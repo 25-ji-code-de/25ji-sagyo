@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>『25时、Nightcord见。』成员们的 24 小时工作日常</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <video id="video" autoplay muted playsinline preload="metadata"></video>
+      <div id="overlay">
+        <div id="info">
+          Time (<span id="tzLabel">Local</span>): <span id="localTime">--:--:--</span>
+          &nbsp;•&nbsp; Part: <span id="partName">-</span>
+        </div>
+
+        <div id="controls" role="toolbar" aria-label="Video controls">
+          <button id="muteBtn" aria-pressed="true" title="Mute / Unmute">🔊</button>
+          <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" />
+          <button id="fullscreenBtn" title="Fullscreen">Fullscreen</button>
+          <button id="tzToggleBtn" title="Toggle timezone">Toggle TZ</button>
+          <button id="pomodoroBtn" title="Pomodoro Timer">🍅</button>
+          <button id="cdPlayerBtn" title="CD Player">💿</button>
+        </div>
+
+        <!-- Pomodoro Timer Panel -->
+        <div id="pomodoroPanel" class="hidden">
+          <div class="pomodoro-header">
+            <span>番茄钟 & 世界时钟</span>
+            <div class="header-controls">
+              <button id="toggleClockWidget" class="toggle-btn" title="显示/隐藏时钟">🕐</button>
+              <button id="pomodoroCloseBtn" class="close-btn" title="关闭">✕</button>
+            </div>
+          </div>
+          
+          <!-- Main Content: Left-Right Layout -->
+          <div class="pomodoro-main-content">
+            <!-- Left Side: World Clock Section -->
+            <div class="world-clock-section" id="worldClockSection">
+              <div class="clock-item main-clock">
+                <div class="clock-label">本地时间</div>
+                <div class="clock-time-large">
+                  <span class="time-hours" id="localHours">00</span>
+                  <span class="time-separator">:</span>
+                  <span class="time-minutes" id="localMinutes">00</span>
+                  <span class="time-separator">:</span>
+                  <span class="time-seconds" id="localSeconds">00</span>
+                  <span class="time-milliseconds" id="localMilliseconds">.000</span>
+                </div>
+                <div class="clock-date" id="localDate">2025年12月7日 星期六</div>
+              </div>
+              
+              <div class="world-clocks-grid">
+                <div class="clock-item-small">
+                  <div class="clock-label-small">东京 🗼</div>
+                  <div class="clock-time-small" id="tokyoClock">
+                    <span class="time-hms" id="tokyoTime">00:00:00</span>
+                  </div>
+                </div>
+                <div class="clock-item-small">
+                  <div class="clock-label-small">纽约 🗽</div>
+                  <div class="clock-time-small" id="nyClock">
+                    <span class="time-hms" id="nyTime">00:00:00</span>
+                  </div>
+                </div>
+                <div class="clock-item-small">
+                  <div class="clock-label-small">伦敦 🏰</div>
+                  <div class="clock-time-small" id="londonClock">
+                    <span class="time-hms" id="londonTime">00:00:00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Pomodoro Timer -->
+            <div class="pomodoro-body">
+              <div id="pomodoroDisplay" class="pomodoro-display">25:00</div>
+              <div class="pomodoro-status">准备工作</div>
+              <div class="pomodoro-controls">
+                <button id="pomodoroStartBtn" class="pomodoro-btn primary">开始</button>
+                <button id="pomodoroPauseBtn" class="pomodoro-btn" disabled>暂停</button>
+                <button id="pomodoroResetBtn" class="pomodoro-btn">重置</button>
+              </div>
+              <div class="pomodoro-settings">
+                <div class="setting-item">
+                  <label>工作时长 (分钟):</label>
+                  <input type="number" id="workDuration" min="1" max="60" value="25" />
+                </div>
+                <div class="setting-item">
+                  <label>短休息 (分钟):</label>
+                  <input type="number" id="shortBreak" min="1" max="30" value="5" />
+                </div>
+                <div class="setting-item">
+                  <label>长休息 (分钟):</label>
+                  <input type="number" id="longBreak" min="1" max="60" value="15" />
+                </div>
+                <div class="setting-item">
+                  <label>工作轮次:</label>
+                  <span id="pomodoroRound">0 / 4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CD Player Panel -->
+      <div id="cdPlayerPanel" class="hidden">
+        <div class="cd-player-header">
+          <span>🎵 Project Sekai Music Player</span>
+          <button id="cdPlayerCloseBtn" class="close-btn" title="关闭">✕</button>
+        </div>
+        
+        <div class="cd-player-body">
+          <!-- Music List -->
+          <div class="music-list-section">
+            <div class="music-search">
+              <input type="text" id="musicSearchInput" placeholder="搜索歌曲..." />
+            </div>
+            <div class="music-list" id="musicList">
+              <div class="loading">加载中...</div>
+            </div>
+          </div>
+
+          <!-- Now Playing -->
+          <div class="now-playing-section">
+            <div class="album-cover-container">
+              <img id="albumCover" src="https://pj-sekai.oss-cn-shanghai.aliyuncs.com/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png" alt="Album Cover" class="album-cover" />
+              <div class="cd-animation" id="cdAnimation"></div>
+              <div id="trackLoadingSpinner" class="track-loading-spinner hidden">
+                <div class="spinner-icon"></div>
+              </div>
+            </div>
+            
+            <div class="track-info">
+              <div class="track-title" id="trackTitle">选择一首歌曲</div>
+              <div class="track-artist" id="trackArtist">-</div>
+              <div class="track-vocal" id="trackVocal">-</div>
+            </div>
+
+            <!-- Audio Player Controls -->
+            <div class="player-progress">
+              <span class="time-current" id="currentTime">0:00</span>
+              <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1" />
+              <span class="time-total" id="totalTime">0:00</span>
+            </div>
+
+            <div class="player-controls">
+              <button id="prevBtn" class="control-btn" title="上一首">⏮</button>
+              <button id="playPauseBtn" class="control-btn play-btn" title="播放/暂停">▶️</button>
+              <button id="nextBtn" class="control-btn" title="下一首">⏭</button>
+              <button id="shuffleBtn" class="control-btn" title="随机播放">🔀</button>
+              <button id="repeatBtn" class="control-btn" title="循环播放">🔁</button>
+            </div>
+
+            <div class="volume-control">
+              <span>🔊</span>
+              <input type="range" id="cdVolumeSlider" min="0" max="1" step="0.01" value="0.7" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden Audio Element -->
+        <audio id="cdAudioPlayer" preload="metadata"></audio>
+      </div>
+  </div>
+
+  <script>
+  // Default sources - replace or override with query params ?p1=...&p2=...&p3=...
+  const DEFAULT_SOURCES = {
+    p1: 'https://houtar-disk.oss-cn-shanghai.aliyuncs.com/nightcord/p01.mp4',
+    p2: 'https://houtar-disk.oss-cn-shanghai.aliyuncs.com/nightcord/p02.mp4',
+    p3: 'https://houtar-disk.oss-cn-shanghai.aliyuncs.com/nightcord/p03.mp4'
+  };
+
+  function parseSourcesFromURL() {
+    const url = new URL(window.location.href);
+    const s = { ...DEFAULT_SOURCES };
+    ['p1','p2','p3'].forEach(k => {
+      if (url.searchParams.get(k)) s[k] = url.searchParams.get(k);
+    });
+    return s;
+  }
+
+  // make sources globally available to script.js
+  window.TIME_SYNC_SOURCES = parseSourcesFromURL();
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>

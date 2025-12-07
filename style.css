@@ -1,0 +1,1181 @@
+/* style.css - simple fullscreen video with overlay info */
+#app, html, body {
+  height: 100vh;
+  margin: 0;
+  background: #000;
+}
+
+#app{display:flex;align-items:center;justify-content:center;position:relative}
+
+/* Make video responsive and show the whole video on narrow/portrait screens.
+   Use object-fit: contain so the video is fully visible with letterboxing
+   instead of being cropped (object-fit:cover). Limit height to viewport. */
+video{
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  object-fit: contain;
+  background: #000; /* letterbox color */
+}
+#overlay{position:absolute;left:0;top:0;width:100%;padding:12px;box-sizing:border-box}
+#info{color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;font-size:14px;background:rgba(0,0,0,0.35);display:inline-block;padding:6px 10px;border-radius:6px}
+#controls{position:absolute;right:12px;top:12px;display:flex;gap:8px;align-items:center}
+#controls button{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:6px 8px;border-radius:6px;font-size:13px;backdrop-filter:blur(4px);cursor:pointer}
+#controls button:hover{background:rgba(255,255,255,0.09)}
+#volumeSlider{width:110px}
+/* no extra select styles (speed selector removed) */
+#muteBtn[aria-pressed="false"]{opacity:0.9}
+#muteBtn[aria-pressed="true"]{opacity:0.75}
+#controls input[type="range"]{appearance:none;background:transparent;height:24px}
+#controls input[type="range"]::-webkit-slider-runnable-track{height:6px;background:rgba(255,255,255,0.12);border-radius:6px}
+#controls input[type="range"]::-webkit-slider-thumb{width:12px;height:12px;border-radius:50%;background:#fff;margin-top:-3px}
+#overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease, visibility .18s ease}
+
+/* HEVC warning banner - styled to blend with existing overlay and placed bottom-left */
+#hevcWarning{position:absolute;left:12px;bottom:12px;z-index:9999}
+#hevcWarning .hevc-inner{background:rgba(0,0,0,0.5);color:#fff;padding:8px 12px;border-radius:8px;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;font-size:13px;border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(6px)}
+/* no dismiss button styles (banner is non-dismissible) */
+
+@media (max-width:520px){
+  #hevcWarning .hevc-inner{font-size:12px;padding:7px 9px}
+  #hevcWarning{left:8px;bottom:8px}
+}
+
+/* Responsive: on narrow devices stack info and controls vertically to avoid overlap */
+@media (max-width:520px){
+  /* make overlay use document flow and stack children */
+  #overlay{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    padding:10px;
+  }
+
+  /* remove absolute positioning so controls flow below info */
+  #controls{
+    position:static;
+    right:auto;
+    top:auto;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    width:100%;
+    box-sizing:border-box;
+    justify-content:flex-start;
+    background:rgba(0,0,0,0.18);
+    padding:6px 8px;
+    border-radius:6px;
+  }
+
+  /* make info take full width so it doesn't collide with controls */
+  #info{
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  /* reduce slider width on small screens */
+  #volumeSlider{width:80px}
+}
+
+/* Pomodoro Timer Styles */
+#pomodoroBtn {
+  font-size: 16px;
+  padding: 6px 10px;
+}
+
+#pomodoroPanel {
+  position: fixed;
+  bottom: 80px;
+  right: 12px;
+  background: rgba(15, 15, 25, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 0;
+  width: 750px;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+  color: #fff;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  transform-origin: bottom right;
+  overflow: hidden;
+}
+
+/* When clock is collapsed, make panel narrower */
+#pomodoroPanel:has(.world-clock-section.collapsed) {
+  width: 420px;
+}
+
+#pomodoroPanel.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+/* Main Content: Left-Right Layout */
+.pomodoro-main-content {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Remove old :has() rule - not needed anymore */
+
+/* World Clock Section - Left Side */
+.world-clock-section {
+  flex: 0 0 350px;
+  width: 350px;
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.25) 0%, rgba(20, 20, 35, 0.35) 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 28px 24px 24px;
+  transition: flex-basis 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 400px;
+  max-height: 600px;
+  position: relative;
+}
+
+.world-clock-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.world-clock-section.collapsed {
+  flex: 0 0 0;
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  border-right: none;
+  min-height: 0;
+  max-height: 0;
+}
+
+/* Main Clock - Time.is Style */
+.clock-item.main-clock {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.clock-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+
+.clock-time-large {
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-family: 'Montserrat', 'SF Mono', 'Monaco', 'Consolas', 'Roboto Mono', monospace;
+  line-height: 1.2;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.time-hours, .time-minutes, .time-seconds {
+  display: inline-block;
+  min-width: 1.1em;
+  text-align: center;
+}
+
+.time-separator {
+  opacity: 0.6;
+  margin: 0 2px;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 0.6; }
+  50%, 100% { opacity: 0.2; }
+}
+
+.time-milliseconds {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+  margin-left: 2px;
+  align-self: flex-end;
+  padding-bottom: 6px;
+}
+
+.clock-date {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* World Clocks Grid */
+.world-clocks-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.clock-item-small {
+  text-align: center;
+  padding: 14px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.clock-item-small:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clock-label-small {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.clock-time-small {
+  font-family: 'Montserrat', 'SF Mono', 'Monaco', 'Consolas', 'Roboto Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.time-hms {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.time-ms {
+  /* Removed - no longer displayed */
+  display: none;
+}
+
+/* Remove old clock styles */
+.clock-item {
+  /* styles removed */
+}
+
+.clock-display {
+  /* styles removed */
+}
+
+.clock-display.ticking {
+  /* removed */
+}
+
+@keyframes pulse {
+  /* kept for other uses */
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.pomodoro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(8px);
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 0.2s;
+  padding: 6px 10px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.toggle-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+  border-color: rgba(99, 102, 241, 0.6);
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.close-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+/* Pomodoro Body - Right Side */
+.pomodoro-body {
+  flex: 1;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 450px;
+  margin: 0 auto;
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When clock is collapsed, center the pomodoro */
+.world-clock-section.collapsed ~ .pomodoro-body {
+  max-width: 100%;
+}
+
+.pomodoro-display {
+  font-size: 64px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: #ff6b6b;
+  text-shadow: 0 2px 12px rgba(255, 107, 107, 0.3);
+}
+
+.pomodoro-status {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 24px;
+}
+
+.pomodoro-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pomodoro-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.pomodoro-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.pomodoro-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.pomodoro-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pomodoro-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pomodoro-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pomodoro-btn.primary {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.pomodoro-btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff5252 0%, #ff4444 100%);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.pomodoro-settings {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 20px 16px 16px;
+  margin-top: 8px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.setting-item label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.setting-item input[type="number"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 70px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+
+.setting-item input[type="number"]:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+#pomodoroRound {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Responsive adjustments for pomodoro panel */
+@media (max-width: 800px) {
+  #pomodoroPanel {
+    width: 95vw;
+    min-width: 300px;
+    max-width: 95vw;
+    right: 2.5vw;
+    bottom: 70px;
+  }
+
+  /* When clock is collapsed, allow panel to be smaller */
+  #pomodoroPanel:has(.world-clock-section.collapsed) {
+    width: 95vw;
+    max-width: 450px;
+  }
+
+  .pomodoro-main-content {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .world-clock-section {
+    flex: 1 1 auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px 12px 12px;
+  }
+
+  .world-clock-section.collapsed {
+    display: none;
+  }
+
+  .clock-time-large {
+    font-size: 32px;
+  }
+
+  .time-milliseconds {
+    font-size: 14px;
+    padding-bottom: 3px;
+  }
+
+  .clock-date {
+    font-size: 11px;
+  }
+
+  .world-clocks-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .time-hms {
+    font-size: 13px;
+  }
+
+  .time-ms {
+    font-size: 9px;
+  }
+
+  .pomodoro-body {
+    padding: 16px;
+  }
+
+  .pomodoro-display {
+    font-size: 48px;
+  }
+
+  .pomodoro-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pomodoro-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pomodoro-display {
+    font-size: 40px;
+  }
+  
+  .world-clocks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CD Player Styles */
+#cdPlayerBtn {
+  font-size: 16px;
+  padding: 6px 10px;
+}
+
+#cdPlayerPanel {
+  position: fixed;
+  bottom: 80px;
+  right: 12px;
+  background: rgba(15, 15, 25, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 0;
+  width: 800px;
+  max-height: 600px;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 999;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+  color: #fff;
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  transform-origin: bottom right;
+  overflow: hidden;
+}
+
+#cdPlayerPanel.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+.cd-player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(8px);
+}
+
+.cd-player-body {
+  display: flex;
+  flex-direction: row;
+  height: 520px;
+  overflow: hidden;
+}
+
+/* Music List Section */
+.music-list-section {
+  flex: 0 0 300px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.25) 0%, rgba(20, 20, 35, 0.35) 100%);
+}
+
+.music-search {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.music-search input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+.music-search input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.music-search input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.music-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.music-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.music-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.music-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.music-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.music-item {
+  padding: 12px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.music-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+.music-item.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.music-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-item-artist {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+/* Now Playing Section */
+.now-playing-section {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.now-playing-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.now-playing-section::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.now-playing-section::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.now-playing-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.album-cover-container {
+  width: 240px;
+  height: 240px;
+  position: relative;
+  margin-bottom: 24px;
+  transition: transform 0.3s ease;
+}
+
+.album-cover {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  transition: border-radius 0.5s ease;
+  transform: rotate(0deg);
+}
+
+/* Playing state: turn into a spinning CD */
+.album-cover-container.playing .album-cover {
+  border-radius: 50%;
+  animation: spin 20s linear infinite;
+  transition: border-radius 0.5s ease;
+}
+
+/* Loading spinner overlay */
+.track-loading-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.3s;
+}
+
+.track-loading-spinner.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner-icon {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spinLoader 1s ease-in-out infinite;
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+.cd-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* CD texture: grooves and shine */
+  background: 
+    /* Grooves */
+    repeating-radial-gradient(rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 2px, transparent 3px, transparent 4px),
+    /* Shine */
+    conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.2) 45deg, transparent 90deg, rgba(255,255,255,0.2) 135deg, transparent 180deg, rgba(255,255,255,0.2) 225deg, transparent 270deg, rgba(255,255,255,0.2) 315deg, transparent 360deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+  transform: rotate(0deg);
+}
+
+.album-cover-container.playing .cd-animation {
+  opacity: 1;
+  animation: spin 20s linear infinite;
+  transition: opacity 0.5s;
+}
+
+/* Center hole overlay removed */
+.album-cover-container::after {
+  display: none;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.track-info {
+  text-align: center;
+  margin-bottom: 24px;
+  max-width: 400px;
+}
+
+.track-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.track-artist {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.track-vocal {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Player Progress */
+.player-progress {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.time-current, .time-total {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+}
+
+#progressBar {
+  flex: 1;
+  height: 6px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#progressBar::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#progressBar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+#progressBar::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+/* Player Controls */
+.player-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.control-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:active:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.control-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.play-btn {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.play-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff5252 0%, #ff4444 100%);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.control-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Volume Control */
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.volume-control span {
+  font-size: 18px;
+}
+
+#cdVolumeSlider {
+  flex: 1;
+  height: 6px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#cdVolumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#cdVolumeSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+#cdVolumeSlider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+/* Responsive for CD Player */
+@media (max-width: 850px) {
+  #cdPlayerPanel {
+    width: 95vw;
+    max-width: 95vw;
+    right: 2.5vw;
+    bottom: 70px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cd-player-body {
+    flex-direction: column;
+    height: auto;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .music-list-section {
+    flex: 0 0 120px; /* Fixed height for list on mobile */
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    order: 2; /* Put list below player controls */
+  }
+
+  .music-search {
+    padding: 8px;
+  }
+
+  .music-item {
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .now-playing-section {
+    flex: 1;
+    padding: 16px;
+    order: 1; /* Put player controls on top */
+    overflow-y: auto;
+    min-height: 300px;
+  }
+
+  .album-cover-container {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 16px;
+  }
+
+  .track-title {
+    font-size: 18px;
+  }
+  
+  .track-info {
+    margin-bottom: 16px;
+  }
+
+  .player-controls {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .control-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .play-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .player-progress {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .music-list-section {
+    flex: 0 0 100px;
+  }
+  
+  .album-cover-container {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .now-playing-section {
+    min-height: auto;
+  }
+}

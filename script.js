@@ -793,6 +793,7 @@
     if (!cdPlayerBtn || !cdPlayerPanel) return;
 
     let musicData = [];
+    let localMusicData = []; // Store imported local music
     let musicVocalsData = [];
     let musicTitlesZhCN = {}; // Chinese translations
     const gameCharacters = {
@@ -984,6 +985,8 @@
       // Filter by category
       if (currentCategory === 'favorites') {
         list = list.filter(music => favorites.has(music.id));
+      } else if (currentCategory === 'local') {
+        list = localMusicData;
       } else if (currentCategory === 'playlists') {
         // Special case: handled by displayPlaylists, but if we are here, it means we are searching
         // or filtering within "all playlists" context? No, 'playlists' category shows playlist grid.
@@ -1014,6 +1017,44 @@
       
       filteredMusicData = list;
       displayMusicList(filteredMusicData);
+    }
+
+    // Import Local Music
+    function importLocalMusic() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.multiple = true;
+      input.accept = 'audio/*';
+      
+      input.onchange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        files.forEach((file, index) => {
+          const id = 'local_' + Date.now() + '_' + index;
+          localMusicData.push({
+            id: id,
+            title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+            composer: 'Local File',
+            lyricist: '',
+            isLocal: true,
+            file: file,
+            audioUrl: URL.createObjectURL(file),
+            assetbundleName: 'local' // Placeholder
+          });
+        });
+        
+        // Refresh list if currently viewing local music
+        if (currentCategory === 'local') {
+          filterMusicList(musicSearchInput ? musicSearchInput.value.toLowerCase().trim() : '');
+        } else {
+          // Switch to local category
+          const localBtn = document.querySelector('.category-btn[data-category="local"]');
+          if (localBtn) localBtn.click();
+        }
+      };
+      
+      input.click();
     }
 
     // Playlist Management Functions
@@ -1318,12 +1359,38 @@
 
     // Display music list
     function displayMusicList(list) {
-      if (list.length === 0) {
+      musicList.innerHTML = '';
+
+      // Show Import button for Local Music category
+      if (currentCategory === 'local') {
+        const importBtn = document.createElement('div');
+        importBtn.className = 'music-item import-item';
+        importBtn.style.justifyContent = 'center';
+        importBtn.style.cursor = 'pointer';
+        importBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+        importBtn.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">📥</span>
+            <span>导入本地音乐文件...</span>
+          </div>
+        `;
+        importBtn.addEventListener('click', importLocalMusic);
+        musicList.appendChild(importBtn);
+        
+        if (list.length === 0) {
+          const tip = document.createElement('div');
+          tip.style.padding = '20px';
+          tip.style.textAlign = 'center';
+          tip.style.color = 'rgba(255,255,255,0.5)';
+          tip.textContent = '支持 MP3, FLAC, WAV 等格式。刷新页面后列表会清空。';
+          musicList.appendChild(tip);
+          return;
+        }
+      } else if (list.length === 0) {
         musicList.innerHTML = '<div class="loading">没有找到歌曲</div>';
         return;
       }
 
-      musicList.innerHTML = '';
       list.forEach((music, index) => {
         const item = document.createElement('div');
         item.className = 'music-item';
@@ -1337,13 +1404,14 @@
         const displayArtist = music.composer || 'Unknown';
         
         const isFav = favorites.has(music.id);
+        const isLocal = music.isLocal;
         
         item.innerHTML = `
           <div class="music-item-content">
             <div class="music-item-title" data-full-text="${displayTitle.replace(/"/g, '&quot;')}">${displayTitle}</div>
             <div class="music-item-artist">${displayArtist}</div>
           </div>
-          <div class="music-item-actions">
+          <div class="music-item-actions" style="${isLocal ? 'display: none;' : ''}">
             <button class="add-to-playlist-btn" title="添加到歌单">✚</button>
             <button class="favorite-btn ${isFav ? 'active' : ''}" title="${isFav ? '取消收藏' : '添加到我喜欢的音乐'}">
               ${isFav ? '★' : '☆'}
@@ -1449,6 +1517,32 @@
 
       // Show loading spinner
       if (trackLoadingSpinner) trackLoadingSpinner.classList.remove('hidden');
+      
+      // Handle Local Music
+      if (music.isLocal) {
+        trackTitle.textContent = music.title;
+        trackArtist.textContent = music.composer;
+        trackVocal.textContent = 'Local File';
+        
+        // Use default cover or placeholder
+        albumCover.src = 'https://pj-sekai.oss-cn-shanghai.aliyuncs.com/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
+        albumCover.style.opacity = '1';
+        
+        // Set audio source
+        cdAudioPlayer.onerror = null;
+        cdAudioPlayer.src = music.audioUrl;
+        cdAudioPlayer.load();
+        
+        // Update active class manually
+        const items = musicList.querySelectorAll('.music-item:not(.import-item)');
+        items.forEach(item => item.classList.remove('active'));
+        if (items[index]) items[index].classList.add('active');
+
+        saveSettings();
+        progressBar.value = 0;
+        currentTimeEl.textContent = '0:00';
+        return;
+      }
       
       // Get all vocals for this music
       const availableVocals = musicVocalsData.filter(

@@ -1769,9 +1769,16 @@
         if (music.coverUrl) {
           albumCover.src = music.coverUrl;
           albumCover.style.opacity = '1';
+          albumCover.onload = () => {
+            // Extract colors from loaded cover for visualizer
+            dominantColors = extractColorsFromCover();
+          };
         } else {
           albumCover.src = 'https://pj-sekai.oss-cn-shanghai.aliyuncs.com/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
           albumCover.style.opacity = '1';
+          albumCover.onload = () => {
+            dominantColors = extractColorsFromCover();
+          };
         }
         
         // Set audio source
@@ -1895,17 +1902,22 @@
       const primaryCoverUrl = `https://pj-sekai.oss-cn-shanghai.aliyuncs.com/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
       const fallbackCoverUrl = `https://storage.nightcord.de5.net/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
       
+      // Set crossOrigin BEFORE setting src to enable CORS
+      albumCover.crossOrigin = "anonymous";
       albumCover.src = primaryCoverUrl;
       albumCover.style.display = 'block';
       albumCover.style.opacity = '0.5'; // Dim while loading
       
       albumCover.onload = () => {
         albumCover.style.opacity = '1';
+        // Extract colors from loaded cover for visualizer
+        dominantColors = extractColorsFromCover();
       };
       
       // If primary cover fails, try fallback
       albumCover.onerror = () => {
         if (albumCover.src === primaryCoverUrl) {
+          albumCover.crossOrigin = "anonymous"; // Re-set for fallback
           albumCover.src = fallbackCoverUrl;
         }
       };
@@ -1918,6 +1930,7 @@
       cdAudioPlayer.onerror = null;
       
       // Try primary audio first
+      cdAudioPlayer.crossOrigin = "anonymous"; // Ensure CORS for visualizer
       cdAudioPlayer.src = primaryAudioUrl;
       cdAudioPlayer.load(); // Explicitly load the new source
       
@@ -1967,10 +1980,344 @@
     const albumCoverContainer = document.querySelector('.album-cover-container');
     const albumCoverElement = document.getElementById('albumCover');
     const cdAnimationElement = document.getElementById('cdAnimation');
+    
+    // Audio Visualizer Setup
+    let audioContext = null;
+    let analyser = null;
+    let source = null;
+    let visualizerCanvas = document.getElementById('visualizerCanvas');
+    let canvasCtx = visualizerCanvas ? visualizerCanvas.getContext('2d') : null;
+    let animationId = null;
+    let dominantColors = []; // Store extracted colors from album cover
+
+    // Extract dominant colors from album cover
+    function extractColorsFromCover() {
+      try {
+        const img = albumCoverElement;
+        if (!img || !img.complete) return [];
+        
+        // Create temporary canvas to read image pixels
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Resize to small size for faster processing
+        const size = 50;
+        tempCanvas.width = size;
+        tempCanvas.height = size;
+        
+        // Draw image
+        tempCtx.drawImage(img, 0, 0, size, size);
+        
+        // Get image data
+        const imageData = tempCtx.getImageData(0, 0, size, size);
+        const pixels = imageData.data;
+        
+        // Collect color samples (sample every 10th pixel for performance)
+        const colorMap = {};
+        const lowSatColors = []; // Store low-saturation colors separately
+        let totalSaturation = 0;
+        let sampleCount = 0;
+        
+        for (let i = 0; i < pixels.length; i += 40) { // RGBA, so skip by 40 (10 pixels)
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const a = pixels[i + 3];
+          
+          // Skip transparent pixels
+          if (a < 128) continue;
+          
+          // Skip pure black/white
+          if ((r < 15 && g < 15 && b < 15) || (r > 240 && g > 240 && b > 240)) continue;
+          
+          // Convert to HSL for better color grouping
+          const hsl = rgbToHsl(r, g, b);
+          totalSaturation += hsl.s;
+          sampleCount++;
+          
+          // Separate saturated and desaturated colors
+          if (hsl.s >= 20) {
+            const hueKey = Math.round(hsl.h / 30) * 30; // Group by 30° hue ranges
+            
+            if (!colorMap[hueKey]) {
+              colorMap[hueKey] = { h: hsl.h, s: hsl.s, l: hsl.l, count: 0 };
+            }
+            colorMap[hueKey].count++;
+            // Average the values for better representation
+            colorMap[hueKey].h = (colorMap[hueKey].h * colorMap[hueKey].count + hsl.h) / (colorMap[hueKey].count + 1);
+            colorMap[hueKey].s = (colorMap[hueKey].s * colorMap[hueKey].count + hsl.s) / (colorMap[hueKey].count + 1);
+            colorMap[hueKey].l = (colorMap[hueKey].l * colorMap[hueKey].count + hsl.l) / (colorMap[hueKey].count + 1);
+          } else {
+            // Collect low-saturation colors
+            lowSatColors.push({ h: hsl.h, s: hsl.s, l: hsl.l });
+          }
+        }
+        
+        // Calculate average saturation
+        const avgSaturation = sampleCount > 0 ? totalSaturation / sampleCount : 0;
+        
+        // Check if this is a monochrome/low-saturation cover
+        const isMonochrome = avgSaturation < 15;
+        
+        let colors;
+        
+        if (isMonochrome) {
+          // For monochrome covers, use grayscale gradient
+          console.log('Detected monochrome cover, using grayscale palette');
+          
+          // Sort low-sat colors by lightness
+          lowSatColors.sort((a, b) => a.l - b.l);
+          
+          // Create grayscale gradient from dark to light
+          colors = [
+            { h: 0, s: 0, l: 30 },  // Dark gray
+            { h: 0, s: 0, l: 45 },  // Medium-dark gray
+            { h: 0, s: 0, l: 60 },  // Medium gray
+            { h: 0, s: 0, l: 75 }   // Light gray
+          ];
+        } else {
+          // Get top saturated colors by frequency
+          const colorList = Object.values(colorMap)
+            .sort((a, b) => b.count - a.count);
+          
+          // Check if this is a monochromatic (single hue) cover
+          const dominantColor = colorList[0];
+          const hueVariance = colorList.reduce((acc, c) => {
+            const hueDiff = Math.abs(c.h - dominantColor.h);
+            // Handle hue wrapping (e.g., 350° and 10° are close)
+            const wrappedDiff = Math.min(hueDiff, 360 - hueDiff);
+            return acc + wrappedDiff * c.count;
+          }, 0) / colorList.reduce((acc, c) => acc + c.count, 0);
+          
+          console.log(`Hue variance: ${hueVariance.toFixed(1)}°`);
+          
+          // If hue variance is very small (< 30°), it's a single-color cover
+          if (hueVariance < 30) {
+            console.log('Detected monochromatic (single-color) cover');
+            // Use different lightness values of the same hue
+            colors = [
+              { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 35 },
+              { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 50 },
+              { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 65 },
+              { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 75 }
+            ];
+          } else {
+            // Multi-color cover, use extracted palette
+            colors = colorList
+              .slice(0, 8) // Get more colors for better gradient
+              .map(c => ({ 
+                h: c.h, 
+                s: Math.max(c.s, 50), // Boost saturation for colorful covers
+                l: Math.min(Math.max(c.l, 40), 70) 
+              }));
+            
+            // Sort colors by hue for smooth gradient
+            colors = sortColorsForGradient(colors);
+          }
+        }
+        
+        return colors;
+      } catch (e) {
+        console.warn('Failed to extract colors from cover:', e);
+        return [];
+      }
+    }
+
+    // Sort colors by hue to create smooth gradient
+    function sortColorsForGradient(colors) {
+      if (colors.length <= 1) return colors;
+      
+      // Sort by hue value (0-360)
+      const sorted = [...colors].sort((a, b) => a.h - b.h);
+      
+      // Check if we should wrap around (e.g., red at 0° and 360°)
+      // Calculate the largest gap in the hue circle
+      let maxGap = 0;
+      let maxGapIndex = 0;
+      
+      for (let i = 0; i < sorted.length; i++) {
+        const current = sorted[i].h;
+        const next = sorted[(i + 1) % sorted.length].h;
+        const gap = i === sorted.length - 1 
+          ? (360 - current + next) // Wrap around gap
+          : (next - current);
+        
+        if (gap > maxGap) {
+          maxGap = gap;
+          maxGapIndex = i;
+        }
+      }
+      
+      // If there's a large gap, start the array after that gap
+      // This ensures the gradient doesn't go through the gap
+      if (maxGap > 60) { // If gap is larger than 60°, reorganize
+        const reordered = [
+          ...sorted.slice(maxGapIndex + 1),
+          ...sorted.slice(0, maxGapIndex + 1)
+        ];
+        return reordered;
+      }
+      
+      return sorted;
+    }
+
+    // RGB to HSL conversion
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      
+      return {
+        h: h * 360,
+        s: s * 100,
+        l: l * 100
+      };
+    }
+
+    function initAudioVisualizer() {
+      if (!visualizerCanvas || audioContext) return;
+      
+      try {
+        // Create AudioContext
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+        
+        // Create Analyser
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256; // Controls the number of frequency bins
+        
+        // Connect Audio Element to Analyser
+        // Note: This requires CORS to be handled correctly for cross-origin audio
+        cdAudioPlayer.crossOrigin = "anonymous";
+        source = audioContext.createMediaElementSource(cdAudioPlayer);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        
+        drawVisualizer();
+      } catch (e) {
+        console.warn('Web Audio API setup failed:', e);
+      }
+    }
+
+    function drawVisualizer() {
+      if (!analyser || !visualizerCanvas) return;
+      
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      const width = visualizerCanvas.width;
+      const height = visualizerCanvas.height;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const coverRadius = 120; // Approximate CD cover radius
+      const minBarHeight = 5; // Minimum bar height to ensure visibility
+      const maxBarHeight = 80; // Maximum bar height
+      
+      const draw = () => {
+        animationId = requestAnimationFrame(draw);
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        canvasCtx.clearRect(0, 0, width, height);
+        
+        // Use extracted colors or fallback to rainbow
+        const useExtractedColors = dominantColors.length > 0;
+        
+        // Draw bars starting from cover edge, extending outward
+        for (let i = 0; i < bufferLength; i++) {
+          // Scale bar height with minimum
+          const barHeight = minBarHeight + (dataArray[i] / 255) * (maxBarHeight - minBarHeight);
+          
+          // Calculate angle
+          const angle = (i / bufferLength) * 2 * Math.PI - Math.PI / 2; // Start from top
+          
+          // Start from edge of cover, extend outward
+          const x1 = centerX + Math.cos(angle) * coverRadius;
+          const y1 = centerY + Math.sin(angle) * coverRadius;
+          const x2 = centerX + Math.cos(angle) * (coverRadius + barHeight);
+          const y2 = centerY + Math.sin(angle) * (coverRadius + barHeight);
+          
+          // Draw bar with gradient effect
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(x1, y1);
+          canvasCtx.lineTo(x2, y2);
+          canvasCtx.lineWidth = 4;
+          
+          // Create gradient from base to tip
+          const gradient = canvasCtx.createLinearGradient(x1, y1, x2, y2);
+          
+          if (useExtractedColors) {
+            // Add slow rotation effect by shifting the color array position
+            const rotationSpeed = 0.0005; // Very slow rotation
+            const rotationOffset = (Date.now() * rotationSpeed) % dominantColors.length;
+            
+            // Smooth gradient across all colors with rotation
+            // Calculate position in the color array (with smooth interpolation and rotation)
+            const basePosition = (i / bufferLength) * dominantColors.length;
+            const position = (basePosition + rotationOffset) % dominantColors.length;
+            const colorIndex = Math.floor(position);
+            const nextColorIndex = (colorIndex + 1) % dominantColors.length;
+            const blend = position - colorIndex; // 0 to 1 for blending
+            
+            const color1 = dominantColors[colorIndex];
+            const color2 = dominantColors[nextColorIndex];
+            
+            // Interpolate between two adjacent colors in the gradient array
+            const h = color1.h + (color2.h - color1.h) * blend;
+            const s = color1.s + (color2.s - color1.s) * blend;
+            const l = color1.l + (color2.l - color1.l) * blend;
+            
+            // Vary lightness based on frequency intensity
+            const intensity = dataArray[i] / 255;
+            const lightness1 = Math.max(25, l - 15);
+            const lightness2 = Math.min(75, l + 15 + 15 * intensity);
+            
+            gradient.addColorStop(0, `hsla(${h}, ${s}%, ${lightness1}%, 0.6)`);
+            gradient.addColorStop(1, `hsla(${h}, ${s}%, ${lightness2}%, 0.95)`);
+          } else {
+            // Fallback to rainbow colors
+            const hue = (i * 360 / bufferLength + Date.now() * 0.05) % 360;
+            gradient.addColorStop(0, `hsla(${hue}, 70%, 50%, 0.4)`);
+            gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0.8)`);
+          }
+          
+          canvasCtx.strokeStyle = gradient;
+          canvasCtx.lineCap = 'round';
+          canvasCtx.stroke();
+        }
+      };
+      
+      draw();
+    }
 
     // Play track
     function playTrack() {
       console.log('[playTrack] Called, currentTrackIndex:', currentTrackIndex);
+      
+      // Initialize visualizer on first user interaction (play)
+      if (!audioContext) {
+        initAudioVisualizer();
+      } else if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
       if (currentTrackIndex < 0) {
         // Play first track if none selected
         console.log('[playTrack] No track selected, loading first track');

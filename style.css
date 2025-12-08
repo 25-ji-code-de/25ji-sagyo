@@ -928,6 +928,19 @@ video{
   transition: opacity 0.5s;
 }
 
+/* Audio Visualizer Canvas */
+#visualizerCanvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%; /* Larger than cover */
+  height: 150%;
+  z-index: 0; /* Behind cover */
+  pointer-events: none;
+  opacity: 0.8;
+}
+
 /* Center hole overlay removed */
 .album-cover-container::after {
   display: none;

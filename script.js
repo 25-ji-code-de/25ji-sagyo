@@ -1019,6 +1019,31 @@
       displayMusicList(filteredMusicData);
     }
 
+    // Dynamically load jsmediatags library
+    let jsMediaTagsLoaded = false;
+    async function loadJsMediaTags() {
+      if (jsMediaTagsLoaded || window.jsmediatags) {
+        return true;
+      }
+      
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js';
+          script.onload = () => {
+            jsMediaTagsLoaded = true;
+            resolve();
+          };
+          script.onerror = () => reject(new Error('Failed to load jsmediatags'));
+          document.head.appendChild(script);
+        });
+        return true;
+      } catch (error) {
+        console.error('Failed to load jsmediatags library:', error);
+        return false;
+      }
+    }
+
     // Import Local Music
     function importLocalMusic() {
       const input = document.createElement('input');
@@ -1026,23 +1051,83 @@
       input.multiple = true;
       input.accept = 'audio/*';
       
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
         
-        files.forEach((file, index) => {
+        // Show loading indicator
+        musicList.innerHTML = '<div class="loading">正在加载库文件...</div>';
+        
+        // Load jsmediatags library
+        const loaded = await loadJsMediaTags();
+        if (!loaded) {
+          musicList.innerHTML = '<div class="loading">加载元数据读取库失败，将使用文件名</div>';
+          setTimeout(() => {
+            if (currentCategory === 'local') {
+              filterMusicList(musicSearchInput ? musicSearchInput.value.toLowerCase().trim() : '');
+            }
+          }, 1500);
+        }
+        
+        musicList.innerHTML = '<div class="loading">正在读取文件信息...</div>';
+        
+        for (let index = 0; index < files.length; index++) {
+          const file = files[index];
           const id = 'local_' + Date.now() + '_' + index;
-          localMusicData.push({
+          const audioUrl = URL.createObjectURL(file);
+          
+          // Default values
+          let musicInfo = {
             id: id,
             title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-            composer: 'Local File',
+            composer: 'Unknown Artist',
             lyricist: '',
+            album: 'Unknown Album',
             isLocal: true,
             file: file,
-            audioUrl: URL.createObjectURL(file),
-            assetbundleName: 'local' // Placeholder
-          });
-        });
+            audioUrl: audioUrl,
+            assetbundleName: 'local',
+            coverUrl: null
+          };
+          
+          // Try to read metadata using jsmediatags
+          if (loaded && window.jsmediatags) {
+            try {
+              await new Promise((resolve) => {
+                window.jsmediatags.read(file, {
+                  onSuccess: function(tag) {
+                    const tags = tag.tags;
+                    
+                    // Extract metadata
+                    if (tags.title) musicInfo.title = tags.title;
+                    if (tags.artist) musicInfo.composer = tags.artist;
+                    if (tags.album) musicInfo.album = tags.album;
+                    
+                    // Extract album cover
+                    if (tags.picture) {
+                      const picture = tags.picture;
+                      let base64String = "";
+                      for (let i = 0; i < picture.data.length; i++) {
+                        base64String += String.fromCharCode(picture.data[i]);
+                      }
+                      musicInfo.coverUrl = `data:${picture.format};base64,${window.btoa(base64String)}`;
+                    }
+                    
+                    resolve();
+                  },
+                  onError: function(error) {
+                    console.warn('Failed to read metadata for', file.name, error);
+                    resolve(); // Continue with default values
+                  }
+                });
+              });
+            } catch (err) {
+              console.warn('Error reading tags:', err);
+            }
+          }
+          
+          localMusicData.push(musicInfo);
+        }
         
         // Refresh list if currently viewing local music
         if (currentCategory === 'local') {
@@ -1401,7 +1486,12 @@
         
         // Always display original title + composer
         const displayTitle = music.title;
-        const displayArtist = music.composer || 'Unknown';
+        let displayArtist = music.composer || 'Unknown';
+        
+        // For local music, show album info
+        if (music.isLocal && music.album && music.album !== 'Unknown Album') {
+          displayArtist = `${displayArtist} · ${music.album}`;
+        }
         
         const isFav = favorites.has(music.id);
         const isLocal = music.isLocal;
@@ -1521,12 +1611,17 @@
       // Handle Local Music
       if (music.isLocal) {
         trackTitle.textContent = music.title;
-        trackArtist.textContent = music.composer;
+        trackArtist.textContent = `${music.composer}${music.album ? ' · ' + music.album : ''}`;
         trackVocal.textContent = 'Local File';
         
-        // Use default cover or placeholder
-        albumCover.src = 'https://pj-sekai.oss-cn-shanghai.aliyuncs.com/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
-        albumCover.style.opacity = '1';
+        // Use cover from metadata if available, otherwise use placeholder
+        if (music.coverUrl) {
+          albumCover.src = music.coverUrl;
+          albumCover.style.opacity = '1';
+        } else {
+          albumCover.src = 'https://pj-sekai.oss-cn-shanghai.aliyuncs.com/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
+          albumCover.style.opacity = '1';
+        }
         
         // Set audio source
         cdAudioPlayer.onerror = null;

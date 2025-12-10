@@ -1158,8 +1158,7 @@
         const savedMusic = await loadLocalMusicFromDB();
         if (savedMusic.length > 0) {
           localMusicData.push(...savedMusic);
-          console.log(`Loaded ${savedMusic.length} local music files from database`);
-        }
+                  }
       } catch (error) {
         console.error('Failed to load local music from database:', error);
       }
@@ -1986,8 +1985,7 @@
       // If primary audio fails, use fallback (and preserve pendingAutoPlay flag)
       cdAudioPlayer.onerror = () => {
         if (cdAudioPlayer.src === primaryAudioUrl) {
-          console.log('Primary audio source failed, trying fallback... (pendingAutoPlay:', pendingAutoPlay, ')');
-          cdAudioPlayer.onerror = null; // Clear handler before changing src
+                    cdAudioPlayer.onerror = null; // Clear handler before changing src
           cdAudioPlayer.src = fallbackAudioUrl;
           cdAudioPlayer.load();
           // pendingAutoPlay flag is preserved, canplay event will handle auto-play
@@ -2112,8 +2110,7 @@
         
         if (isMonochrome) {
           // For monochrome covers, use grayscale gradient
-          console.log('Detected monochrome cover, using grayscale palette');
-          
+                    
           // Sort low-sat colors by lightness
           lowSatColors.sort((a, b) => a.l - b.l);
           
@@ -2138,12 +2135,10 @@
             return acc + wrappedDiff * c.count;
           }, 0) / colorList.reduce((acc, c) => acc + c.count, 0);
           
-          console.log(`Hue variance: ${hueVariance.toFixed(1)}°`);
-          
+                    
           // If hue variance is very small (< 30°), it's a single-color cover
           if (hueVariance < 30) {
-            console.log('Detected monochromatic (single-color) cover');
-            // Use different lightness values of the same hue
+                        // Use different lightness values of the same hue
             colors = [
               { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 35 },
               { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 50 },
@@ -2358,8 +2353,7 @@
 
     // Play track
     function playTrack() {
-      console.log('[playTrack] Called, currentTrackIndex:', currentTrackIndex);
-      
+            
       // Initialize visualizer on first user interaction (play)
       if (!audioContext) {
         initAudioVisualizer();
@@ -2369,26 +2363,22 @@
       
       if (currentTrackIndex < 0) {
         // Play first track if none selected
-        console.log('[playTrack] No track selected, loading first track');
-        pendingAutoPlay = true;
+                pendingAutoPlay = true;
         loadTrack(0);
         return;
       }
       
-      console.log('[playTrack] Attempting to play audio, src:', cdAudioPlayer.src, 'readyState:', cdAudioPlayer.readyState);
-      
+            
       // If audio is not ready yet, set flag and wait for canplay event
       if (cdAudioPlayer.readyState < 2) {
-        console.log('[playTrack] Audio not ready, setting pendingAutoPlay flag');
-        if (trackLoadingSpinner) trackLoadingSpinner.classList.remove('hidden');
+                if (trackLoadingSpinner) trackLoadingSpinner.classList.remove('hidden');
         pendingAutoPlay = true;
         return;
       }
       
       cdAudioPlayer.play()
         .then(() => {
-          console.log('[playTrack] Play successful');
-          isPlaying = true;
+                    isPlaying = true;
           playPauseBtn.textContent = '⏸️';
           
           // Start CD animation smoothly
@@ -2403,8 +2393,7 @@
 
     // Pause track
     function pauseTrack() {
-      console.log('[pauseTrack] Called');
-      cdAudioPlayer.pause();
+            cdAudioPlayer.pause();
       isPlaying = false;
       playPauseBtn.textContent = '▶️';
       
@@ -2460,13 +2449,11 @@
     if (prevBtn) {
       prevBtn.addEventListener('click', () => {
         const wasPlaying = isPlaying;
-        console.log('[Prev] Was playing:', wasPlaying);
-        pauseTrack(); // Pause current first
+                pauseTrack(); // Pause current first
         pendingAutoPlay = wasPlaying; // Set flag for auto-play
         
         const nextIndex = getNextTrackIndex(currentTrackIndex, -1, isShuffleOn);
-        console.log('[Prev] Next index:', nextIndex);
-        loadTrack(nextIndex);
+                loadTrack(nextIndex);
       });
     }
 
@@ -2474,13 +2461,11 @@
     if (nextBtn) {
       nextBtn.addEventListener('click', () => {
         const wasPlaying = isPlaying;
-        console.log('[Next] Was playing:', wasPlaying);
-        pauseTrack(); // Pause current first
+                pauseTrack(); // Pause current first
         pendingAutoPlay = wasPlaying; // Set flag for auto-play
         
         const nextIndex = getNextTrackIndex(currentTrackIndex, 1, isShuffleOn);
-        console.log('[Next] Next index:', nextIndex);
-        loadTrack(nextIndex);
+                loadTrack(nextIndex);
       });
     }
 
@@ -2519,8 +2504,7 @@
         
         // Auto-play if flag is set
         if (pendingAutoPlay) {
-          console.log('[canplay] Auto-playing track (src:', cdAudioPlayer.src, ')');
-          pendingAutoPlay = false;
+                    pendingAutoPlay = false;
           setTimeout(() => {
             playTrack();
           }, 50); // Small delay to ensure audio is truly ready

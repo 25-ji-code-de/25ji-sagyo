@@ -452,9 +452,71 @@
     const localMillisecondsEl = document.getElementById('localMilliseconds');
     const localDateEl = document.getElementById('localDate');
     
-    const tokyoTimeEl = document.getElementById('tokyoTime');
-    const nyTimeEl = document.getElementById('nyTime');
-    const londonTimeEl = document.getElementById('londonTime');
+    // Configurable World Clocks
+    const clockSelects = [
+      document.getElementById('clock1Select'),
+      document.getElementById('clock2Select'),
+      document.getElementById('clock3Select')
+    ];
+    
+    const clockTimeEls = [
+      document.getElementById('clock1Time'),
+      document.getElementById('clock2Time'),
+      document.getElementById('clock3Time')
+    ];
+
+    const AVAILABLE_TIMEZONES = [
+      { label: '东京 🗼', zone: 'Asia/Tokyo' },
+      { label: '纽约 🗽', zone: 'America/New_York' },
+      { label: '伦敦 🏰', zone: 'Europe/London' },
+      { label: '巴黎 🗼', zone: 'Europe/Paris' },
+      { label: '洛杉矶 🌴', zone: 'America/Los_Angeles' },
+      { label: '悉尼 🐨', zone: 'Australia/Sydney' },
+      { label: '上海 🐼', zone: 'Asia/Shanghai' },
+      { label: '迪拜 🏙️', zone: 'Asia/Dubai' },
+      { label: '莫斯科 🏰', zone: 'Europe/Moscow' },
+      { label: '新加坡 🦁', zone: 'Asia/Singapore' },
+      { label: '首尔 🏯', zone: 'Asia/Seoul' },
+      { label: '温哥华 🍁', zone: 'America/Vancouver' },
+      { label: '圣保罗 🇧🇷', zone: 'America/Sao_Paulo' },
+      { label: 'UTC 🌍', zone: 'UTC' }
+    ];
+
+    // Default selections
+    let selectedTimeZones = ['Asia/Tokyo', 'America/New_York', 'Europe/London'];
+
+    // Load saved timezones
+    try {
+      const saved = localStorage.getItem('worldClockTimeZones');
+      if (saved) {
+        selectedTimeZones = JSON.parse(saved);
+      }
+    } catch (e) {}
+
+    // Initialize selects
+    clockSelects.forEach((select, index) => {
+      if (!select) return;
+      
+      // Populate options
+      AVAILABLE_TIMEZONES.forEach(tz => {
+        const option = document.createElement('option');
+        option.value = tz.zone;
+        option.textContent = tz.label;
+        select.appendChild(option);
+      });
+      
+      // Set selected value
+      if (selectedTimeZones[index]) {
+        select.value = selectedTimeZones[index];
+      }
+      
+      // Add change listener
+      select.addEventListener('change', (e) => {
+        selectedTimeZones[index] = e.target.value;
+        localStorage.setItem('worldClockTimeZones', JSON.stringify(selectedTimeZones));
+        updateWorldClocks();
+      });
+    });
 
     if (!pomodoroBtn || !pomodoroPanel) return;
 
@@ -579,35 +641,22 @@
         localDateEl.textContent = dateStr;
       }
 
-      // Tokyo time (UTC+9) - no milliseconds
-      if (tokyoTimeEl) {
-        const tokyoTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-        const tokyoHours = String(tokyoTime.getHours()).padStart(2, '0');
-        const tokyoMinutes = String(tokyoTime.getMinutes()).padStart(2, '0');
-        const tokyoSeconds = String(tokyoTime.getSeconds()).padStart(2, '0');
+      // Update configurable clocks
+      clockTimeEls.forEach((el, index) => {
+        if (!el) return;
+        const zone = selectedTimeZones[index];
+        if (!zone) return;
         
-        tokyoTimeEl.textContent = `${tokyoHours}:${tokyoMinutes}:${tokyoSeconds}`;
-      }
-
-      // New York time (UTC-5/-4) - no milliseconds
-      if (nyTimeEl) {
-        const nyTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-        const nyHours = String(nyTime.getHours()).padStart(2, '0');
-        const nyMinutes = String(nyTime.getMinutes()).padStart(2, '0');
-        const nySeconds = String(nyTime.getSeconds()).padStart(2, '0');
-        
-        nyTimeEl.textContent = `${nyHours}:${nyMinutes}:${nySeconds}`;
-      }
-
-      // London time (UTC+0/+1) - no milliseconds
-      if (londonTimeEl) {
-        const londonTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
-        const londonHours = String(londonTime.getHours()).padStart(2, '0');
-        const londonMinutes = String(londonTime.getMinutes()).padStart(2, '0');
-        const londonSeconds = String(londonTime.getSeconds()).padStart(2, '0');
-        
-        londonTimeEl.textContent = `${londonHours}:${londonMinutes}:${londonSeconds}`;
-      }
+        try {
+          const time = new Date(now.toLocaleString('en-US', { timeZone: zone }));
+          const h = String(time.getHours()).padStart(2, '0');
+          const m = String(time.getMinutes()).padStart(2, '0');
+          const s = String(time.getSeconds()).padStart(2, '0');
+          el.textContent = `${h}:${m}:${s}`;
+        } catch (e) {
+          el.textContent = '--:--:--';
+        }
+      });
     }
 
     // Update world clocks immediately and then every 50ms for smooth milliseconds

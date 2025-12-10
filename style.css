@@ -266,6 +266,34 @@ video{
   letter-spacing: 0.05em;
 }
 
+.clock-select {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align-last: center;
+  outline: none;
+  font-family: inherit;
+}
+
+.clock-select:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.clock-select option {
+  background: #1e1e2d;
+  color: #fff;
+  text-align: left;
+}
+
 .clock-time-small {
   font-family: 'Montserrat', 'SF Mono', 'Monaco', 'Consolas', 'Roboto Mono', monospace;
   font-variant-numeric: tabular-nums;

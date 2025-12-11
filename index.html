@@ -2,25 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" id="viewportMeta" content="width=800, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-  <script>
-    (function(){
-      const LANDSCAPE_WIDTH = 1600;
-      const PORTRAIT_WIDTH = 800;
-      var target = window.innerWidth > window.innerHeight ? LANDSCAPE_WIDTH : PORTRAIT_WIDTH;
-      var vp = document.getElementById('viewportMeta');
-      if(!vp) return;
-      var scale = Math.min(1, window.innerWidth / target);
-      if (scale <= 0) scale = 1;
-      vp.setAttribute('content',
-        'width=' + target +
-        ', initial-scale=' + scale.toFixed(4) +
-        ', minimum-scale=' + scale.toFixed(4) +
-        ', maximum-scale=' + scale.toFixed(4) +
-        ', user-scalable=no'
-      );
-    })();
-  </script>
+  <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1">
   <title>『25时、Nightcord见。』成员们的 24 小时工作日常</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

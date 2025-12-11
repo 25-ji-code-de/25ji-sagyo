@@ -555,11 +555,12 @@ video{
 }
 
 /* Responsive adjustments for pomodoro panel */
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
   #pomodoroPanel {
     width: 95vw;
     min-width: 300px;
     max-width: 95vw;
+    max-height: 80vh;
     right: 2.5vw;
     bottom: 70px;
   }
@@ -567,19 +568,18 @@ video{
   /* When clock is collapsed, allow panel to be smaller */
   #pomodoroPanel:has(.world-clock-section.collapsed) {
     width: 95vw;
-    max-width: 450px;
+    max-width: 550px;
   }
 
   .pomodoro-main-content {
-    flex-direction: column;
     min-height: auto;
   }
 
   .world-clock-section {
-    flex: 1 1 auto;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 16px 12px 12px;
+    justify-content: unset;
   }
 
   .world-clock-section.collapsed {
@@ -613,16 +613,42 @@ video{
   }
 
   .pomodoro-body {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0.5rem;
     padding: 16px;
+    max-width: unset;
   }
 
   .pomodoro-display {
+    margin-top: 24px;
+    grid-column: 1;
+    grid-row: 1;
     font-size: 48px;
+  }
+  
+  .pomodoro-status {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .pomodoro-controls {
+    grid-column: 1;
+    grid-row: 3;
+    display: flex;
     flex-wrap: wrap;
     gap: 8px;
+  }
+  
+  .pomodoro-settings {
+    margin-top: 0;
+    grid-column: 2;
+    grid-row: 1 / 4;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .pomodoro-btn {
@@ -1169,7 +1195,7 @@ video{
 }
 
 /* Responsive for CD Player */
-@media (max-width: 850px) {
+@media (max-width: 1000px) {
   #cdPlayerPanel {
     width: 95vw;
     max-width: 95vw;
@@ -1181,22 +1207,20 @@ video{
   }
 
   .cd-player-body {
-    flex-direction: column;
     height: auto;
     flex: 1;
-    overflow: hidden;
   }
 
   .music-list-section {
-    flex: 0 0 120px; /* Fixed height for list on mobile */
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    order: 2; /* Put list below player controls */
-    flex-direction: column; /* Stack vertically on mobile */
+    flex: 0 0 40%; /* 左侧占40%宽度 */
+    max-width: 40%;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    order: 1;
   }
 
   .music-categories {
-    flex-direction: row; /* Horizontal on mobile */
+    flex-direction: row;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 8px;
@@ -1225,10 +1249,8 @@ video{
   }
 
   .now-playing-section {
-    flex: 1;
     padding: 16px;
-    order: 1; /* Put player controls on top */
-    overflow-y: auto;
+    order: 2;
     min-height: 300px;
   }
 
@@ -1240,6 +1262,10 @@ video{
 
   .track-title {
     font-size: 18px;
+  }
+
+  .track-artist {
+    margin-bottom: 16px;
   }
   
   .track-info {
@@ -1265,6 +1291,11 @@ video{
   
   .player-progress {
     margin-bottom: 12px;
+  }
+
+  .volume-control {
+    max-width: 85%;
+    padding-bottom: 80px;
   }
 }
 

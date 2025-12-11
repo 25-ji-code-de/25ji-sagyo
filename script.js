@@ -878,7 +878,8 @@
     // LocalStorage keys for CD Player
     const STORAGE_KEYS = {
       VOLUME: 'cdPlayer_volume',
-      LAST_TRACK: 'cdPlayer_lastTrack',
+      LAST_TRACK_ID: 'cdPlayer_lastTrackId', // Use musicId instead of index
+      LAST_VOCAL_ID: 'cdPlayer_lastVocalId', // Also save vocal version
       SHUFFLE: 'cdPlayer_shuffle',
       REPEAT: 'cdPlayer_repeat',
       VOCAL_PREFERENCE: 'cdPlayer_vocalPreference',
@@ -891,7 +892,13 @@
     function saveSettings() {
       try {
         localStorage.setItem(STORAGE_KEYS.VOLUME, cdAudioPlayer.volume);
-        localStorage.setItem(STORAGE_KEYS.LAST_TRACK, currentTrackIndex);
+        // Save musicId and vocalId instead of index
+        if (currentMusicId !== null) {
+          localStorage.setItem(STORAGE_KEYS.LAST_TRACK_ID, currentMusicId);
+        }
+        if (currentVocalId !== null) {
+          localStorage.setItem(STORAGE_KEYS.LAST_VOCAL_ID, currentVocalId);
+        }
         localStorage.setItem(STORAGE_KEYS.SHUFFLE, isShuffleOn);
         localStorage.setItem(STORAGE_KEYS.REPEAT, isRepeatOn);
         localStorage.setItem(STORAGE_KEYS.VOCAL_PREFERENCE, preferredVocalType);
@@ -957,17 +964,29 @@
             tracks: new Set(p.tracks)
           }));
         }
-
-        const savedTrack = localStorage.getItem(STORAGE_KEYS.LAST_TRACK);
-        if (savedTrack !== null) {
-          const trackIndex = parseInt(savedTrack);
-          // Load last track after music data is ready
-          return trackIndex;
-        }
       } catch (e) {
         console.warn('Failed to load CD player settings:', e);
       }
       return null;
+    }
+
+    // Restore last track by musicId (called after data is loaded)
+    function restoreLastTrack() {
+      try {
+        const savedMusicId = localStorage.getItem(STORAGE_KEYS.LAST_TRACK_ID);
+        const savedVocalId = localStorage.getItem(STORAGE_KEYS.LAST_VOCAL_ID);
+        
+        if (savedMusicId !== null) {
+          // Find the index of the saved music in current filtered list
+          const index = filteredMusicData.findIndex(m => m.id === parseInt(savedMusicId));
+          if (index >= 0) {
+            // Load the track with saved vocal version (if available)
+            loadTrack(index, savedVocalId ? parseInt(savedVocalId) : null);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to restore last track:', e);
+      }
     }
 
     // Helper to determine music category
@@ -1646,13 +1665,11 @@
         // Initial filter (just to populate filteredMusicData correctly for the first time)
         filterMusicList('');
 
-        // Load saved settings and restore last track
+        // Load saved settings first
         loadSettings();
-        const savedTrackIndex = localStorage.getItem(STORAGE_KEYS.LAST_TRACK);
-        if (savedTrackIndex !== null && parseInt(savedTrackIndex) >= 0 && parseInt(savedTrackIndex) < filteredMusicData.length) {
-          // Load last track but don't auto-play
-          loadTrack(parseInt(savedTrackIndex));
-        }
+        
+        // Restore last track by musicId (instead of index)
+        restoreLastTrack();
       } catch (error) {
         console.error('Error loading music data:', error);
         musicList.innerHTML = '<div class="loading">加载失败，请重试</div>';

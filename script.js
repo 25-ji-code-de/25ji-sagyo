@@ -17,9 +17,20 @@
   const audioProcessBtn = document.getElementById('audioProcessBtn');
   const orientationWarning = document.getElementById('orientation-warning');
 
-  const sources = window.TIME_SYNC_SOURCES || { p1: 'p1.mp4', p2: 'p2.mp4', p3: 'p3.mp4' };
+  const DEFAULT_SOURCES = { p1: 'p1.mp4', p2: 'p2.mp4', p3: 'p3.mp4' };
+  const sources = window.TIME_SYNC_SOURCES || DEFAULT_SOURCES;
 
+  // Determine playback mode: HLS (m3u8) or traditional MP4 (p1/p2/p3)
+  // If sources has m3u8 field, use HLS mode; if it has all p1/p2/p3, use MP4 mode
+  const useHLS = !!(sources.m3u8) && !(sources.p1 && sources.p2 && sources.p3);
+  
   const PART_LENGTH_SECONDS = 8 * 3600; // 8 hours
+  const DAY_LENGTH_SECONDS = 24 * 3600; // 24 hours for HLS mode
+
+  // HLS.js instance for HLS mode
+  let hlsInstance = null;
+  let hlsReady = false;
+  let hlsCodecUnsupported = false; // Set to true if codec error (e.g., HEVC not supported) occurs
 
   // timezone mode: 'local' or 'tokyo'
   let timezoneMode = 'local';
@@ -62,6 +73,132 @@
   }
 
   let lastPartIndex = null;
+
+  // Compute full day offset (0-86399 seconds) for HLS mode
+  function computeDayOffset(date) {
+    const base = new Date(date);
+    base.setHours(1, 0, 0, 0);
+    if (date < base) {
+      base.setDate(base.getDate() - 1);
+    }
+    let diffSeconds = Math.floor((date.getTime() - base.getTime()) / 1000);
+    // wrap to [0, 86400)
+    diffSeconds = ((diffSeconds % 86400) + 86400) % 86400;
+    return diffSeconds;
+  }
+
+  // Initialize HLS.js for m3u8 playback
+  function initHLS() {
+    if (hlsInstance) return Promise.resolve();
+    
+    return new Promise((resolve, reject) => {
+      // Check if HLS.js is already loaded
+      if (typeof Hls !== 'undefined') {
+        createHLSInstance(resolve, reject);
+        return;
+      }
+      
+      // Dynamically load HLS.js library
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+      script.onload = () => createHLSInstance(resolve, reject);
+      script.onerror = () => reject(new Error('Failed to load HLS.js'));
+      document.head.appendChild(script);
+    });
+  }
+
+  function createHLSInstance(resolve, reject) {
+    if (!Hls.isSupported()) {
+      // Check if native HLS is supported (Safari)
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        hlsReady = true;
+        resolve();
+        return;
+      }
+      reject(new Error('HLS not supported'));
+      return;
+    }
+
+    hlsInstance = new Hls({
+      maxBufferLength: 30,
+      maxMaxBufferLength: 60,
+      startLevel: -1, // auto quality
+      enableWorker: true, // Enable worker for better performance
+      // Allow HEVC if browser supports it
+      enableSoftwareAES: true,
+      manifestLoadingTimeOut: 10000,
+      levelLoadingTimeOut: 10000,
+      fragLoadingTimeOut: 20000,
+      startFragPrefetch: true
+    });
+
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      hlsReady = true;
+      resolve();
+    });
+
+    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        console.error('HLS fatal error:', data);
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            hlsInstance.startLoad();
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            // Handle specific codec errors
+            if (data.details === 'bufferAddCodecError') {
+               console.warn('Browser does not support this codec (likely HEVC). Stopping HLS attempts.');
+               hlsCodecUnsupported = true; // Mark codec as unsupported to prevent retry loops
+            }
+          default:
+            hlsInstance.destroy();
+            hlsInstance = null;
+            hlsReady = false;
+            break;
+        }
+      }
+    });
+
+    hlsInstance.loadSource(sources.m3u8);
+    hlsInstance.attachMedia(video);
+  }
+
+  // Seek to position for HLS mode
+  function hlsSeekTo(offsetSeconds) {
+    return new Promise((resolve) => {
+      const doSeek = () => {
+        try {
+          if (video.duration && offsetSeconds > video.duration) {
+            offsetSeconds = offsetSeconds % video.duration;
+          }
+        } catch (e) {}
+
+        function onSeeked() {
+          video.removeEventListener('seeked', onSeeked);
+          resolve();
+        }
+
+        video.addEventListener('seeked', onSeeked);
+        try {
+          video.currentTime = Math.max(0, offsetSeconds);
+        } catch (err) {
+          setTimeout(() => {
+            try { video.currentTime = Math.max(0, offsetSeconds); } catch (e) {}
+          }, 300);
+        }
+      };
+
+      if (video.readyState >= 1) {
+        doSeek();
+      } else {
+        video.addEventListener('loadedmetadata', function onMeta() {
+          video.removeEventListener('loadedmetadata', onMeta);
+          doSeek();
+          video.play().catch(() => {});
+        });
+      }
+    });
+  }
 
   // Load the right src and seek to offset. Returns a Promise that resolves when seek done.
   function loadAndSeekTo(partIndex, offsetSeconds) {
@@ -369,33 +506,68 @@
     const now = getNowByMode();
     localTimeEl.textContent = formatTime(now);
 
-    const { partIndex, offset } = computePartAndOffset(now);
-    const key = partIndexToKey(partIndex);
-    partNameEl.textContent = key.toUpperCase();
+    if (useHLS) {
+      // HLS mode: use full day offset (0-86399 seconds)
+      const dayOffset = computeDayOffset(now);
+      
+      // Still display part name for UI consistency
+      const { partIndex } = computePartAndOffset(now);
+      const key = partIndexToKey(partIndex);
+      partNameEl.textContent = key.toUpperCase();
 
-    const desired = offset;
-
-    // If part changed, load new source and seek
-    if (lastPartIndex === null || lastPartIndex !== partIndex) {
-      return loadAndSeekTo(partIndex, desired).catch(console.warn).finally(updateControlsUI);
-    }
-
-    // Same part: check drift
-    const current = video.currentTime || 0;
-    const drift = Math.abs(current - desired);
-    // allow a small tolerance (30 seconds)
-    if (drift > 30) {
-      // seek to correct position
-      try {
-        video.currentTime = desired;
-      } catch (e) {
-        // if not ready, attempt load/seek sequence
-        loadAndSeekTo(partIndex, desired).catch(console.warn);
+      // Initialize HLS if not ready
+      if (!hlsReady) {
+        // Don't retry if codec is unsupported (e.g., HEVC)
+        if (hlsCodecUnsupported) {
+          console.warn('HLS codec unsupported, not retrying.');
+          return;
+        }
+        initHLS().then(() => {
+          hlsSeekTo(dayOffset).then(() => {
+            video.play().catch(() => {});
+          });
+        }).catch(console.warn);
+        return;
       }
+
+      // Check drift for HLS
+      const current = video.currentTime || 0;
+      const drift = Math.abs(current - dayOffset);
+      if (drift > 30) {
+        hlsSeekTo(dayOffset).catch(console.warn);
+      }
+      if (video.paused) video.play().catch(() => {});
+      updateControlsUI();
+    } else {
+      // Traditional MP4 mode with p1/p2/p3
+      const { partIndex, offset } = computePartAndOffset(now);
+      const key = partIndexToKey(partIndex);
+      partNameEl.textContent = key.toUpperCase();
+
+      const desired = offset;
+
+      // If part changed, load new source and seek
+      if (lastPartIndex === null || lastPartIndex !== partIndex) {
+        return loadAndSeekTo(partIndex, desired).catch(console.warn).finally(updateControlsUI);
+      }
+
+      // Same part: check drift
+      const current = video.currentTime || 0;
+      const drift = Math.abs(current - desired);
+      // allow a small tolerance (30 seconds)
+      if (drift > 30) {
+        // seek to correct position
+        try {
+          video.currentTime = desired;
+        } catch (e) {
+          // if not ready, attempt load/seek sequence
+          loadAndSeekTo(partIndex, desired).catch(console.warn);
+        }
+      }
+      // ensure playing
+      if (video.paused) video.play().catch(() => {});
+      updateControlsUI();
     }
-    // ensure playing
-    if (video.paused) video.play().catch(() => {});
-    updateControlsUI();
   }
 
   // initial setup

@@ -1951,6 +1951,9 @@
         // Load saved settings first
         loadSettings();
         
+        // Setup Media Session API handlers for system media controls
+        setupMediaSessionHandlers();
+        
         // Restore last track by musicId (instead of index)
         restoreLastTrack();
       } catch (error) {
@@ -2216,6 +2219,9 @@
         saveSettings();
         progressBar.value = 0;
         currentTimeEl.textContent = '0:00';
+
+        // Update Media Session for local music
+        updateMediaSessionLocal(music);
         return;
       }
 
@@ -2412,6 +2418,161 @@
       // Reset progress
       progressBar.value = 0;
       currentTimeEl.textContent = '0:00';
+
+      // Update Media Session API for system media controls
+      updateMediaSession(music, selectedVocal, primaryCoverUrl, fallbackCoverUrl);
+    }
+
+    // Media Session API - Update system media controls metadata
+    function updateMediaSession(music, selectedVocal, primaryCoverUrl, fallbackCoverUrl) {
+      if (!('mediaSession' in navigator)) return;
+
+      const characterNames = selectedVocal ? getVocalCharacterNames(selectedVocal) : '';
+      const composer = (music.composer || '').trim();
+      const names = (characterNames || '').trim();
+      const parts = [];
+      if (composer) parts.push(composer);
+      if (names) parts.push(names);
+      let artist = parts.length ? parts.join(' · ') : 'Unknown';
+
+      // Use OSS image processing to generate properly sized artwork
+      // Format: ?x-oss-process=image/resize,m_fixed,w_SIZE,h_SIZE
+      const baseUrl = primaryCoverUrl.split('?')[0]; // Remove any existing query params
+      const artwork512 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_512,h_512`;
+      const artwork256 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_256,h_256`;
+      const artwork128 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_128,h_128`;
+      const artwork96 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_96,h_96`;
+
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: music.title || 'Unknown Title',
+          artist: artist,
+          album: 'Project SEKAI',
+          artwork: [
+            { src: artwork512, sizes: '512x512', type: 'image/png' },
+            { src: artwork256, sizes: '256x256', type: 'image/png' },
+            { src: artwork128, sizes: '128x128', type: 'image/png' },
+            { src: artwork96, sizes: '96x96', type: 'image/png' }
+          ]
+        });
+        console.log('[MediaSession] Metadata updated:', music.title, artist);
+      } catch (e) {
+        console.error('[MediaSession] Error setting metadata:', e);
+      }
+    }
+
+    // Update playback state for Media Session
+    function updateMediaSessionPlaybackState(state) {
+      if (!('mediaSession' in navigator)) return;
+      try {
+        navigator.mediaSession.playbackState = state; // 'playing', 'paused', 'none'
+      } catch (e) {
+        console.warn('[MediaSession] Error setting playbackState:', e);
+      }
+    }
+
+    // Update position state for Media Session (for seek bar)
+    function updateMediaSessionPositionState() {
+      if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+      if (!cdAudioPlayer.duration || !isFinite(cdAudioPlayer.duration)) return;
+      
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: cdAudioPlayer.duration,
+          playbackRate: cdAudioPlayer.playbackRate,
+          position: cdAudioPlayer.currentTime
+        });
+      } catch (e) {
+        // Ignore errors - some browsers don't support this
+      }
+    }
+
+    // Setup Media Session action handlers (called once on init)
+    function setupMediaSessionHandlers() {
+      if (!('mediaSession' in navigator)) return;
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        playTrack();
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        pauseTrack();
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        const wasPlaying = isPlaying;
+        pauseTrack();
+        pendingAutoPlay = wasPlaying;
+        const nextIndex = getNextTrackIndex(currentTrackIndex, -1, isShuffleOn);
+        loadTrack(nextIndex);
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        const wasPlaying = isPlaying;
+        pauseTrack();
+        pendingAutoPlay = wasPlaying;
+        const nextIndex = getNextTrackIndex(currentTrackIndex, 1, isShuffleOn);
+        loadTrack(nextIndex);
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.fastSeek && 'fastSeek' in cdAudioPlayer) {
+          cdAudioPlayer.fastSeek(details.seekTime);
+        } else {
+          cdAudioPlayer.currentTime = details.seekTime;
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        cdAudioPlayer.currentTime = Math.max(cdAudioPlayer.currentTime - skipTime, 0);
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        cdAudioPlayer.currentTime = Math.min(cdAudioPlayer.currentTime + skipTime, cdAudioPlayer.duration || 0);
+      });
+    }
+
+    // Media Session API - Update for local music files
+    function updateMediaSessionLocal(music) {
+      if (!('mediaSession' in navigator)) return;
+
+      const placeholderCover = 'https://REDACTED/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
+      let coverUrl = music.coverUrl || placeholderCover;
+
+      // Generate artwork URLs - use OSS processing for remote URLs, direct URL for local blob
+      let artwork;
+      if (coverUrl.startsWith('blob:') || coverUrl.startsWith('data:')) {
+        // Local file - use same URL for all sizes (browser will scale)
+        artwork = [
+          { src: coverUrl, sizes: '512x512', type: 'image/png' },
+          { src: coverUrl, sizes: '256x256', type: 'image/png' },
+          { src: coverUrl, sizes: '128x128', type: 'image/png' },
+          { src: coverUrl, sizes: '96x96', type: 'image/png' }
+        ];
+      } else {
+        // Remote URL - use OSS image processing
+        const baseUrl = coverUrl.split('?')[0];
+        artwork = [
+          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_512,h_512`, sizes: '512x512', type: 'image/png' },
+          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_256,h_256`, sizes: '256x256', type: 'image/png' },
+          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_128,h_128`, sizes: '128x128', type: 'image/png' },
+          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_96,h_96`, sizes: '96x96', type: 'image/png' }
+        ];
+      }
+
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: music.title || 'Unknown Title',
+          artist: music.composer || 'Unknown Artist',
+          album: music.album || 'Local Music',
+          artwork: artwork
+        });
+        console.log('[MediaSession] Local metadata updated:', music.title);
+      } catch (e) {
+        console.error('[MediaSession] Error setting local metadata:', e);
+      }
     }
 
     const albumCoverContainer = document.querySelector('.album-cover-container');
@@ -2872,6 +3033,10 @@
           isPlaying = true;
           playPauseBtn.textContent = '⏸️';
 
+          // Update Media Session playback state
+          updateMediaSessionPlaybackState('playing');
+          updateMediaSessionPositionState();
+
           // Start CD animation smoothly
           if (albumCoverContainer) {
             albumCoverContainer.classList.add('playing');
@@ -2887,6 +3052,9 @@
       cdAudioPlayer.pause();
       isPlaying = false;
       playPauseBtn.textContent = '▶️';
+
+      // Update Media Session playback state
+      updateMediaSessionPlaybackState('paused');
 
       // Stop CD animation smoothly
       if (albumCoverContainer) {
@@ -3017,11 +3185,18 @@
           const progress = (cdAudioPlayer.currentTime / cdAudioPlayer.duration) * 100;
           progressBar.value = progress;
           currentTimeEl.textContent = formatTime(cdAudioPlayer.currentTime);
+          
+          // Update Media Session position state periodically (throttled)
+          if (isPlaying && Math.floor(cdAudioPlayer.currentTime) % 5 === 0) {
+            updateMediaSessionPositionState();
+          }
         }
       });
 
       cdAudioPlayer.addEventListener('loadedmetadata', () => {
         totalTimeEl.textContent = formatTime(cdAudioPlayer.duration);
+        // Update position state when duration is known
+        updateMediaSessionPositionState();
       });
 
       cdAudioPlayer.addEventListener('ended', () => {

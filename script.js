@@ -1,9 +1,11 @@
 // script.js
-// Logic to choose which video (p1/p2/p3) to load and the correct seek offset
-// so playback matches visitor's chosen timezone (local or Tokyo). Assumes each part is 8 hours long:
-//  - Part P1: 25:00 - 09:00
-//  - Part P2: 09:00 - 17:00
-//  - Part P3: 17:00 - 25:00
+// Logic to choose which video to load and the correct seek offset
+// so playback matches visitor's chosen timezone (local or Tokyo).
+//
+// Supports 3 modes:
+//  1. 6-Part MP4: p1-p6, each 4 hours (01:00-05:00, 05:00-09:00, 09:00-13:00, 13:00-17:00, 17:00-21:00, 21:00-01:00)
+//  2. 3-Part MP4: p1-p3, each 8 hours (01:00-09:00, 09:00-17:00, 17:00-01:00)
+//  3. Single HLS: one m3u8 file covering full 24 hours
 
 (() => {
   const video = document.getElementById('video');
@@ -20,11 +22,37 @@
   const DEFAULT_SOURCES = { p1: 'p1.mp4', p2: 'p2.mp4', p3: 'p3.mp4' };
   const sources = window.TIME_SYNC_SOURCES || DEFAULT_SOURCES;
 
-  // Determine playback mode: HLS (m3u8) or traditional MP4 (p1/p2/p3)
-  // If sources has m3u8 field, use HLS mode; if it has all p1/p2/p3, use MP4 mode
-  const useHLS = !!(sources.m3u8) && !(sources.p1 && sources.p2 && sources.p3);
+  // Determine playback mode based on available sources:
+  // - 'hls': Single HLS mode (m3u8 file, 24 hours) - PREFERRED
+  // - 'mp4-6': 6-Part MP4 mode (p1-p6, each 4 hours) - fallback
+  // - 'mp4-3': 3-Part MP4 mode (p1-p3, each 8 hours) - legacy fallback
+  const has6Parts = !!(sources.p1 && sources.p2 && sources.p3 && sources.p4 && sources.p5 && sources.p6);
+  const has3Parts = !!(sources.p1 && sources.p2 && sources.p3) && !has6Parts;
+  const hasHLS = !!(sources.m3u8);
   
-  const PART_LENGTH_SECONDS = 8 * 3600; // 8 hours
+  // Prefer HLS first, then fallback to MP4 modes
+  let playbackMode;
+  if (hasHLS) {
+    playbackMode = 'hls';
+  } else if (has6Parts) {
+    playbackMode = 'mp4-6';
+  } else if (has3Parts) {
+    playbackMode = 'mp4-3';
+  } else {
+    // fallback to 3-part mode
+    playbackMode = 'mp4-3';
+  }
+
+  // Track if HLS has failed and we need to fallback
+  let hlsFailed = false;
+
+  // Function to get current part length based on mode
+  function getPartLengthSeconds() {
+    return playbackMode === 'mp4-3' ? 8 * 3600 : 4 * 3600; // 8 hours for 3-part, 4 hours for 6-part
+  }
+  
+  // Part length depends on mode (initial value, may change on fallback)
+  let PART_LENGTH_SECONDS = getPartLengthSeconds();
   const DAY_LENGTH_SECONDS = 24 * 3600; // 24 hours for HLS mode
 
   // HLS.js instance for HLS mode
@@ -69,7 +97,7 @@
   }
 
   function partIndexToKey(i) {
-    return ['p1', 'p2', 'p3'][i] || 'p1';
+    return ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'][i] || 'p1';
   }
 
   let lastPartIndex = null;
@@ -87,9 +115,48 @@
     return diffSeconds;
   }
 
+  // Fallback from HLS to MP4 mode
+  function fallbackToMP4() {
+    if (hlsFailed) return; // Already failed, avoid loops
+    
+    console.warn('HLS failed, falling back to MP4 mode...');
+    hlsFailed = true;
+    hlsReady = false;
+    
+    // Cleanup HLS instance
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
+    
+    // Clear video source
+    video.src = '';
+    video.load();
+    
+    // Switch to best available MP4 mode
+    if (has6Parts) {
+      playbackMode = 'mp4-6';
+    } else if (has3Parts) {
+      playbackMode = 'mp4-3';
+    } else {
+      console.error('No fallback MP4 sources available!');
+      return;
+    }
+    
+    // Update part length for new mode
+    PART_LENGTH_SECONDS = getPartLengthSeconds();
+    lastPartIndex = null; // Force reload
+    
+    console.log('Switched to playback mode:', playbackMode);
+    
+    // Trigger resync with new mode
+    resyncOnce();
+  }
+
   // Initialize HLS.js for m3u8 playback
   function initHLS() {
     if (hlsInstance) return Promise.resolve();
+    if (hlsFailed) return Promise.reject(new Error('HLS already failed, using fallback'));
     
     return new Promise((resolve, reject) => {
       // Check if HLS.js is already loaded
@@ -102,7 +169,11 @@
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
       script.onload = () => createHLSInstance(resolve, reject);
-      script.onerror = () => reject(new Error('Failed to load HLS.js'));
+      script.onerror = () => {
+        console.warn('Failed to load HLS.js library');
+        reject(new Error('Failed to load HLS.js'));
+        fallbackToMP4();
+      };
       document.head.appendChild(script);
     });
   }
@@ -111,11 +182,18 @@
     if (!Hls.isSupported()) {
       // Check if native HLS is supported (Safari)
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Use native HLS, but still set up error handling
+        video.src = sources.m3u8;
+        video.addEventListener('error', () => {
+          console.warn('Native HLS playback failed');
+          fallbackToMP4();
+        }, { once: true });
         hlsReady = true;
         resolve();
         return;
       }
       reject(new Error('HLS not supported'));
+      fallbackToMP4();
       return;
     }
 
@@ -142,18 +220,35 @@
         console.error('HLS fatal error:', data);
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
+            // Try to recover from network error once
+            console.warn('HLS network error, attempting recovery...');
             hlsInstance.startLoad();
+            // If still failing, fallback after a delay
+            setTimeout(() => {
+              if (!hlsReady) {
+                fallbackToMP4();
+              }
+            }, 5000);
             break;
           case Hls.ErrorTypes.MEDIA_ERROR:
             // Handle specific codec errors
             if (data.details === 'bufferAddCodecError') {
-               console.warn('Browser does not support this codec (likely HEVC). Stopping HLS attempts.');
-               hlsCodecUnsupported = true; // Mark codec as unsupported to prevent retry loops
+               console.warn('Browser does not support this codec (likely HEVC). Falling back to MP4.');
+               hlsCodecUnsupported = true;
+               fallbackToMP4();
+               break;
             }
+            // Try to recover from other media errors
+            console.warn('HLS media error, attempting recovery...');
+            hlsInstance.recoverMediaError();
+            break;
           default:
+            // Unrecoverable error, fallback to MP4
+            console.warn('HLS unrecoverable error, falling back to MP4');
             hlsInstance.destroy();
             hlsInstance = null;
             hlsReady = false;
+            fallbackToMP4();
             break;
         }
       }
@@ -506,27 +601,30 @@
     const now = getNowByMode();
     localTimeEl.textContent = formatTime(now);
 
-    if (useHLS) {
+    if (playbackMode === 'hls' && !hlsFailed) {
       // HLS mode: use full day offset (0-86399 seconds)
       const dayOffset = computeDayOffset(now);
       
-      // Still display part name for UI consistency
-      const { partIndex } = computePartAndOffset(now);
+      // Still display part name for UI consistency (use 6-part scheme for display)
+      const partIndex = Math.floor(dayOffset / (4 * 3600)); // 4-hour parts for display
       const key = partIndexToKey(partIndex);
       partNameEl.textContent = key.toUpperCase();
 
       // Initialize HLS if not ready
       if (!hlsReady) {
-        // Don't retry if codec is unsupported (e.g., HEVC)
-        if (hlsCodecUnsupported) {
-          console.warn('HLS codec unsupported, not retrying.');
+        // Don't retry if codec is unsupported or already failed
+        if (hlsCodecUnsupported || hlsFailed) {
+          // fallbackToMP4 should have been called already
           return;
         }
         initHLS().then(() => {
           hlsSeekTo(dayOffset).then(() => {
             video.play().catch(() => {});
           });
-        }).catch(console.warn);
+        }).catch((err) => {
+          console.warn('HLS init failed:', err);
+          // fallbackToMP4 is called inside initHLS on error
+        });
         return;
       }
 
@@ -539,7 +637,7 @@
       if (video.paused) video.play().catch(() => {});
       updateControlsUI();
     } else {
-      // Traditional MP4 mode with p1/p2/p3
+      // MP4 mode (both 3-part and 6-part)
       const { partIndex, offset } = computePartAndOffset(now);
       const key = partIndexToKey(partIndex);
       partNameEl.textContent = key.toUpperCase();
@@ -638,15 +736,15 @@
   }
 
   // Run detection and show message if unsupported
-  try {
-    if (!browserSupportsHEVC()) {
-      // Delay slightly to avoid layout flash while other inits run
-      setTimeout(showHEVCWarning, 80);
-    }
-  } catch (e) {
-    // safe fallback: don't block the app
-    console.warn('HEVC detection error', e);
-  }
+  // try {
+  //   if (!browserSupportsHEVC()) {
+  //     // Delay slightly to avoid layout flash while other inits run
+  //     setTimeout(showHEVCWarning, 80);
+  //   }
+  // } catch (e) {
+  //   // safe fallback: don't block the app
+  //   console.warn('HEVC detection error', e);
+  // }
 
   resyncOnce();
 

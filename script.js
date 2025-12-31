@@ -8,6 +8,46 @@
 //  3. Single HLS: one m3u8 file covering full 24 hours
 
 (() => {
+  const R2_BASE = 'https://assets.nightcord.de5.net';
+
+  const knownAssets = new Set();
+
+  // Get asset URL (for elements that need URL, not Response)
+  // Returns the R2 URL and handles upload trigger if needed
+  async function getAssetUrl(path) {
+    const r2Url = `${R2_BASE}${path}`;
+
+    if (knownAssets.has(path)) {
+      return r2Url;
+    }
+
+    // Check if asset exists via HEAD request
+    const headResp = await fetch(r2Url, { method: 'HEAD' });
+
+    if (headResp.ok) {
+      knownAssets.add(path);
+      return r2Url;
+    }
+
+    if (headResp.status === 404) {
+      // 404 时触发上传
+      try {
+        const uploadResp = await fetch(`${R2_BASE}/upload?path=${encodeURIComponent(path)}`);
+        const result = await uploadResp.json();
+        
+        if (result.status === 'uploaded' || result.status === 'exists') {
+          knownAssets.add(path);
+          return r2Url;
+        }
+      } catch (e) {
+        console.warn('Upload trigger failed:', e);
+      }
+    }
+    
+    // Return R2 URL anyway, let the caller handle any errors
+    return r2Url;
+  }
+
   const video = document.getElementById('video');
   const localTimeEl = document.getElementById('localTime');
   const partNameEl = document.getElementById('partName');
@@ -140,6 +180,7 @@
       playbackMode = 'mp4-3';
     } else {
       console.error('No fallback MP4 sources available!');
+      showHEVCWarning();
       return;
     }
     
@@ -2023,18 +2064,18 @@
         musicList.innerHTML = '<div class="loading">加载音乐列表中...</div>';
 
         // Fetch musics.json
-        const musicsResponse = await fetch('https://REDACTED/musics.json');
+        const musicsResponse = await fetch('https://storage.nightcord.de5.net/musics.json');
         if (!musicsResponse.ok) throw new Error('Failed to fetch musics');
         musicData = await musicsResponse.json();
 
         // Fetch musicVocals.json
-        const vocalsResponse = await fetch('https://REDACTED/musicVocals.json');
+        const vocalsResponse = await fetch('https://storage.nightcord.de5.net/musicVocals.json');
         if (!vocalsResponse.ok) throw new Error('Failed to fetch music vocals');
         musicVocalsData = await vocalsResponse.json();
 
         // Fetch Chinese translations
         try {
-          const titlesResponse = await fetch('https://REDACTED/music_titles.json');
+          const titlesResponse = await fetch('https://storage.nightcord.de5.net/music_titles.json');
           if (titlesResponse.ok) {
             musicTitlesZhCN = await titlesResponse.json();
           }
@@ -2272,7 +2313,7 @@
     }
 
     // Load a track
-    function loadTrack(index, vocalId = null) {
+    async function loadTrack(index, vocalId = null) {
       if (index < 0 || index >= filteredMusicData.length) return;
 
       currentTrackIndex = index;
@@ -2297,7 +2338,7 @@
             dominantColors = extractColorsFromCover();
           };
         } else {
-          albumCover.src = 'https://REDACTED/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
+          albumCover.src = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png');
           albumCover.style.opacity = '1';
           albumCover.onload = () => {
             dominantColors = extractColorsFromCover();
@@ -2440,15 +2481,24 @@
         trackVocal.textContent = characterNames ? `${vocalLabel} (${characterNames})` : vocalLabel;
       }
 
-      // Update album cover with fallback
-      const primaryCoverUrl = `https://REDACTED/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
-      const fallbackCoverUrl = `https://storage.nightcord.de5.net/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
+      // Update album cover with R2 CDN (auto-upload on 404)
+      const coverPath = `/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
 
       // Set crossOrigin BEFORE setting src to enable CORS
       albumCover.crossOrigin = "anonymous";
-      albumCover.src = primaryCoverUrl;
       albumCover.style.display = 'block';
       albumCover.style.opacity = '0.5'; // Dim while loading
+
+      // Load cover via R2 with auto-upload fallback
+      (async () => {
+        try {
+          const coverUrl = await getAssetUrl(coverPath);
+          albumCover.src = coverUrl;
+        } catch (e) {
+          console.warn('Failed to load cover:', e);
+          albumCover.src = `${R2_BASE}${coverPath}`; // Try anyway
+        }
+      })();
 
       albumCover.onload = () => {
         albumCover.style.opacity = '1';
@@ -2456,39 +2506,35 @@
         dominantColors = extractColorsFromCover();
       };
 
-      // If primary cover fails, try fallback
       albumCover.onerror = () => {
-        if (albumCover.src === primaryCoverUrl) {
-          albumCover.crossOrigin = "anonymous"; // Re-set for fallback
-          albumCover.src = fallbackCoverUrl;
-        }
+        console.warn('Cover image failed to load');
       };
 
-      // Build audio URL with primary source
-      const primaryAudioUrl = `https://REDACTED/music/long/${selectedVocal.assetbundleName}/${selectedVocal.assetbundleName}.flac`;
-      const fallbackAudioUrl = `https://storage.nightcord.de5.net/music/long/${selectedVocal.assetbundleName}/${selectedVocal.assetbundleName}.flac`;
+      // Build audio URL with R2 CDN (auto-upload on 404)
+      const audioPath = `/music/long/${selectedVocal.assetbundleName}/${selectedVocal.assetbundleName}.flac`;
 
       // Clear previous onerror handler to prevent conflicts
       cdAudioPlayer.onerror = null;
 
-      // Try primary audio first
+      // Load audio via R2 with auto-upload fallback
       cdAudioPlayer.crossOrigin = "anonymous"; // Ensure CORS for visualizer
-      cdAudioPlayer.src = primaryAudioUrl;
-      cdAudioPlayer.load(); // Explicitly load the new source
 
-      // If primary audio fails, use fallback (and preserve pendingAutoPlay flag)
-      cdAudioPlayer.onerror = () => {
-        if (cdAudioPlayer.src === primaryAudioUrl) {
-          cdAudioPlayer.onerror = null; // Clear handler before changing src
-          cdAudioPlayer.src = fallbackAudioUrl;
+      (async () => {
+        try {
+          const audioUrl = await getAssetUrl(audioPath);
+          cdAudioPlayer.src = audioUrl;
+          cdAudioPlayer.load(); // Explicitly load the new source
+        } catch (e) {
+          console.error('Failed to load audio:', e);
+          cdAudioPlayer.src = `${R2_BASE}${audioPath}`; // Try anyway
           cdAudioPlayer.load();
-          // pendingAutoPlay flag is preserved, canplay event will handle auto-play
-        } else {
-          // Both sources failed
-          console.error('Both audio sources failed');
-          if (trackLoadingSpinner) trackLoadingSpinner.classList.add('hidden');
-          pendingAutoPlay = false;
         }
+      })();
+
+      cdAudioPlayer.onerror = () => {
+        console.error('Audio source failed to load');
+        if (trackLoadingSpinner) trackLoadingSpinner.classList.add('hidden');
+        pendingAutoPlay = false;
       };
 
       // Set start time to skip filler (blank audio at beginning)
@@ -2533,24 +2579,16 @@
       if (names) parts.push(names);
       let artist = parts.length ? parts.join(' · ') : 'Unknown';
 
-      // Use OSS image processing to generate properly sized artwork
-      // Format: ?x-oss-process=image/resize,m_fixed,w_SIZE,h_SIZE
-      const baseUrl = primaryCoverUrl.split('?')[0]; // Remove any existing query params
-      const artwork512 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_512,h_512`;
-      const artwork256 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_256,h_256`;
-      const artwork128 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_128,h_128`;
-      const artwork96 = `${baseUrl}?x-oss-process=image/resize,m_fixed,w_96,h_96`;
-
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: music.title || 'Unknown Title',
           artist: artist,
           album: 'Project SEKAI',
           artwork: [
-            { src: artwork512, sizes: '512x512', type: 'image/png' },
-            { src: artwork256, sizes: '256x256', type: 'image/png' },
-            { src: artwork128, sizes: '128x128', type: 'image/png' },
-            { src: artwork96, sizes: '96x96', type: 'image/png' }
+            { src: primaryCoverUrl, sizes: '512x512', type: 'image/png' },
+            { src: primaryCoverUrl, sizes: '256x256', type: 'image/png' },
+            { src: primaryCoverUrl, sizes: '128x128', type: 'image/png' },
+            { src: primaryCoverUrl, sizes: '96x96', type: 'image/png' }
           ]
         });
         console.log('[MediaSession] Metadata updated:', music.title, artist);
@@ -2633,10 +2671,10 @@
     }
 
     // Media Session API - Update for local music files
-    function updateMediaSessionLocal(music) {
+    async function updateMediaSessionLocal(music) {
       if (!('mediaSession' in navigator)) return;
 
-      const placeholderCover = 'https://REDACTED/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png';
+      const placeholderCover = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png');
       let coverUrl = music.coverUrl || placeholderCover;
 
       // Generate artwork URLs - use OSS processing for remote URLs, direct URL for local blob
@@ -2650,13 +2688,12 @@
           { src: coverUrl, sizes: '96x96', type: 'image/png' }
         ];
       } else {
-        // Remote URL - use OSS image processing
         const baseUrl = coverUrl.split('?')[0];
         artwork = [
-          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_512,h_512`, sizes: '512x512', type: 'image/png' },
-          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_256,h_256`, sizes: '256x256', type: 'image/png' },
-          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_128,h_128`, sizes: '128x128', type: 'image/png' },
-          { src: `${baseUrl}?x-oss-process=image/resize,m_fixed,w_96,h_96`, sizes: '96x96', type: 'image/png' }
+          { src: baseUrl, sizes: '512x512', type: 'image/png' },
+          { src: baseUrl, sizes: '256x256', type: 'image/png' },
+          { src: baseUrl, sizes: '128x128', type: 'image/png' },
+          { src: baseUrl, sizes: '96x96', type: 'image/png' }
         ];
       }
 

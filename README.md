@@ -74,5 +74,4 @@ MIT License
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=bili-47177171806/25ji-sagyo&type=Date)](https://star-history.com/#bili-47177171806/25ji-sagyo&Date)
-
+[![Star History Chart](https://api.star-history.com/svg?repos=bili-47177171806/25ji-sagyo&type=date&legend=top-left)](https://www.star-history.com/#bili-47177171806/25ji-sagyo&type=date&legend=top-left)

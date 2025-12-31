@@ -1,5 +1,16 @@
 # 『25时、Nightcord见。』成员们的 24 小时工作日常
 
+<div align="center">
+
+![GitHub License](https://img.shields.io/github/license/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+![GitHub stars](https://img.shields.io/github/stars/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+![GitHub forks](https://img.shields.io/github/forks/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+![GitHub issues](https://img.shields.io/github/issues/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+![GitHub last commit](https://img.shields.io/github/last-commit/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+![GitHub repo size](https://img.shields.io/github/repo-size/bili-47177171806/25ji-sagyo?style=flat-square&color=884499)
+
+</div>
+
 这是一个基于《Project SEKAI》“25时、Nightcord见。” (25-ji, Nightcord de.) 主题的沉浸式作业陪伴网页应用。它结合了与现实时间同步的背景视频、内置 CD 播放器和番茄钟，为你提供专注的作业环境。
 
 ## ✨ 主要功能
@@ -39,10 +50,20 @@
 
 ## 🛠️ 技术栈
 
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflareworkers&logoColor=white)
+![Cloudflare R2](https://img.shields.io/badge/Cloudflare%20R2-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+
 - **核心**：原生 HTML5, CSS3, JavaScript。
+- **部署与服务**：
+  - 托管：Cloudflare Pages。
+  - 逻辑处理：Cloudflare Workers (回源代理)。
+  - 资源存储：Cloudflare R2。
 - **数据源**：
   - 音乐数据：[Sekai Viewer](https://github.com/Sekai-World/sekai-viewer)。
-  - 资源托管：Aliyun OSS。
 - **存储**：
   - `localStorage`: 持久化用户偏好（音量、播放列表设置）。
   - `sessionStorage`: 保持番茄钟运行状态。
@@ -50,3 +71,8 @@
 ## 📝 License
 
 MIT License
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=bili-47177171806/25ji-sagyo&type=Date)](https://star-history.com/#bili-47177171806/25ji-sagyo&Date)
+

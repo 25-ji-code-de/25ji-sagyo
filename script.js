@@ -50,7 +50,6 @@
 
   const video = document.getElementById('video');
   const localTimeEl = document.getElementById('localTime');
-  const partNameEl = document.getElementById('partName');
   const tzLabelEl = document.getElementById('tzLabel');
   const muteBtn = document.getElementById('muteBtn');
   const volumeSlider = document.getElementById('volumeSlider');
@@ -645,11 +644,6 @@
     if (playbackMode === 'hls' && !hlsFailed) {
       // HLS mode: use full day offset (0-86399 seconds)
       const dayOffset = computeDayOffset(now);
-      
-      // Still display part name for UI consistency (use 6-part scheme for display)
-      const partIndex = Math.floor(dayOffset / (4 * 3600)); // 4-hour parts for display
-      const key = partIndexToKey(partIndex);
-      partNameEl.textContent = key.toUpperCase();
 
       // Initialize HLS if not ready
       if (!hlsReady) {
@@ -680,8 +674,6 @@
     } else {
       // MP4 mode (both 3-part and 6-part)
       const { partIndex, offset } = computePartAndOffset(now);
-      const key = partIndexToKey(partIndex);
-      partNameEl.textContent = key.toUpperCase();
 
       const desired = offset;
 

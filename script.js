@@ -208,7 +208,7 @@
       
       // Dynamically load HLS.js library
       const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+      script.src = 'https://s4.zstatic.net/npm/hls.js@latest/dist/hls.min.js';
       script.onload = () => createHLSInstance(resolve, reject);
       script.onerror = () => {
         console.warn('Failed to load HLS.js library');

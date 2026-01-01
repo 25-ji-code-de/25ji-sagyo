@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found</title>
+  <!-- Google Fonts: Inter for elegance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Modern Elegant Light Theme - "Glass & Gradient" */
+      --bg-color: #f2f4f8;
+      --card-bg: rgba(255, 255, 255, 0.65);
+      --text-main: #2c3e50;
+      --text-muted: #64748b;
+      --heading-color: #1e293b;
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-secondary: #8b5cf6; /* Violet */
+      --accent-tertiary: #ec4899; /* Pink */
+      --border-color: rgba(0, 0, 0, 0.06);
+      --code-bg: #f1f5f9;
+      --link-color: #4f46e5;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -3px rgba(0, 0, 0, 0.02);
+      --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      background-color: #eef2f6; /* Fallback */
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Layer */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      z-index: -1;
+      /* 25-ji Theme Background: School Refusal / Empty Sekai Atmosphere */
+      background-image: url('https://assets.nightcord.de5.net/unit_background/bg_school_refusal.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      animation: backgroundSway 25s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes backgroundSway {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.08) translate(-2%, 1%); }
+    }
+    
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+
+    /* Glassmorphism Card */
+    .markdown-body {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 24px;
+      padding: 64px;
+      box-shadow: var(--shadow-lg);
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      text-align: center;
+    }
+    
+    /* Top accent line */
+    .markdown-body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+    }
+
+    /* Typography & Elements */
+    .error-code {
+      font-size: 8em;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.05em;
+    }
+
+    .error-title {
+      font-size: 2em;
+      color: var(--heading-color);
+      font-weight: 700;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .error-message {
+      font-size: 1.1em;
+      color: #374151;
+      margin-bottom: 2.5em;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .back-button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+      .markdown-body {
+        padding: 40px 20px;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: rgba(255, 255, 255, 0.95);
+      }
+      .page-container {
+        padding: 0;
+        max-width: 100%;
+        min-height: 100vh;
+      }
+      body {
+        background-image: none;
+        background-color: #fff;
+      }
+      .error-code {
+        font-size: 5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="markdown-body">
+      <h1 class="error-code">404</h1>
+      <h2 class="error-title">……这里是？</h2>
+      <p class="error-message">
+        似乎误入了一个空无一人的世界……<br>
+        您寻找的页面可能已被移除，或暂时无法访问。
+      </p>
+      <a href="/" class="back-button">返回主页</a>
+    </div>
+  </div>
+</body>
+</html>

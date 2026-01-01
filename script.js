@@ -3467,18 +3467,50 @@
 
     // --- Achievement System ---
     const achievements = [
+      // Pomodoro / Ranks
       { id: 'first_pomodoro', title: '初めての一歩', desc: '完成第一个番茄钟', icon: '🍅', type: 'pomodoro_count', target: 1, points: 10 },
       { id: 'pomodoro_10', title: '番茄收集者', desc: '累计完成10个番茄钟', icon: '🍅', type: 'pomodoro_count', target: 10, points: 20 },
-      { id: 'pomodoro_50', title: '番茄大师', desc: '累计完成50个番茄钟', icon: '🏆', type: 'pomodoro_count', target: 50, points: 50 },
-      { id: 'pomodoro_100', title: '番茄传说', desc: '累计完成100个番茄钟', icon: '👑', type: 'pomodoro_count', target: 100, points: 100 },
+      { id: 'rank_platinum', title: 'Platinum（白金）', desc: '累计完成50个番茄钟', icon: '🏆', type: 'pomodoro_count', target: 50, points: 100 },
+      { id: 'rank_diamond', title: 'Diamond（钻石）', desc: '累计完成100个番茄钟', icon: '💎', type: 'pomodoro_count', target: 100, points: 200 },
+      { id: 'rank_ruby', title: 'Ruby（红宝石）', desc: '累计完成200个番茄钟', icon: '🔴', type: 'pomodoro_count', target: 200, points: 400 },
+      { id: 'rank_pearl', title: 'Pearl（珍珠）', desc: '累计完成300个番茄钟', icon: '⚪', type: 'pomodoro_count', target: 300, points: 600 },
+      { id: 'rank_sapphire', title: 'Sapphire（蓝宝石）', desc: '累计完成400个番茄钟', icon: '🔵', type: 'pomodoro_count', target: 400, points: 800 },
+      { id: 'rank_garnet', title: 'Garnet（石榴石）', desc: '累计完成500个番茄钟', icon: '🟤', type: 'pomodoro_count', target: 500, points: 1000 },
+      { id: 'rank_emerald', title: 'Emerald（祖母绿）', desc: '累计完成1000个番茄钟', icon: '💚', type: 'pomodoro_count', target: 1000, points: 2000 },
+
+      // Streak / Attendance
       { id: 'streak_3', title: '三日坚持', desc: '连续3天学习', icon: '🔥', type: 'streak_days', target: 3, points: 30 },
-      { id: 'streak_7', title: '周间勇者', desc: '连续7天学习', icon: '⚡', type: 'streak_days', target: 7, points: 70 },
-      { id: 'streak_30', title: '月间王者', desc: '连续30天学习', icon: '🌟', type: 'streak_days', target: 30, points: 300 },
+      { id: 'streak_7', title: '皆勤賞', desc: '连续7天学习', icon: '📅', type: 'streak_days', target: 7, points: 70 },
+      { id: 'streak_14', title: '高校1年生', desc: '连续14天学习', icon: '🏫', type: 'streak_days', target: 14, points: 140 },
+      { id: 'streak_30', title: '高校2年生', desc: '连续30天学习', icon: '🔥', type: 'streak_days', target: 30, points: 300 },
+      { id: 'streak_60', title: '高校3年生', desc: '连续60天学习', icon: '🌸', type: 'streak_days', target: 60, points: 600 },
+      { id: 'streak_100', title: '一直都在身边', desc: '连续100天学习', icon: '💑', type: 'streak_days', target: 100, points: 1000 },
+      { id: 'streak_365', title: '永远都在身边', desc: '连续365天学习', icon: '💍', type: 'streak_days', target: 365, points: 3650 },
+
+      // Time / Experience
+      { id: 'time_10h', title: '一人前', desc: '累计学习10小时', icon: '🐣', type: 'total_time', target: 36000, points: 100 },
+      { id: 'time_50h', title: 'Veteran（资深老手）', desc: '累计学习50小时', icon: '🦅', type: 'total_time', target: 180000, points: 500 },
+      { id: 'time_100h', title: '老相识', desc: '累计学习100小时', icon: '👴', type: 'total_time', target: 360000, points: 1000 },
+      { id: 'time_200h', title: '元老级', desc: '累计学习200小时', icon: '🦕', type: 'total_time', target: 720000, points: 2000 },
+      { id: 'time_500h', title: '远古居民', desc: '累计学习500小时', icon: '🦖', type: 'total_time', target: 1800000, points: 5000 },
+      { id: 'time_1000h', title: '前世之缘', desc: '累计学习1000小时', icon: '👻', type: 'total_time', target: 3600000, points: 10000 },
+
+      // Songs / Live Master
+      { id: 'live_master_beginner', title: 'Live Master 初級', desc: '播放10首歌曲', icon: '🎵', type: 'songs_played', target: 10, points: 10 },
+      { id: 'song_39', title: '39！', desc: '播放39首歌曲', icon: '🎵', type: 'songs_played', target: 39, points: 39 },
+      { id: 'live_master_intermediate', title: 'Live Master 中級', desc: '播放50首歌曲', icon: '🎧', type: 'songs_played', target: 50, points: 50 },
+      { id: 'live_master_advanced', title: 'Live Master 上級', desc: '播放100首歌曲', icon: '🎹', type: 'songs_played', target: 100, points: 100 },
+      { id: 'live_master_expert', title: 'Live Master 達人', desc: '播放500首歌曲', icon: '🎸', type: 'songs_played', target: 500, points: 500 },
+      { id: 'live_master_master', title: 'Live Master 皆伝', desc: '播放1000首歌曲', icon: '🎺', type: 'songs_played', target: 1000, points: 1000 },
+      { id: 'live_master_true_master', title: 'Live Master 真・皆伝', desc: '播放2000首歌曲', icon: '🎻', type: 'songs_played', target: 2000, points: 2000 },
+      { id: 'song_3939', title: '3939！', desc: '播放3939首歌曲', icon: '🎵', type: 'songs_played', target: 3939, points: 3939 },
+
+      // Special / Misc
       { id: 'night_owl', title: '25時の住人', desc: '在凌晨1点学习', icon: '🌙', type: 'night_owl', target: 1, points: 25 },
-      { id: 'early_bird', title: '朝活マスター', desc: '在早上6点前学习', icon: '🌅', type: 'early_bird', target: 1, points: 25 },
-      { id: 'music_lover', title: 'Nightcord DJ', desc: '播放100首歌曲', icon: '🎵', type: 'songs_played', target: 100, points: 50 },
+      { id: 'early_bird', title: '朝活 Master', desc: '在早上6点前学习', icon: '🌅', type: 'early_bird', target: 1, points: 25 },
       { id: 'time_1h', title: '一時間集中', desc: '单次学习超过1小时', icon: '⏰', type: 'session_duration', target: 3600, points: 30 },
-      { id: 'time_10h', title: '十時間達成', desc: '累计学习10小时', icon: '📚', type: 'total_time', target: 36000, points: 100 }
+      { id: 'session_long', title: 'Never Give Up（永不言弃）', desc: '单次学习超过2小时', icon: '⏳', type: 'session_duration', target: 7200, points: 50 },
+      { id: 'session_very_long', title: '腱鞘炎', desc: '单次学习超过4小时', icon: '🩹', type: 'session_duration', target: 14400, points: 100 }
     ];
 
     // Achievement State

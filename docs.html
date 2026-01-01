@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- Google Fonts: Inter for elegance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  
+  <!-- Highlight.js Theme: GitHub Light for better readability on light theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+  
+  <style>
+    :root {
+      /* Modern Elegant Light Theme - "Glass & Gradient" */
+      --bg-color: #f2f4f8;
+      --card-bg: rgba(255, 255, 255, 0.65);
+      --text-main: #2c3e50;
+      --text-muted: #64748b;
+      --heading-color: #1e293b;
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-secondary: #8b5cf6; /* Violet */
+      --accent-tertiary: #ec4899; /* Pink */
+      --border-color: rgba(0, 0, 0, 0.06);
+      --code-bg: #f1f5f9;
+      --link-color: #4f46e5;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -3px rgba(0, 0, 0, 0.02);
+      --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      background-color: #eef2f6; /* Fallback */
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Layer */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      z-index: -1;
+      background-image: url('https://assets.nightcord.de5.net/area/area10/bg.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      animation: backgroundSway 25s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes backgroundSway {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.08) translate(-2%, 1%); }
+    }
+    
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    /* Glassmorphism Card */
+    .markdown-body {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 24px;
+      padding: 64px;
+      box-shadow: var(--shadow-lg);
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Top accent line */
+    .markdown-body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+    }
+
+    /* Typography & Elements */
+    .markdown-body h1, 
+    .markdown-body h2, 
+    .markdown-body h3, 
+    .markdown-body h4 {
+      color: var(--heading-color);
+      font-weight: 700;
+      margin-top: 2em;
+      margin-bottom: 0.8em;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    .markdown-body h1 {
+      font-size: 2.5em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.6em;
+      margin-top: 0;
+      /* Gradient Text for Title */
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    .markdown-body h2 {
+      font-size: 1.75em;
+      padding-left: 0;
+      border-bottom: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .markdown-body h2::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-color), transparent);
+      margin-left: 16px;
+      margin-top: 4px;
+    }
+
+    .markdown-body p {
+      margin-bottom: 1.5em;
+      font-weight: 400;
+      font-size: 1.05em;
+      color: #374151;
+    }
+
+    .markdown-body a {
+      color: var(--link-color);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+      background: rgba(79, 70, 229, 0.05);
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+
+    .markdown-body a:hover {
+      color: var(--accent-secondary);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .markdown-body blockquote {
+      margin: 2em 0;
+      padding: 1.5em 2em;
+      background: linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent);
+      border-left: 4px solid var(--accent-primary);
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      color: #475569;
+    }
+    
+    .markdown-body blockquote::before {
+      display: none;
+    }
+
+    .markdown-body code {
+      font-family: "JetBrains Mono", "SF Mono", monospace;
+      font-size: 0.9em;
+      background: var(--code-bg);
+      padding: 0.25em 0.5em;
+      border-radius: 6px;
+      color: var(--accent-primary);
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .markdown-body pre {
+      background: #1e293b !important; /* Dark code blocks for contrast */
+      border-radius: 16px;
+      padding: 24px;
+      margin: 2em 0;
+      overflow-x: auto;
+      box-shadow: var(--shadow-md);
+      color: #e2e8f0;
+    }
+
+    .markdown-body pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+      font-size: 0.9em;
+      border: none;
+    }
+
+    .markdown-body ul, .markdown-body ol {
+      padding-left: 1.5em;
+      margin-bottom: 1.5em;
+    }
+
+    .markdown-body li {
+      margin-bottom: 0.6em;
+      color: #374151;
+    }
+    
+    .markdown-body ul li::marker {
+      color: var(--accent-secondary);
+    }
+
+    .markdown-body hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+      margin: 3em 0;
+    }
+
+    .markdown-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      margin: 1.5em 0;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+    
+    .markdown-body img:hover {
+      transform: scale(1.01);
+    }
+
+    .markdown-body table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 2em 0;
+      font-size: 0.95em;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .markdown-body th {
+      text-align: left;
+      padding: 16px;
+      background-color: #f8fafc;
+      color: var(--heading-color);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .markdown-body td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #475569;
+      background: #fff;
+    }
+    
+    .markdown-body tr:last-child td {
+      border-bottom: none;
+    }
+
+    .markdown-body tr:hover td {
+      background: #f1f5f9;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent; 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1; 
+      border-radius: 5px;
+      border: 2px solid var(--bg-color);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8; 
+    }
+
+    /* Loading & Error States */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 60vh;
+      color: var(--text-muted);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--accent-primary);
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .error-container {
+      text-align: center;
+      padding: 40px;
+      color: #ef4444;
+      background: #fef2f2;
+      border: 1px solid #fee2e2;
+      border-radius: 16px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+      .markdown-body {
+        padding: 32px 20px;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: rgba(255, 255, 255, 0.95);
+      }
+      .page-container {
+        padding: 0;
+        max-width: 100%;
+      }
+      body {
+        background-image: none;
+        background-color: #fff;
+      }
+      .markdown-body h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div id="content">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <div style="font-weight: 300; letter-spacing: 1px;">LOADING DOCUMENTATION</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  
+  <script>
+    (async () => {
+      const contentEl = document.getElementById('content');
+      
+      // Get markdown file from query param: ?file=README.md
+      const params = new URLSearchParams(window.location.search);
+      const file = params.get('file') || 'README.md';
+      
+      try {
+        const response = await fetch(file);
+        if (!response.ok) throw new Error(`Failed to load ${file} (Status: ${response.status})`);
+        
+        const markdown = await response.text();
+        
+        // Configure marked
+        marked.setOptions({
+          highlight: function(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+          },
+          langPrefix: 'hljs language-'
+        });
+
+        // Render
+        contentEl.innerHTML = `<article class="markdown-body">${marked.parse(markdown)}</article>`;
+        
+        // Update title
+        const h1 = contentEl.querySelector('h1');
+        if (h1) document.title = h1.textContent;
+        
+        // Highlight code blocks (if marked's highlight option didn't catch them all)
+        document.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block);
+        });
+        
+      } catch (e) {
+        contentEl.innerHTML = `
+          <div class="error-container">
+            <h3 style="margin-top:0">Unable to load documentation</h3>
+            <p>${e.message}</p>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8">Make sure the file exists and is accessible.</p>
+            <a href="?file=README.md" style="display: inline-block; margin-top: 20px; color: var(--accent-primary); border-bottom: 1px solid var(--accent-primary);">Return to README</a>
+          </div>
+        `;
+      }
+    })();
+  </script>
+</body>
+</html>

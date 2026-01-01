@@ -2078,30 +2078,46 @@
       return `${mins}:${String(secs).padStart(2, '0')}`;
     }
 
-    // Load music data from Sekai API
+    // Load music data from unified API
     async function loadMusicData() {
       try {
         musicList.innerHTML = '<div class="loading">加载音乐列表中...</div>';
 
-        // Fetch musics.json
-        const musicsResponse = await fetch('https://storage.nightcord.de5.net/musics.json');
-        if (!musicsResponse.ok) throw new Error('Failed to fetch musics');
-        musicData = await musicsResponse.json();
+        // Fetch unified music_data.json
+        const response = await fetch('https://storage.nightcord.de5.net/music_data.json');
+        if (!response.ok) throw new Error('Failed to fetch music data');
+        const musicDatabase = await response.json();
 
-        // Fetch musicVocals.json
-        const vocalsResponse = await fetch('https://storage.nightcord.de5.net/musicVocals.json');
-        if (!vocalsResponse.ok) throw new Error('Failed to fetch music vocals');
-        musicVocalsData = await vocalsResponse.json();
+        // Extract music data
+        musicData = musicDatabase.musics;
 
-        // Fetch Chinese translations
-        try {
-          const titlesResponse = await fetch('https://storage.nightcord.de5.net/music_titles.json');
-          if (titlesResponse.ok) {
-            musicTitlesZhCN = await titlesResponse.json();
+        // Build flattened musicVocalsData (add musicId to each vocal)
+        musicVocalsData = [];
+        musicData.forEach(music => {
+          if (music.vocals) {
+            music.vocals.forEach(vocal => {
+              musicVocalsData.push({
+                ...vocal,
+                musicId: music.id,
+                // Map new field names to legacy names for compatibility
+                musicVocalType: vocal.type,
+                characters: vocal.characters ? vocal.characters.map(c => ({
+                  ...c,
+                  characterType: c.type,
+                  characterId: c.id
+                })) : []
+              });
+            });
           }
-        } catch (error) {
-          console.warn('Failed to load Chinese translations:', error);
-        }
+        });
+
+        // Build Chinese title mapping from inline titleZhCN
+        musicTitlesZhCN = {};
+        musicData.forEach(music => {
+          if (music.titleZhCN) {
+            musicTitlesZhCN[music.id] = music.titleZhCN;
+          }
+        });
 
         // Filter and prepare music list
         // Initial filter (just to populate filteredMusicData correctly for the first time)

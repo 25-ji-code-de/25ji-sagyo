@@ -49,6 +49,7 @@
   }
 
   const video = document.getElementById('video');
+  const videoLoader = document.getElementById('videoLoader');
   const localTimeEl = document.getElementById('localTime');
   const tzLabelEl = document.getElementById('tzLabel');
   const muteBtn = document.getElementById('muteBtn');
@@ -57,6 +58,24 @@
   const tzToggleBtn = document.getElementById('tzToggleBtn');
   const audioProcessBtn = document.getElementById('audioProcessBtn');
   const orientationWarning = document.getElementById('orientation-warning');
+
+  // Hide loader when video can play
+  function hideVideoLoader() {
+    if (videoLoader) {
+      videoLoader.classList.add('hidden');
+    }
+  }
+
+  // Show loader (e.g., when switching sources)
+  function showVideoLoader() {
+    if (videoLoader) {
+      videoLoader.classList.remove('hidden');
+    }
+  }
+
+  // Listen for video ready events
+  video.addEventListener('canplay', hideVideoLoader);
+  video.addEventListener('playing', hideVideoLoader);
 
   const DEFAULT_SOURCES = { p1: 'p1.mp4', p2: 'p2.mp4', p3: 'p3.mp4' };
   const sources = window.TIME_SYNC_SOURCES || DEFAULT_SOURCES;
@@ -490,6 +509,7 @@
     tzToggleBtn.addEventListener('click', () => {
       timezoneMode = timezoneMode === 'local' ? 'tokyo' : 'local';
       updateControlsUI();
+      showVideoLoader();
       // immediate resync with new timezone
       resyncOnce();
       saveSettings();

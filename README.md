@@ -72,6 +72,14 @@
 
 MIT License
 
+> ⚠️ **重要提示**：MIT 许可证仅适用于本项目的原创代码。游戏相关素材（音乐、图像等）的版权归 SEGA、Colorful Palette、Crypton Future Media 等原版权方所有。
+
+## ⚠️ 免责声明
+
+本项目是**非官方、非商业性质的粉丝作品**，与 SEGA、Colorful Palette、Crypton Future Media 或任何其他与《Project SEKAI》相关的版权持有方**无任何官方关联**。
+
+所有游戏相关素材（包括但不限于角色、音乐、图像）的版权归其各自的版权持有方所有。
+
 ## 🌟 Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=bili-47177171806/25ji-sagyo&type=date&legend=top-left)](https://www.star-history.com/#bili-47177171806/25ji-sagyo&type=date&legend=top-left)

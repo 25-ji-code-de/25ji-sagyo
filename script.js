@@ -1183,6 +1183,14 @@
       // Switch modes
       if (currentMode === 'work') {
         workRounds++;
+        // Track achievement
+        if (window.achievementSystem) {
+          window.achievementSystem.incrementPomodoro();
+          // Add focus time (25 mins or custom)
+          const duration = parseInt(workDurationInput.value) * 60;
+          window.achievementSystem.addFocusTime(duration);
+        }
+        
         if (workRounds >= maxRounds) {
           currentMode = 'long-break';
           remainingSeconds = parseInt(longBreakInput.value) * 60;
@@ -3347,6 +3355,11 @@
       });
 
       cdAudioPlayer.addEventListener('ended', () => {
+        // Track achievement
+        if (window.achievementSystem) {
+          window.achievementSystem.incrementSongs();
+        }
+
         if (!isRepeatOn) {
           if (isShuffleOn) {
             // Random next track
@@ -3420,6 +3433,532 @@
     cdPlayerPanel.addEventListener('click', (e) => {
       e.stopPropagation();
     });
+
+    // Expose CD Player System
+    window.cdPlayerSystem = {
+      getRandomSong: () => {
+        // Use musicData if available, otherwise try to load or return null
+        if (musicData && musicData.length > 0) {
+          return musicData[Math.floor(Math.random() * musicData.length)];
+        }
+        return null;
+      },
+      playSongById: (id) => {
+        // Find index by id
+        const index = musicData.findIndex(track => track.id === id);
+        if (index !== -1) {
+          // If panel is hidden, show it? Maybe not necessary, just play
+          // But we need to ensure filteredMusicData contains it or we switch to 'all'
+          // For simplicity, just switch to 'all' category and play
+          if (currentCategory !== 'all') {
+            const allBtn = document.querySelector('.category-btn[data-category="all"]');
+            if (allBtn) allBtn.click();
+          }
+          // Need to find index in filteredMusicData (which should be all now)
+          const filteredIndex = filteredMusicData.findIndex(track => track.id === id);
+          if (filteredIndex !== -1) {
+            loadTrack(filteredIndex);
+            playTrack();
+          }
+        }
+      }
+    };
+  })();
+
+    // --- Achievement System ---
+    const achievements = [
+      { id: 'first_pomodoro', title: '初めての一歩', desc: '完成第一个番茄钟', icon: '🍅', type: 'pomodoro_count', target: 1, points: 10 },
+      { id: 'pomodoro_10', title: '番茄收集者', desc: '累计完成10个番茄钟', icon: '🍅', type: 'pomodoro_count', target: 10, points: 20 },
+      { id: 'pomodoro_50', title: '番茄大师', desc: '累计完成50个番茄钟', icon: '🏆', type: 'pomodoro_count', target: 50, points: 50 },
+      { id: 'pomodoro_100', title: '番茄传说', desc: '累计完成100个番茄钟', icon: '👑', type: 'pomodoro_count', target: 100, points: 100 },
+      { id: 'streak_3', title: '三日坚持', desc: '连续3天学习', icon: '🔥', type: 'streak_days', target: 3, points: 30 },
+      { id: 'streak_7', title: '周间勇者', desc: '连续7天学习', icon: '⚡', type: 'streak_days', target: 7, points: 70 },
+      { id: 'streak_30', title: '月间王者', desc: '连续30天学习', icon: '🌟', type: 'streak_days', target: 30, points: 300 },
+      { id: 'night_owl', title: '25時の住人', desc: '在凌晨1点学习', icon: '🌙', type: 'night_owl', target: 1, points: 25 },
+      { id: 'early_bird', title: '朝活マスター', desc: '在早上6点前学习', icon: '🌅', type: 'early_bird', target: 1, points: 25 },
+      { id: 'music_lover', title: 'Nightcord DJ', desc: '播放100首歌曲', icon: '🎵', type: 'songs_played', target: 100, points: 50 },
+      { id: 'time_1h', title: '一時間集中', desc: '单次学习超过1小时', icon: '⏰', type: 'session_duration', target: 3600, points: 30 },
+      { id: 'time_10h', title: '十時間達成', desc: '累计学习10小时', icon: '📚', type: 'total_time', target: 36000, points: 100 }
+    ];
+
+    // Achievement State
+    let userStats = {
+      pomodoro_count: 0,
+      streak_days: 0,
+      last_login_date: null,
+      songs_played: 0,
+      total_time: 0,
+      today_time: 0,
+      today_date: null,
+      unlocked_achievements: [],
+      recent_activities: [] // {type, timestamp, detail}
+    };
+
+    // Add activity record
+    function addActivity(type, detail) {
+      const activity = {
+        type,
+        timestamp: Date.now(),
+        detail
+      };
+      userStats.recent_activities.unshift(activity);
+      // Keep only last 20 activities
+      if (userStats.recent_activities.length > 20) {
+        userStats.recent_activities = userStats.recent_activities.slice(0, 20);
+      }
+      saveStats();
+    }
+
+    // Load stats from localStorage
+    function loadStats() {
+      const saved = localStorage.getItem('userStats');
+      if (saved) {
+        userStats = { ...userStats, ...JSON.parse(saved) };
+      }
+      checkDailyLogin();
+    }
+
+    // Save stats to localStorage
+    function saveStats() {
+      localStorage.setItem('userStats', JSON.stringify(userStats));
+      updateAchievementsUI();
+    }
+
+    // Check daily login for streak
+    function checkDailyLogin() {
+      const today = new Date().toDateString();
+      if (userStats.last_login_date !== today) {
+        const lastLogin = userStats.last_login_date ? new Date(userStats.last_login_date) : null;
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (lastLogin && lastLogin.toDateString() === yesterday.toDateString()) {
+          userStats.streak_days++;
+        } else {
+          userStats.streak_days = 1;
+        }
+        userStats.last_login_date = today;
+        
+        // Record login activity
+        addActivity('login', `新的一天开始了，连续第 ${userStats.streak_days} 天`);
+        
+        checkAchievements('streak_days');
+      }
+      
+      // Check time-based achievements
+      const hour = new Date().getHours();
+      if (hour === 1) checkAchievements('night_owl');
+      if (hour >= 4 && hour < 6) checkAchievements('early_bird');
+    }
+
+    // Check and unlock achievements
+    function checkAchievements(type, value = null) {
+      let changed = false;
+      const currentValue = value !== null ? value : userStats[type];
+      
+      achievements.forEach(ach => {
+        if (ach.type === type && !userStats.unlocked_achievements.includes(ach.id)) {
+          if (currentValue >= ach.target) {
+            unlockAchievement(ach);
+            changed = true;
+          }
+        }
+      });
+      
+      if (changed) saveStats();
+    }
+
+    // Unlock an achievement
+    function unlockAchievement(achievement) {
+      userStats.unlocked_achievements.push(achievement.id);
+      addActivity('achievement', `解锁成就「${achievement.title}」`);
+      showNotification(`成就解锁: ${achievement.title}`, achievement.icon);
+      // You could also play a sound here
+    }
+
+    // Show in-app notification
+    function showNotification(text, icon) {
+      // Simple toast implementation
+      const toast = document.createElement('div');
+      toast.className = 'achievement-toast';
+      toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span>`;
+      document.body.appendChild(toast);
+      
+      // Add styles dynamically if not present
+      if (!document.getElementById('toast-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-style';
+        style.textContent = `
+          .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(30, 30, 45, 0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+          }
+          .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+          }
+          .toast-icon { font-size: 20px; }
+          .toast-text { font-size: 14px; font-weight: 600; }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Trigger animation
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+
+    // Update Achievements UI in Settings Panel
+    function updateAchievementsUI() {
+      const list = document.querySelector('.achievements-list');
+      if (!list) return;
+      
+      // Calculate total score
+      const totalScore = userStats.unlocked_achievements.reduce((sum, id) => {
+        const ach = achievements.find(a => a.id === id);
+        return sum + (ach ? ach.points : 0);
+      }, 0);
+
+      // Add score display if not exists
+      let scoreDisplay = document.getElementById('achievementScore');
+      if (!scoreDisplay) {
+        scoreDisplay = document.createElement('div');
+        scoreDisplay.id = 'achievementScore';
+        scoreDisplay.className = 'achievement-score';
+        list.parentNode.insertBefore(scoreDisplay, list);
+      }
+      scoreDisplay.innerHTML = `<span>当前积分:</span> <span class="score-value">${totalScore}</span>`;
+
+      list.innerHTML = '';
+      achievements.forEach(ach => {
+        const isUnlocked = userStats.unlocked_achievements.includes(ach.id);
+        const item = document.createElement('div');
+        item.className = `achievement-item ${isUnlocked ? '' : 'locked'}`;
+        item.innerHTML = `
+          <div class="achievement-icon">${ach.icon}</div>
+          <div class="achievement-info">
+            <div class="achievement-title">${ach.title} <span class="achievement-points">+${ach.points}</span></div>
+            <div class="achievement-desc">${ach.desc}</div>
+          </div>
+          ${isUnlocked ? '<div class="achievement-check">✓</div>' : ''}
+        `;
+        list.appendChild(item);
+      });
+
+      // Update Stats UI
+      const statValues = document.querySelectorAll('.stat-value');
+      if (statValues.length >= 3) {
+        // Check if today_date is current, if not reset today_time
+        const today = new Date().toDateString();
+        if (userStats.today_date !== today) {
+          userStats.today_time = 0;
+          userStats.today_date = today;
+        }
+        statValues[0].textContent = Math.floor(userStats.today_time / 60); // Today's mins
+        statValues[1].textContent = (userStats.total_time / 3600).toFixed(1); // Total hours
+        statValues[2].textContent = userStats.pomodoro_count;
+      }
+
+      // Update Activity List
+      const activityList = document.querySelector('.activity-list');
+      if (activityList) {
+        activityList.innerHTML = '';
+        const activities = userStats.recent_activities || [];
+        if (activities.length === 0) {
+          activityList.innerHTML = '<div class="activity-item">暂无记录</div>';
+        } else {
+          activities.slice(0, 10).forEach(activity => {
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            const time = new Date(activity.timestamp);
+            const timeStr = `${time.getMonth() + 1}/${time.getDate()} ${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+            
+            let icon = '📝';
+            let text = activity.detail;
+            switch (activity.type) {
+              case 'pomodoro': icon = '🍅'; break;
+              case 'song': icon = '🎵'; break;
+              case 'achievement': icon = '🏆'; break;
+              case 'login': icon = '👋'; break;
+            }
+            
+            item.innerHTML = `<span class="activity-icon">${icon}</span><span class="activity-text">${text}</span><span class="activity-time">${timeStr}</span>`;
+            activityList.appendChild(item);
+          });
+        }
+      }
+    }
+
+    // Initialize
+    loadStats();
+    
+    // Check time-based achievements every minute
+    setInterval(() => {
+      const hour = new Date().getHours();
+      if (hour === 1) checkAchievements('night_owl');
+      if (hour >= 4 && hour < 6) checkAchievements('early_bird');
+    }, 60000);
+
+    // Expose functions for other modules to call
+    window.achievementSystem = {
+      incrementPomodoro: () => {
+        userStats.pomodoro_count++;
+        addActivity('pomodoro', `完成了第 ${userStats.pomodoro_count} 个番茄钟`);
+        checkAchievements('pomodoro_count');
+      },
+      incrementSongs: () => {
+        userStats.songs_played++;
+        saveStats();
+        checkAchievements('songs_played');
+      },
+      addFocusTime: (seconds) => {
+        // Update today's time
+        const today = new Date().toDateString();
+        if (userStats.today_date !== today) {
+          userStats.today_time = 0;
+          userStats.today_date = today;
+        }
+        userStats.today_time += seconds;
+        userStats.total_time += seconds;
+        saveStats();
+        checkAchievements('total_time');
+        if (seconds >= 3600) checkAchievements('session_duration', seconds);
+      },
+      updateUI: updateAchievementsUI
+    };
+
+  // --- Settings Panel Logic ---
+  (() => {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+
+    if (!settingsBtn || !settingsPanel) return;
+
+    // Toggle panel visibility
+    function togglePanel() {
+      settingsPanel.classList.toggle('hidden');
+      if (!settingsPanel.classList.contains('hidden')) {
+        if (window.achievementSystem) {
+          window.achievementSystem.updateUI();
+        }
+        updateHomeTab();
+      }
+    }
+
+    // --- Home Tab Logic ---
+    const greetingText = document.getElementById('greetingText');
+    const userNickname = document.getElementById('userNickname');
+    const editNicknameBtn = document.getElementById('editNicknameBtn');
+    const streakSummary = document.getElementById('streakSummary');
+    const timeSummary = document.getElementById('timeSummary');
+    const randomTipText = document.getElementById('randomTipText');
+
+    const STATIC_TIPS = [
+      // General Tips
+      "休息也是工作的一部分哦。",
+      "感到疲惫的时候，听听音乐放松一下吧。",
+      "保持水分充足有助于提高专注力。",
+      "番茄工作法建议每25分钟休息5分钟。",
+      "今天的努力，未来的你会感谢现在的自己。",
+      "不要忘记伸展一下身体。",
+      "深呼吸，让大脑重新充满氧气。",
+      "整理桌面也能整理心情。",
+      "设定一个小目标，完成后给自己一点奖励。",
+      "即使是微小的进步，也值得庆祝。",
+      
+      // App Tips
+      "使用快捷键 'M' 可以快速静音，'F' 键进入全屏。",
+      "在 CD 播放器中点击 '🌀' 按钮，可以开启音频可视化效果。",
+      "点击 '🎚️' 按钮，可以开启音频处理效果，享受人声衰减后的背景声。",
+      "番茄钟的设置可以调整，找到最适合你的节奏。",
+      "点击顶部的 'Toggle TZ' 按钮，假装自己身处东京的时间流中。",
+      
+      // Game Context / Quotes
+      "奏：「就这样继续吧。」",
+      "奏：「嗯，感觉不错。」",
+      "奏：「……时间是还有点早，不过还是上 Nightcord 干活吧。」",
+      "奏：「去吃饭吧，我的肚子也咕咕叫了。」",
+      "瑞希：「今天就稍微积极点吧。」",
+      "瑞希：「好，我也要加把劲了。」",
+      "瑞希：「嗯，小菜一碟♪」",
+      "瑞希：「大家都辛苦啦～♪」",
+      "绘名：「状态很不错嘛。」",
+      "绘名：「继续保持这个状态哦。」",
+      "绘名：「嗯，感觉不错哦。」",
+      "绘名：「呼，好累啊。今天就到这里吧。」",
+      "绘名：「嗯，感觉不错！」",
+      "绘名：「这点事还是很轻松的♪」",
+      "绘名：「半途而废也不好，再加把劲吧。」",
+      "真冬：「……新的一天开始了。」",
+      "真冬：「……听着 25 的歌曲，内心就会平静下来。」",
+      "真冬：「……真希望赶快到 25 点。」",
+      "真冬：「这么顺利真是太好了。」",
+      "真冬：「辛苦了。」",
+      "真冬：「干活的时候心里就会平静下来……」",
+      "未来：「非常棒。」",
+      "未来：「我也会加油的。」",
+      "未来：「啊……你来了啊。谢谢……」",
+      "未来：「今天做些什么好呢？咦……？你愿意和我待在一起吗？」",
+      "未来：「……啊，欢迎。」",
+      "未来：「努力过了。」",
+      "未来：「……没事的。我在你身边……」",
+    ];
+
+    function getDailyTip() {
+      const rand = Math.random();
+      
+      // 30% chance for song recommendation if available
+      if (rand < 0.3 && window.cdPlayerSystem && window.cdPlayerSystem.getRandomSong) {
+        const song = window.cdPlayerSystem.getRandomSong();
+        if (song) {
+          return `今日推荐曲目：《${song.title}》\n适合现在的氛围呢。`;
+        }
+      }
+
+      // 20% chance for Unit recommendation
+      if (rand >= 0.3 && rand < 0.5) {
+        const units = ["Leo/need", "MORE MORE JUMP!", "Vivid BAD SQUAD", "Wonderlands×Showtime", "25时，在Nightcord。", "VIRTUAL SINGER"];
+        const templates = [
+          "想转换心情吗？试试去 CD 播放器里找找 {unit} 的歌吧。",
+          "如果是 {unit} 的曲风，说不定能给你带来新的灵感。",
+          "偶尔听听 {unit} 的歌，感觉也不错呢。",
+          "现在的气氛，或许很适合 {unit} 的音乐？"
+        ];
+        const unit = units[Math.floor(Math.random() * units.length)];
+        const template = templates[Math.floor(Math.random() * templates.length)];
+        return template.replace('{unit}', unit);
+      }
+
+      // Fallback to static tips
+      return STATIC_TIPS[Math.floor(Math.random() * STATIC_TIPS.length)];
+    }
+
+    function updateHomeTab() {
+      // Update Greeting
+      const hour = new Date().getHours();
+      let greeting = '你好，';
+      if (hour >= 5 && hour < 12) greeting = '早上好，';
+      else if (hour >= 12 && hour < 18) greeting = '下午好，';
+      else if (hour >= 18 && hour < 23) greeting = '晚上好，';
+      else greeting = '夜深了，';
+      
+      if (greetingText) greetingText.textContent = greeting;
+
+      // Update Nickname
+      const savedNickname = localStorage.getItem('userNickname') || '「世界」的居民';
+      if (userNickname) userNickname.textContent = savedNickname;
+
+      // Update Stats Summary
+      if (window.achievementSystem) { // Access userStats via a global or shared way? 
+        // Actually userStats is local to the achievement closure. 
+        // We need to expose it or read from localStorage directly for simplicity here.
+        const savedStats = localStorage.getItem('userStats');
+        if (savedStats) {
+          const stats = JSON.parse(savedStats);
+          if (streakSummary) streakSummary.textContent = `你已与 25时 共同度过了 ${stats.streak_days || 1} 天的时光`;
+          if (timeSummary) {
+            const hours = ((stats.total_time || 0) / 3600).toFixed(1);
+            timeSummary.textContent = `累计专注 ${hours} 小时，继续加油！`;
+          }
+        }
+      }
+
+      // Random Tip
+      if (randomTipText) {
+        randomTipText.textContent = getDailyTip();
+      }
+    }
+
+    // Edit Nickname Logic
+    if (editNicknameBtn) {
+      editNicknameBtn.addEventListener('click', () => {
+        const currentName = localStorage.getItem('userNickname') || '「世界」的居民';
+        const newName = prompt('请输入你的昵称:', currentName);
+        if (newName && newName.trim() !== '') {
+          localStorage.setItem('userNickname', newName.trim());
+          updateHomeTab();
+        }
+      });
+    }
+
+    // Tab switching logic
+    const sidebarBtns = settingsPanel.querySelectorAll('.sidebar-btn');
+    const tabContents = settingsPanel.querySelectorAll('.tab-content');
+
+    sidebarBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.getAttribute('data-tab');
+        
+        // Update sidebar buttons
+        sidebarBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Update tab contents
+        tabContents.forEach(content => {
+          if (content.id === `tab-${tabId}`) {
+            content.classList.add('active');
+          } else {
+            content.classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // Event listeners
+    settingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePanel();
+    });
+
+    settingsCloseBtn.addEventListener('click', () => {
+      togglePanel();
+    });
+
+    // Prevent clicks inside panel from propagating
+    settingsPanel.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // Version info - Placeholders replaced at build time by build.sh
+    // If you see the placeholders, you're running a dev build
+    const APP_VERSION = {
+      commit: '__BUILD_VERSION__',
+      date: '__BUILD_DATE__',
+      fullSha: '__BUILD_FULL_SHA__'
+    };
+
+    // Display version
+    function displayVersion() {
+      const versionEl = document.getElementById('appVersion');
+      if (!versionEl) return;
+      
+      // Check if placeholders were replaced (production) or not (dev)
+      if (APP_VERSION.commit.startsWith('__')) {
+        versionEl.textContent = 'Dev Build';
+        versionEl.title = 'Running in development mode';
+      } else {
+        versionEl.textContent = `${APP_VERSION.date} (${APP_VERSION.commit})`;
+        versionEl.title = `Full SHA: ${APP_VERSION.fullSha}`;
+      }
+    }
+    displayVersion();
   })();
 
 })();

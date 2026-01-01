@@ -29,6 +29,7 @@
           <button id="tzToggleBtn" title="Toggle timezone">Toggle TZ</button>
           <button id="pomodoroBtn" title="Pomodoro Timer">🍅</button>
           <button id="cdPlayerBtn" title="CD Player">💿</button>
+          <button id="settingsBtn" title="设置">⚙️</button>
         </div>
 
         <!-- Pomodoro Timer Panel -->
@@ -204,6 +205,151 @@
 
         <!-- Hidden Audio Element -->
         <audio id="cdAudioPlayer" preload="metadata"></audio>
+      </div>
+
+      <!-- Settings Panel (Expanded) -->
+      <div id="settingsPanel" class="hidden expanded-panel">
+        <div class="settings-header">
+          <span>控制中心</span>
+          <div class="header-controls">
+            <button id="settingsCloseBtn" class="close-btn" title="关闭">✕</button>
+          </div>
+        </div>
+        <div class="settings-body-layout">
+          <!-- Sidebar -->
+          <div class="settings-sidebar">
+            <button class="sidebar-btn active" data-tab="home">
+              <span class="icon">🏠</span> <span class="label">首页</span>
+            </button>
+            <button class="sidebar-btn" data-tab="sync">
+              <span class="icon">☁️</span> <span class="label">数据同步</span>
+            </button>
+            <button class="sidebar-btn" data-tab="stats">
+              <span class="icon">📊</span> <span class="label">专注统计</span>
+            </button>
+            <button class="sidebar-btn" data-tab="achievements">
+              <span class="icon">🏆</span> <span class="label">成就系统</span>
+            </button>
+            <button class="sidebar-btn" data-tab="about">
+              <span class="icon">ℹ️</span> <span class="label">关于</span>
+            </button>
+          </div>
+
+          <!-- Content Area -->
+          <div class="settings-content">
+            <!-- Home Tab -->
+            <div class="tab-content active" id="tab-home">
+              <div class="home-welcome-section">
+                <h2 id="greetingText">晚上好，</h2>
+                <div class="user-nickname-container">
+                  <span id="userNickname" class="nickname-text">「世界」的居民</span>
+                  <button id="editNicknameBtn" class="icon-btn" title="修改昵称">✏️</button>
+                </div>
+              </div>
+              
+              <div class="home-stats-summary">
+                <div class="summary-card">
+                  <div class="summary-icon">🔥</div>
+                  <div class="summary-text" id="streakSummary">你已与 25时 共同度过了 1 天的时光</div>
+                </div>
+                <div class="summary-card">
+                  <div class="summary-icon">⏳</div>
+                  <div class="summary-text" id="timeSummary">累计专注 0 小时，继续加油！</div>
+                </div>
+              </div>
+
+              <div class="home-tips-card">
+                <div class="tips-header">
+                  <span class="tips-icon">💡</span>
+                  <span>每日贴士</span>
+                </div>
+                <p id="randomTipText" class="tips-content">休息也是工作的一部分哦。</p>
+              </div>
+            </div>
+
+            <!-- Sync Tab -->
+            <div class="tab-content" id="tab-sync">
+              <div class="empty-state">
+                <div class="empty-icon">☁️</div>
+                <h3>云端同步</h3>
+                <p>登录以同步您的专注时长、成就和偏好设置。</p>
+                <button class="primary-btn">登录 / 注册</button>
+              </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div class="tab-content" id="tab-stats">
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">今日专注 (分钟)</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">累计专注 (小时)</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">完成番茄钟</div>
+                </div>
+              </div>
+              <div class="settings-section">
+                <h3>近期活动</h3>
+                <div class="activity-list">
+                  <div class="activity-item">暂无记录</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Achievements Tab -->
+            <div class="tab-content" id="tab-achievements">
+              <div class="achievements-list"></div>
+            </div>
+
+            <!-- About Tab -->
+            <div class="tab-content" id="tab-about">
+              <div class="about-header">
+                <div class="about-logo"><svg width="48" height="48" viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M13,10.69v2.72H10.23V10.69Zm3,0v2.69h2.69V10.72ZM23.29,12A11.31,11.31,0,1,1,12,.67,11.31,11.31,0,0,1,23.29,12Zm-.18.07a8.87,8.87,0,1,0-8.87,8.86A8.87,8.87,0,0,0,23.11,12.05Z"
+                    fill="white"></path>
+                </svg></div>
+                <h3>『25时、Nightcord见。』成员们的 24 小时工作日常</h3>
+                <p class="version" id="appVersion">Loading...</p>
+              </div>
+              <div class="settings-section">
+                <p class="about-desc">
+                  沉浸式作业陪伴工具，提供番茄钟、CD 播放器、世界时钟与音频可视化等实用功能。
+                </p>
+                <div class="links-row">
+                  <a href="https://github.com/bili-47177171806/25ji-sagyo" class="link-btn">GitHub</a>
+                  <a href="https://space.bilibili.com/3546904856103196" class="link-btn">Bilibili</a>
+                  <a href="https://github.com/bili-47177171806/25ji-sagyo/issues/new" class="link-btn">反馈问题</a>
+                </div>
+              </div>
+              <div class="settings-section">
+                <div class="section-title">📜 法律条款</div>
+                <div class="legal-links-row">
+                  <a href="./TERMS_OF_SERVICE.md" target="_blank" class="legal-link-btn">用户协议</a>
+                  <a href="./PRIVACY_POLICY.md" target="_blank" class="legal-link-btn">隐私政策</a>
+                  <a href="./COPYRIGHT.md" target="_blank" class="legal-link-btn">版权声明</a>
+                  <a href="./LICENSE" target="_blank" class="legal-link-btn">开源许可</a>
+                </div>
+              </div>
+              <div class="settings-section">
+                <div class="legal-text">
+                  <p><strong>免责声明 / Disclaimer</strong></p>
+                  <p>本项目（25ji-sagyo）为非官方粉丝作品（Fan Art），与 SEGA、Colorful Palette 或 Crypton Future Media 无任何关联。</p>
+                  <p>本项目中使用的所有游戏素材（包括但不限于视频、音频、图像、角色设计、剧本等）的版权均归 <strong>© SEGA</strong>、<strong>© Colorful Palette Inc.</strong> 及 <strong>© Crypton Future Media, INC.</strong> 所有。</p>
+                  <p>本项目仅供学习、研究及个人欣赏使用，<strong>严禁用于任何形式的商业用途或营利活动</strong>。开发者不对因使用本项目而产生的任何直接或间接损失承担责任。</p>
+                  <p>如权利方认为本项目侵犯了您的权益，请联系开发者，我们将立即采取措施进行处理。</p>
+                  <p style="margin-top: 12px; font-size: 0.85em; opacity: 0.8;">使用本网站即表示您已阅读并同意上述条款。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Orientation Warning -->

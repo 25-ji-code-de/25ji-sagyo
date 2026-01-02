@@ -428,14 +428,38 @@
         });
         
       } catch (e) {
-        contentEl.innerHTML = `
-          <div class="error-container">
-            <h3 style="margin-top:0">Unable to load documentation</h3>
-            <p>${e.message}</p>
-            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8">Make sure the file exists and is accessible.</p>
-            <a href="?file=README.md" style="display: inline-block; margin-top: 20px; color: var(--accent-primary); border-bottom: 1px solid var(--accent-primary);">Return to README</a>
-          </div>
-        `;
+        // Build error message DOM safely without injecting raw HTML from e.message
+        contentEl.textContent = '';
+
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'error-container';
+
+        const heading = document.createElement('h3');
+        heading.style.marginTop = '0';
+        heading.textContent = 'Unable to load documentation';
+        errorContainer.appendChild(heading);
+
+        const messageP = document.createElement('p');
+        messageP.textContent = e.message;
+        errorContainer.appendChild(messageP);
+
+        const hintP = document.createElement('p');
+        hintP.style.fontSize = '0.9em';
+        hintP.style.marginTop = '10px';
+        hintP.style.opacity = '0.8';
+        hintP.textContent = 'Make sure the file exists and is accessible.';
+        errorContainer.appendChild(hintP);
+
+        const backLink = document.createElement('a');
+        backLink.href = '?file=README.md';
+        backLink.style.display = 'inline-block';
+        backLink.style.marginTop = '20px';
+        backLink.style.color = 'var(--accent-primary)';
+        backLink.style.borderBottom = '1px solid var(--accent-primary)';
+        backLink.textContent = 'Return to README';
+        errorContainer.appendChild(backLink);
+
+        contentEl.appendChild(errorContainer);
       }
     })();
   </script>

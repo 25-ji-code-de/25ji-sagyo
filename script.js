@@ -2592,7 +2592,7 @@
             dominantColors = extractColorsFromCover();
           };
         } else {
-          albumCover.src = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png');
+          albumCover.src = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp');
           albumCover.style.opacity = '1';
           albumCover.onload = () => {
             dominantColors = extractColorsFromCover();
@@ -2736,7 +2736,7 @@
       }
 
       // Update album cover with R2 CDN (auto-upload on 404)
-      const coverPath = `/music/jacket/${music.assetbundleName}/${music.assetbundleName}.png`;
+      const coverPath = `/music/jacket/${music.assetbundleName}/${music.assetbundleName}.webp`;
 
       // Set crossOrigin BEFORE setting src to enable CORS
       albumCover.crossOrigin = "anonymous";
@@ -2839,10 +2839,10 @@
           artist: artist,
           album: 'Project SEKAI',
           artwork: [
-            { src: primaryCoverUrl, sizes: '512x512', type: 'image/png' },
-            { src: primaryCoverUrl, sizes: '256x256', type: 'image/png' },
-            { src: primaryCoverUrl, sizes: '128x128', type: 'image/png' },
-            { src: primaryCoverUrl, sizes: '96x96', type: 'image/png' }
+            { src: primaryCoverUrl, sizes: '512x512', type: 'image/webp' },
+            { src: primaryCoverUrl, sizes: '256x256', type: 'image/webp' },
+            { src: primaryCoverUrl, sizes: '128x128', type: 'image/webp' },
+            { src: primaryCoverUrl, sizes: '96x96', type: 'image/webp' }
           ]
         });
         console.log('[MediaSession] Metadata updated:', music.title, artist);
@@ -2928,26 +2928,26 @@
     async function updateMediaSessionLocal(music) {
       if (!('mediaSession' in navigator)) return;
 
-      const placeholderCover = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.png');
+      const placeholderCover = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp');
       let coverUrl = music.coverUrl || placeholderCover;
 
       // Generate artwork URLs - use OSS processing for remote URLs, direct URL for local blob
       let artwork;
       if (coverUrl.startsWith('blob:') || coverUrl.startsWith('data:')) {
-        // Local file - use same URL for all sizes (browser will scale)
+        // Local file - use same URL for all sizes (browser will scale), omit type for local files
         artwork = [
-          { src: coverUrl, sizes: '512x512', type: 'image/png' },
-          { src: coverUrl, sizes: '256x256', type: 'image/png' },
-          { src: coverUrl, sizes: '128x128', type: 'image/png' },
-          { src: coverUrl, sizes: '96x96', type: 'image/png' }
+          { src: coverUrl, sizes: '512x512' },
+          { src: coverUrl, sizes: '256x256' },
+          { src: coverUrl, sizes: '128x128' },
+          { src: coverUrl, sizes: '96x96' }
         ];
       } else {
         const baseUrl = coverUrl.split('?')[0];
         artwork = [
-          { src: baseUrl, sizes: '512x512', type: 'image/png' },
-          { src: baseUrl, sizes: '256x256', type: 'image/png' },
-          { src: baseUrl, sizes: '128x128', type: 'image/png' },
-          { src: baseUrl, sizes: '96x96', type: 'image/png' }
+          { src: baseUrl, sizes: '512x512', type: 'image/webp' },
+          { src: baseUrl, sizes: '256x256', type: 'image/webp' },
+          { src: baseUrl, sizes: '128x128', type: 'image/webp' },
+          { src: baseUrl, sizes: '96x96', type: 'image/webp' }
         ];
       }
 

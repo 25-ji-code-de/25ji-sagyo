@@ -128,7 +128,7 @@ export async function loadJsMediaTags() {
   try {
     await new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js';
+      script.src = 'https://s4.zstatic.net/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js';
       script.onload = () => {
         jsMediaTagsLoaded = true;
         resolve();

@@ -9,8 +9,9 @@ BUILD_DATE=$(date +%Y.%m.%d)
 
 # Inject version directly into script.js
 # This ensures version is always in sync with the JS file itself
-sed -i "s/__BUILD_VERSION__/${SHORT_SHA}/g" script.js
-sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" script.js
-sed -i "s/__BUILD_FULL_SHA__/${COMMIT_SHA}/g" script.js
+sed -i "s/__BUILD_VERSION__/${SHORT_SHA}/g" js/components/settings-panel.js
+sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" js/components/settings-panel.js
+sed -i "s/__BUILD_FULL_SHA__/${COMMIT_SHA}/g" js/components/settings-panel.js
+sed -i "s/__BUILD_VERSION__/${SHORT_SHA}/g" js/main.js
 
-echo "Injected version into script.js: ${BUILD_DATE} (${SHORT_SHA})"
+echo "Injected version into settings-panel.js: ${BUILD_DATE} (${SHORT_SHA})"

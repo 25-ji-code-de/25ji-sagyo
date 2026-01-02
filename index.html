@@ -387,6 +387,23 @@
   window.TIME_SYNC_SOURCES = parseSourcesFromURL();
   </script>
 
-  <script src="script.js"></script>
+  <!-- 工具模块 -->
+  <script src="js/utils/helpers.js"></script>
+  <script src="js/utils/storage.js"></script>
+  <script src="js/utils/asset-loader.js"></script>
+  
+  <!-- 功能模块 -->
+  <script src="js/features/achievements.js"></script>
+  
+  <!-- 组件模块 -->
+  <script src="js/components/pomodoro.js"></script>
+  <script src="js/components/world-clock.js"></script>
+  <script src="js/components/settings-panel.js"></script>
+  
+  <!-- CD 播放器模块 -->
+  <script type="module" src="js/cd-player/index.js"></script>
+  
+  <!-- 核心模块 -->
+  <script src="js/core/video-player.js"></script>
 </body>
 </html>

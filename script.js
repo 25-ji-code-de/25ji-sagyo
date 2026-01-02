@@ -2086,10 +2086,30 @@
         // Fetch unified music_data.json
         const response = await fetch('https://storage.nightcord.de5.net/music_data.json');
         if (!response.ok) throw new Error('Failed to fetch music data');
-        const musicDatabase = await response.json();
+        const raw = await response.json();
 
-        // Extract music data
-        musicData = musicDatabase.musics;
+        // Map compressed field names to full names
+        // API v2 format: i=id, t=title, tz=titleZhCN, c=composer, l=lyricist, a=assetbundleName, f=fillerSec, v=vocals
+        // vocals: i=id, t=type, c=caption, a=assetbundleName, ch=characters (array of [id, type])
+        musicData = raw.m.map(m => ({
+          id: m.i,
+          title: m.t,
+          titleZhCN: m.tz,
+          composer: m.c,
+          lyricist: m.l,
+          assetbundleName: m.a,
+          fillerSec: m.f || 0,
+          vocals: m.v ? m.v.map(v => ({
+            id: v.i,
+            type: v.t,
+            caption: v.c,
+            assetbundleName: v.a,
+            characters: v.ch ? v.ch.map(ch => ({
+              id: ch[0],
+              type: ch[1]
+            })) : []
+          })) : []
+        }));
 
         // Build flattened musicVocalsData (add musicId to each vocal)
         musicVocalsData = [];
@@ -2099,13 +2119,13 @@
               musicVocalsData.push({
                 ...vocal,
                 musicId: music.id,
-                // Map new field names to legacy names for compatibility
+                // Map to legacy field names for compatibility
                 musicVocalType: vocal.type,
-                characters: vocal.characters ? vocal.characters.map(c => ({
+                characters: vocal.characters.map(c => ({
                   ...c,
                   characterType: c.type,
                   characterId: c.id
-                })) : []
+                }))
               });
             });
           }

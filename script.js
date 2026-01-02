@@ -1431,6 +1431,178 @@
       }
     }
 
+    // ============ 搜索辅助函数 ============
+
+    // 预编译正则表达式
+    const RE_FULLWIDTH_ALPHANUM = /[Ａ-Ｚａ-ｚ０-９]/g;
+    const RE_FULLWIDTH_SPACE = /　/g;
+    const RE_KATAKANA = /[\u30A1-\u30F6]/g;
+    const RE_BRACKETS = /[「」『』【】〈〉《》（）()［］\[\]]/g;
+    const RE_MULTI_SPACE = /\s+/g;
+    const RE_ALL_SPACE = /\s/g;
+
+    // 假名常量
+    const KATAKANA_OFFSET = 0x30A1 - 0x3041;
+
+    // 罗马音转换规则（按长度预排序，优先匹配长字符）
+    const ROMAJI_RULES = [
+      // 二字符规则（拗音）
+      ['きゃ','kya'],['きゅ','kyu'],['きょ','kyo'],
+      ['しゃ','sha'],['しゅ','shu'],['しょ','sho'],
+      ['ちゃ','cha'],['ちゅ','chu'],['ちょ','cho'],
+      ['にゃ','nya'],['にゅ','nyu'],['にょ','nyo'],
+      ['ひゃ','hya'],['ひゅ','hyu'],['ひょ','hyo'],
+      ['みゃ','mya'],['みゅ','myu'],['みょ','myo'],
+      ['りゃ','rya'],['りゅ','ryu'],['りょ','ryo'],
+      ['ぎゃ','gya'],['ぎゅ','gyu'],['ぎょ','gyo'],
+      ['じゃ','ja'],['じゅ','ju'],['じょ','jo'],
+      ['びゃ','bya'],['びゅ','byu'],['びょ','byo'],
+      ['ぴゃ','pya'],['ぴゅ','pyu'],['ぴょ','pyo'],
+      // 单字符
+      ['あ','a'],['い','i'],['う','u'],['え','e'],['お','o'],
+      ['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko'],
+      ['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so'],
+      ['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to'],
+      ['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no'],
+      ['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho'],
+      ['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo'],
+      ['や','ya'],['ゆ','yu'],['よ','yo'],
+      ['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro'],
+      ['わ','wa'],['を','wo'],['ん','n'],
+      ['が','ga'],['ぎ','gi'],['ぐ','gu'],['げ','ge'],['ご','go'],
+      ['ざ','za'],['じ','ji'],['ず','zu'],['ぜ','ze'],['ぞ','zo'],
+      ['だ','da'],['ぢ','di'],['づ','du'],['で','de'],['ど','do'],
+      ['ば','ba'],['び','bi'],['ぶ','bu'],['べ','be'],['ぼ','bo'],
+      ['ぱ','pa'],['ぴ','pi'],['ぷ','pu'],['ぺ','pe'],['ぽ','po'],
+      ['ー','-'],
+    ];
+
+    // 构建快速查找 Map
+    const ROMAJI_MAP = new Map(ROMAJI_RULES);
+    const TWO_CHAR_ROMAJI = new Set(ROMAJI_RULES.filter(r => r[0].length === 2).map(r => r[0]));
+
+    // 文本标准化
+    function normalizeText(text) {
+      if (!text) return '';
+      
+      return text
+        .toLowerCase()
+        .replace(RE_FULLWIDTH_ALPHANUM, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+        .replace(RE_FULLWIDTH_SPACE, ' ')
+        .replace(RE_KATAKANA, c => String.fromCharCode(c.charCodeAt(0) - KATAKANA_OFFSET))
+        .replace(RE_BRACKETS, ' ')
+        .replace(RE_MULTI_SPACE, ' ')
+        .trim();
+    }
+
+    // 假名转罗马音
+    function toRomaji(text) {
+      if (!text) return '';
+      
+      const normalized = normalizeText(text);
+      const len = normalized.length;
+      let result = '';
+      
+      for (let i = 0; i < len; i++) {
+        // 尝试匹配两字符
+        if (i + 1 < len) {
+          const twoChar = normalized[i] + normalized[i + 1];
+          if (TWO_CHAR_ROMAJI.has(twoChar)) {
+            result += ROMAJI_MAP.get(twoChar);
+            i++;
+            continue;
+          }
+        }
+        
+        const char = normalized[i];
+        
+        // 促音处理
+        if (char === 'っ' && i + 1 < len) {
+          const next = ROMAJI_MAP.get(normalized[i + 1]);
+          if (next?.[0]) result += next[0];
+          continue;
+        }
+        
+        result += ROMAJI_MAP.get(char) ?? char;
+      }
+      
+      return result;
+    }
+
+    // 构建搜索索引
+    function buildSearchIndex(musics, titles) {
+      return musics.map(m => {
+        const title = m.title || '';
+        const titleZh = titles[m.id] || '';
+        const composer = m.composer || '';
+        const lyricist = m.lyricist || '';
+        const pronunciation = m.pronunciation || '';
+        
+        // 预计算所有变体
+        const titleNorm = normalizeText(title);
+        const titleZhNorm = normalizeText(titleZh);
+        const pronunciationNorm = normalizeText(pronunciation);
+        const pronunciationRomaji = toRomaji(pronunciation);
+        
+        const variants = [
+          titleNorm,
+          titleZhNorm,
+          normalizeText(composer),
+          normalizeText(lyricist),
+          pronunciationNorm,
+          pronunciationRomaji,
+          titleNorm.replace(RE_ALL_SPACE, ''),
+          pronunciationRomaji.replace(RE_ALL_SPACE, ''),
+        ].filter(Boolean);
+
+        return {
+          id: m.id,
+          variants: [...new Set(variants)],
+          _titleNorm: titleNorm,
+          _titleZhNorm: titleZhNorm,
+        };
+      });
+    }
+
+    // 计算搜索评分
+    function calculateScore(queryData, song) {
+      const { norm, noSpace } = queryData;
+      let maxScore = 0;
+      
+      for (const variant of song.variants) {
+        let score = 0;
+        
+        if (variant === norm) {
+          score = 1.0;
+        } else if (variant.startsWith(norm) || variant.startsWith(noSpace)) {
+          score = 0.9 - (variant.length - norm.length) * 0.01;
+        } else if (variant.includes(norm) || variant.includes(noSpace)) {
+          score = 0.7 - (variant.length - norm.length) * 0.005;
+        } else if (norm.length >= 2) {
+          let matches = 0;
+          for (const c of norm) {
+            if (variant.includes(c)) matches++;
+          }
+          if (matches >= norm.length * 0.7) {
+            score = 0.3 + (matches / norm.length) * 0.3;
+          }
+        }
+        
+        if (score > maxScore) maxScore = score;
+        if (maxScore >= 1.0) break;
+      }
+      
+      // 标题加分
+      if (song._titleNorm === norm || song._titleZhNorm === norm) {
+        maxScore = Math.min(1.0, maxScore + 0.1);
+      }
+      
+      return Math.round(maxScore * 1000) / 1000;
+    }
+
+    // 搜索索引缓存
+    let searchIndexCache = null;
+
     // Helper to determine music category
     function getMusicCategory(music) {
       // Map categories based on Sekai logic
@@ -1529,16 +1701,38 @@
         list = list.filter(music => getMusicCategory(music) === currentCategory);
       }
 
-      // Filter by search query
+      // Filter by search query using advanced search algorithm
       if (query) {
-        list = list.filter(music => {
-          const zhTitle = musicTitlesZhCN[music.id];
-          return music.title.toLowerCase().includes(query) ||
-            (music.pronunciation && music.pronunciation.toLowerCase().includes(query)) ||
-            (music.lyricist && music.lyricist.toLowerCase().includes(query)) ||
-            (music.composer && music.composer.toLowerCase().includes(query)) ||
-            (zhTitle && zhTitle.toLowerCase().includes(query));
-        });
+        // Build or use cached search index
+        if (!searchIndexCache) {
+          searchIndexCache = buildSearchIndex(musicData, musicTitlesZhCN);
+        }
+        
+        // Create a map for quick lookup
+        const indexMap = new Map(searchIndexCache.map(item => [item.id, item]));
+        
+        // Prepare query data
+        const queryNorm = normalizeText(query);
+        const queryData = {
+          norm: queryNorm,
+          noSpace: queryNorm.replace(RE_ALL_SPACE, ''),
+        };
+        
+        // Score and filter
+        const scoredList = [];
+        for (const music of list) {
+          const indexItem = indexMap.get(music.id);
+          if (indexItem) {
+            const score = calculateScore(queryData, indexItem);
+            if (score > 0.2) {
+              scoredList.push({ music, score });
+            }
+          }
+        }
+        
+        // Sort by score (descending) and extract music
+        scoredList.sort((a, b) => b.score - a.score);
+        list = scoredList.map(item => item.music);
       }
 
       filteredMusicData = list;
@@ -2089,11 +2283,12 @@
         const raw = await response.json();
 
         // Map compressed field names to full names
-        // API v2 format: i=id, t=title, tz=titleZhCN, c=composer, l=lyricist, a=assetbundleName, f=fillerSec, v=vocals
+        // API v2 format: i=id, t=title, p=pronunciation, tz=titleZhCN, c=composer, l=lyricist, a=assetbundleName, f=fillerSec, v=vocals
         // vocals: i=id, t=type, c=caption, a=assetbundleName, ch=characters (array of [id, type])
         musicData = raw.m.map(m => ({
           id: m.i,
           title: m.t,
+          pronunciation: m.p,
           titleZhCN: m.tz,
           composer: m.c,
           lyricist: m.l,
@@ -2138,6 +2333,9 @@
             musicTitlesZhCN[music.id] = music.titleZhCN;
           }
         });
+
+        // Clear search index cache to rebuild with new data
+        searchIndexCache = null;
 
         // Filter and prepare music list
         // Initial filter (just to populate filteredMusicData correctly for the first time)

@@ -80,11 +80,15 @@ async function initCDPlayer() {
     });
   });
 
-  // Setup search functionality
+  // Setup search functionality with debounce to reduce computation pressure
   if (elements.musicSearchInput) {
+    const debouncedSearch = window.AppHelpers.debounce((query) => {
+      filterMusicListWrapper(query);
+    }, 250);
+    
     elements.musicSearchInput.addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase().trim();
-      filterMusicListWrapper(query);
+      debouncedSearch(query);
     });
   }
 

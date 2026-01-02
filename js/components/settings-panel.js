@@ -323,9 +323,9 @@
           <div class="version-actions">
             <button class="version-btn version-btn-secondary" onclick="document.getElementById('versionModal').remove()">关闭</button>
             ${latestCommitInfo && !isUpToDate ? `
-              <a href="https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}" target="_blank" class="version-btn version-btn-primary">
-                前往 GitHub 更新
-              </a>
+              <button class="version-btn version-btn-primary" onclick="(function() { const url = new URL(window.location.href); url.searchParams.set('v', '${latestCommitInfo.shortSha}'); window.location.href = url.toString(); })()">
+                刷新页面以更新
+              </button>
             ` : ''}
           </div>
         </div>

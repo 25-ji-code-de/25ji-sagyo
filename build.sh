@@ -14,3 +14,7 @@ sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" js/components/settings-panel.js
 sed -i "s/__BUILD_FULL_SHA__/${COMMIT_SHA}/g" js/components/settings-panel.js
 
 echo "Injected version into settings-panel.js: ${BUILD_DATE} (${SHORT_SHA})"
+
+sed -i "s|src=\"\([^\"]*\.js\)\"|src=\"\1?v=${SHORT_SHA}\"|g" index.html
+sed -i "s|href=\"\([^\"]*\.css\)\"|href=\"\1?v=${SHORT_SHA}\"|g" index.html
+echo "Appended version query parameter to JS and CSS files in index.html"

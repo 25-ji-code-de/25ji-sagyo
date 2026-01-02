@@ -460,12 +460,19 @@
   }
 
   // 音频处理初始化
+  let bypassGain = null; // 直通时的增益补偿
+  
   function initAudioProcessing() {
     if (audioContext) return;
     
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       audioSource = audioContext.createMediaElementSource(video);
+      
+      // 直通增益：补偿 AudioContext 接管后的音量损失
+      bypassGain = audioContext.createGain();
+      bypassGain.gain.value = 1.5;
+      bypassGain.connect(audioContext.destination);
       
       compressor = audioContext.createDynamicsCompressor();
       compressor.threshold.value = -40;
@@ -489,12 +496,15 @@
       vocalFilter2.Q.value = 1.0;
       vocalFilter2.gain.value = -8;
       
-      audioSource.connect(compressor);
+      // 处理链路（不含 audioSource）
       compressor.connect(gainNode);
       gainNode.connect(vocalFilter1);
       vocalFilter1.connect(vocalFilter2);
       
       vocalReducer = vocalFilter2;
+      
+      // 初始化后默认直连输出（通过 bypassGain）
+      audioSource.connect(bypassGain);
     } catch (e) {
       console.error('Failed to initialize audio processing:', e);
       audioContext = null;
@@ -509,11 +519,13 @@
     
     try {
       if (isAudioProcessing) {
+        // 关闭音频处理：通过 bypassGain 直连输出
         vocalReducer.disconnect();
         audioSource.disconnect();
-        audioSource.connect(audioContext.destination);
+        audioSource.connect(bypassGain);
         isAudioProcessing = false;
       } else {
+        // 开启音频处理：接入处理链路
         audioSource.disconnect();
         audioSource.connect(compressor);
         vocalReducer.connect(audioContext.destination);

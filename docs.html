@@ -395,6 +395,38 @@
           hljs.highlightElement(block);
         });
         
+        // Intercept Markdown/text doc links and redirect through docs.html
+        const textDocPatterns = [
+          /\.md$/i,
+          /^LICENSE$/i,
+          /^README$/i,
+          /^CONTRIBUTING$/i,
+          /^CODE_OF_CONDUCT$/i,
+          /^CHANGELOG$/i,
+          /^AUTHORS$/i,
+          /^SECURITY$/i,
+          /^PRIVACY_POLICY$/i,
+          /^TERMS_OF_SERVICE$/i,
+          /^COPYRIGHT$/i
+        ];
+        
+        document.querySelectorAll('.markdown-body a').forEach((link) => {
+          const href = link.getAttribute('href');
+          if (!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('#')) {
+            return;
+          }
+          
+          const filename = href.split('/').pop();
+          const isTextDoc = textDocPatterns.some(pattern => pattern.test(filename));
+          
+          if (isTextDoc) {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              window.location.href = `?file=${encodeURIComponent(href)}`;
+            });
+          }
+        });
+        
       } catch (e) {
         contentEl.innerHTML = `
           <div class="error-container">

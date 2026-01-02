@@ -160,6 +160,10 @@
       if (newName && newName.trim() !== '') {
         localStorage.setItem('userNickname', newName.trim());
         updateHomeTab();
+        // 通知 LiveStatus 更新用户名
+        if (window.LiveStatus && window.LiveStatus.updateUsername) {
+          window.LiveStatus.updateUsername();
+        }
       }
     });
   }
@@ -372,6 +376,10 @@
 
   // 初始化版本显示
   displayVersion();
+
+  if (!localStorage.getItem('userNickname')) {
+    localStorage.setItem('userNickname', '「世界」的居民_' + [...Array(4)].map(_=>"23456789BCDFGHJKLMNPQRSTVWXY"[Math.random()*28|0]).join(''));
+  }
 
   // 导出到全局命名空间
   window.SettingsPanel = {

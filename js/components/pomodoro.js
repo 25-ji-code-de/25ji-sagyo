@@ -124,6 +124,13 @@
     if (pauseBtn) pauseBtn.disabled = false;
     savePomodoroState();
 
+    // 广播开始番茄钟
+    if (currentMode === 'work' && window.LiveStatus && window.BroadcastMessages) {
+      const username = window.LiveStatus.getCurrentUsername() || '某位用户';
+      const message = window.BroadcastMessages.generate('pomodoro_start', username);
+      window.LiveStatus.sendBroadcast(message);
+    }
+
     timer = setInterval(() => {
       remainingSeconds--;
       updateDisplay();
@@ -188,6 +195,13 @@
         // 添加专注时间（25分钟或自定义）
         const duration = parseInt(workDurationInput?.value || 25) * 60;
         window.achievementSystem.addFocusTime(duration);
+      }
+
+      // 广播完成番茄钟
+      if (window.LiveStatus && window.BroadcastMessages) {
+        const username = window.LiveStatus.getCurrentUsername() || '某位用户';
+        const message = window.BroadcastMessages.generate('pomodoro_complete', username);
+        window.LiveStatus.sendBroadcast(message);
       }
       
       if (workRounds >= maxRounds) {

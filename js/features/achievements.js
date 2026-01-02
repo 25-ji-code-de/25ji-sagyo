@@ -164,6 +164,13 @@
     userStats.unlocked_achievements.push(achievement.id);
     addActivity('achievement', `解锁成就「${achievement.title}」`);
     showNotification(`成就解锁: ${achievement.title}`, achievement.icon);
+    
+    // 广播成就解锁
+    if (window.LiveStatus && window.BroadcastMessages) {
+      const username = window.LiveStatus.getCurrentUsername() || '某位用户';
+      const message = window.BroadcastMessages.generate('achievement_unlock', username, achievement.title);
+      window.LiveStatus.sendBroadcast(message);
+    }
   }
 
   /**

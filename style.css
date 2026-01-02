@@ -76,6 +76,110 @@ video{
 #controls input[type="range"]::-webkit-slider-thumb{width:12px;height:12px;border-radius:50%;background:#fff;margin-top:-3px}
 #overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease, visibility .18s ease}
 
+/* Live Status Widget */
+.live-status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: flex-start;
+  pointer-events: auto;
+}
+
+.live-stat-item {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #fff;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+
+.live-stat-item:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.online-users .live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.stat-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  opacity: 0.8;
+  font-size: 12px;
+}
+
+.broadcast-msg {
+  max-width: 320px;
+  overflow: hidden;
+}
+
+.broadcast-icon {
+  font-size: 14px;
+}
+
+.broadcast-text-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  max-width: 240px;
+}
+
+.broadcast-text {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Auto-scrolling animation for long broadcast text */
+.broadcast-text.scrolling {
+  position: relative;
+  color: transparent; /* Hide original text */
+  --scroll-distance: 0px; /* Will be set by JS */
+}
+
+.broadcast-text.scrolling::after {
+  content: attr(data-full-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  color: #fff;
+  animation: broadcastScrollText 10s ease-in-out infinite;
+}
+
+@keyframes broadcastScrollText {
+  0%, 20% {
+    transform: translateX(0);
+  }
+  50%, 70% {
+    transform: translateX(var(--scroll-distance));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 /* HEVC warning banner - styled to blend with existing overlay and placed bottom-left */
 #hevcWarning{position:absolute;left:12px;bottom:12px;z-index:9999}
 #hevcWarning .hevc-inner{background:rgba(0,0,0,0.5);color:#fff;padding:8px 12px;border-radius:8px;display:flex;gap:10px;align-items:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;font-size:13px;border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(6px)}

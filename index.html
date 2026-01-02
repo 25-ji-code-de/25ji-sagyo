@@ -21,6 +21,21 @@
           Time (<span id="tzLabel">Local</span>): <span id="localTime">--:--:--</span>
         </div>
 
+        <!-- Live Status & Broadcast Widget -->
+        <div id="liveStatus" class="live-status-container">
+          <div class="live-stat-item online-users" title="当前在线人数">
+            <span class="live-dot"></span>
+            <span class="stat-value">--</span>
+            <span class="stat-label">在线</span>
+          </div>
+          <div class="live-stat-item broadcast-msg">
+            <span class="broadcast-icon">📢</span>
+            <div class="broadcast-text-wrapper">
+              <span class="broadcast-text">正在连接 Nightcord...</span>
+            </div>
+          </div>
+        </div>
+
         <div id="controls" role="toolbar" aria-label="Video controls">
           <button id="muteBtn" aria-pressed="true" title="Mute / Unmute">🔊</button>
           <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" />
@@ -392,8 +407,12 @@
   <script src="js/utils/storage.js"></script>
   <script src="js/utils/asset-loader.js"></script>
   
+  <!-- 数据模块 -->
+  <script src="js/data/broadcast-messages.js"></script>
+  
   <!-- 功能模块 -->
   <script src="js/features/achievements.js"></script>
+  <script src="js/features/live-status.js"></script>
   
   <!-- 组件模块 -->
   <script src="js/components/pomodoro.js"></script>

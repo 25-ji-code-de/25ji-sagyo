@@ -52,6 +52,16 @@ export function playTrack(loadTrack) {
         elements.albumCoverContainer.classList.add('playing');
       }
       
+      // 广播正在播放的歌曲
+      if (window.LiveStatus && window.BroadcastMessages && state.currentTrackIndex >= 0) {
+        const track = state.filteredMusicData[state.currentTrackIndex];
+        if (track && track.title) {
+          const username = window.LiveStatus.getCurrentUsername() || '某位用户';
+          const message = window.BroadcastMessages.generate('music_play', username, track.title);
+          window.LiveStatus.sendBroadcast(message);
+        }
+      }
+      
       // Start visualizer if enabled
       if (state.visualizationEnabled && state.analyser && !state.animationId) {
         drawVisualizer();

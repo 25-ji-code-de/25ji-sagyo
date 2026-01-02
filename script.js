@@ -2567,7 +2567,7 @@
       };
 
       // Build audio URL with R2 CDN (auto-upload on 404)
-      const audioPath = `/music/long/${selectedVocal.assetbundleName}/${selectedVocal.assetbundleName}.flac`;
+      const audioPath = `/music/long/${selectedVocal.assetbundleName}/${selectedVocal.assetbundleName}.mp3`;
 
       // Clear previous onerror handler to prevent conflicts
       cdAudioPlayer.onerror = null;

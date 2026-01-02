@@ -4012,20 +4012,163 @@
       fullSha: '__BUILD_FULL_SHA__'
     };
 
-    // Display version
-    function displayVersion() {
+    // GitHub repository info for update checking
+    const GITHUB_REPO = {
+      owner: 'bili-47177171806',
+      repo: '25ji-sagyo'
+    };
+
+    let latestCommitInfo = null;
+
+    // Display version and check for updates
+    async function displayVersion() {
       const versionEl = document.getElementById('appVersion');
       if (!versionEl) return;
       
+      // Add click handler for modal
+      versionEl.addEventListener('click', showVersionModal);
+      
+      const isDev = APP_VERSION.commit.startsWith('__');
+      
       // Check if placeholders were replaced (production) or not (dev)
-      if (APP_VERSION.commit.startsWith('__')) {
-        versionEl.textContent = 'Dev Build';
-        versionEl.title = 'Running in development mode';
+      if (isDev) {
+        versionEl.innerHTML = '<span class="version-dev">🛠️ Dev Build</span>';
+        versionEl.title = 'Click for details';
       } else {
-        versionEl.textContent = `${APP_VERSION.date} (${APP_VERSION.commit})`;
-        versionEl.title = `Full SHA: ${APP_VERSION.fullSha}`;
+        versionEl.innerHTML = `<span class="version-current">📦 ${APP_VERSION.date} (${APP_VERSION.commit})</span> <span class="version-checking">🔄 检查更新中...</span>`;
+        versionEl.title = 'Click for details';
+        
+        // Check for updates from GitHub
+        try {
+          const latestCommit = await fetchLatestCommit();
+          latestCommitInfo = latestCommit;
+          updateVersionDisplay(versionEl, latestCommit);
+        } catch (error) {
+          console.warn('Failed to check for updates:', error);
+          versionEl.innerHTML = `<span class="version-current">📦 ${APP_VERSION.date} (${APP_VERSION.commit})</span>`;
+        }
       }
     }
+
+    // Fetch latest commit info from GitHub API
+    async function fetchLatestCommit() {
+      const response = await fetch(
+        `https://api.github.com/repos/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/commits/main`,
+        {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return {
+        sha: data.sha,
+        shortSha: data.sha.substring(0, 7),
+        date: new Date(data.commit.committer.date).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).replace(/\//g, '-'),
+        message: data.commit.message.split('\n')[0] // First line only
+      };
+    }
+
+    // Update version display with update status
+    function updateVersionDisplay(versionEl, latestCommit) {
+      const isUpToDate = APP_VERSION.fullSha === latestCommit.sha || 
+                         APP_VERSION.commit === latestCommit.shortSha;
+      
+      if (isUpToDate) {
+        versionEl.innerHTML = `
+          <span class="version-current">📦 ${APP_VERSION.date} (${APP_VERSION.commit})</span>
+          <span class="version-uptodate">✅ 已是最新版本</span>
+        `;
+      } else {
+        versionEl.innerHTML = `
+          <span class="version-current">📦 当前: ${APP_VERSION.date} (${APP_VERSION.commit})</span>
+          <span class="version-update-available">
+            🆕 新版本可用: ${latestCommit.date} (${latestCommit.shortSha})
+          </span>
+        `;
+      }
+    }
+
+    // Show version details modal
+    function showVersionModal() {
+      // Remove existing modal if any
+      const existingModal = document.getElementById('versionModal');
+      if (existingModal) existingModal.remove();
+
+      const isDev = APP_VERSION.commit.startsWith('__');
+      const isUpToDate = latestCommitInfo && (APP_VERSION.fullSha === latestCommitInfo.sha || APP_VERSION.commit === latestCommitInfo.shortSha);
+      
+      const modalHtml = `
+        <div class="version-modal-overlay active" id="versionModal">
+          <div class="version-modal">
+            <div class="version-modal-header">
+              <h3 class="version-modal-title">📦 版本信息</h3>
+              <button class="version-modal-close" onclick="document.getElementById('versionModal').remove()">×</button>
+            </div>
+            
+            <div class="version-info-grid">
+              <div class="version-label">构建日期</div>
+              <div class="version-value">${isDev ? 'Development' : APP_VERSION.date}</div>
+              
+              <div class="version-label">Commit</div>
+              <div class="version-value">${isDev ? 'N/A' : APP_VERSION.commit}</div>
+              
+              <div class="version-label">Full SHA</div>
+              <div class="version-value" style="font-size: 11px;">${isDev ? 'N/A' : APP_VERSION.fullSha}</div>
+              
+              <div class="version-label">状态</div>
+              <div class="version-value">
+                ${isDev ? '<span style="color: #ffa500">开发模式</span>' : 
+                  (!latestCommitInfo ? '<span style="color: #aaa">检查中...</span>' : 
+                    (isUpToDate ? '<span style="color: #4ade80">已是最新</span>' : '<span style="color: #60a5fa">有新版本可用</span>')
+                  )
+                }
+              </div>
+            </div>
+
+            ${latestCommitInfo && !isUpToDate ? `
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div class="version-label" style="margin-bottom: 8px;">最新版本 (${latestCommitInfo.shortSha})</div>
+                <div style="font-size: 13px; color: rgba(255,255,255,0.8); background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">
+                  ${latestCommitInfo.message}
+                </div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">
+                  发布于 ${latestCommitInfo.date}
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="version-actions">
+              <button class="version-btn version-btn-secondary" onclick="document.getElementById('versionModal').remove()">关闭</button>
+              ${latestCommitInfo && !isUpToDate ? `
+                <a href="https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}" target="_blank" class="version-btn version-btn-primary">
+                  前往 GitHub 更新
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      
+      // Close on background click
+      document.getElementById('versionModal').addEventListener('click', (e) => {
+        if (e.target.id === 'versionModal') {
+          e.target.remove();
+        }
+      });
+    }
+
     displayVersion();
   })();
 

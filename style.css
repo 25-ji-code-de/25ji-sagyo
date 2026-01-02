@@ -2337,6 +2337,64 @@ video{
   font-size: 12px;
   color: rgba(255, 255, 255, 0.4);
   margin: 0;
+  display: flex;
+  flex-direction: column;
+   gap: 4px;
+  align-items: center;
+}
+
+/* Version status styles */
+.version-dev {
+  color: #ffa500;
+  font-weight: 500;
+}
+
+.version-current {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.version-checking {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.version-uptodate {
+  color: #4ade80;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.version-update-available {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #60a5fa;
+  font-size: 11px;
+  background: rgba(96, 165, 250, 0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.version-update-link {
+  color: #fff;
+  background: rgba(96, 165, 250, 0.3);
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 11px;
+  transition: background 0.2s ease;
+}
+
+.version-update-link:hover {
+  background: rgba(96, 165, 250, 0.5);
 }
 
 .about-desc {
@@ -2569,60 +2627,151 @@ video{
 
 @media (max-width: 480px) {
   #settingsPanel {
-    bottom: 50px;
-    max-height: 88vh;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
   }
-  
-  .settings-body-layout {
-    max-height: calc(88vh - 50px);
-  }
-  
-  .settings-content {
-    padding: 12px;
-  }
-  
-  .home-welcome-section h2 {
-    font-size: 20px;
-  }
-  
-  .nickname-text {
-    font-size: 15px;
-  }
-  
-  .home-stats-summary {
-    gap: 8px;
-  }
-  
-  .summary-card {
-    padding: 10px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-  
-  .summary-icon {
-    font-size: 16px;
-  }
-  
-  .summary-text {
-    font-size: 12px;
-  }
-  
-  .stat-value {
-    font-size: 24px;
-  }
-  
-  .about-logo svg {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .about-header h3 {
-    font-size: 14px;
-  }
-  
-  .legal-links-row {
-    grid-template-columns: 1fr;
-  }
+}
+
+/* Version Info Modal */
+.version-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.version-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.version-modal {
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #fff;
+}
+
+.version-modal-overlay.active .version-modal {
+  transform: translateY(0);
+}
+
+.version-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.version-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.version-modal-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.version-modal-close:hover {
+  color: #fff;
+}
+
+.version-info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 16px;
+  font-size: 14px;
+}
+
+.version-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.version-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.version-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.version-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.version-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.version-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.version-btn-primary {
+  background: #60a5fa;
+  color: #000;
+  font-weight: 500;
+}
+
+.version-btn-primary:hover {
+  background: #93c5fd;
+}
+
+/* Make the version element clickable */
+#appVersion {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  position: relative;
+  user-select: none;
+}
+
+#appVersion:hover {
+  opacity: 0.8;
 }
 

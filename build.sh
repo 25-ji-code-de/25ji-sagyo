@@ -12,6 +12,5 @@ BUILD_DATE=$(date +%Y.%m.%d)
 sed -i "s/__BUILD_VERSION__/${SHORT_SHA}/g" js/components/settings-panel.js
 sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" js/components/settings-panel.js
 sed -i "s/__BUILD_FULL_SHA__/${COMMIT_SHA}/g" js/components/settings-panel.js
-sed -i "s/__BUILD_VERSION__/${SHORT_SHA}/g" js/main.js
 
 echo "Injected version into settings-panel.js: ${BUILD_DATE} (${SHORT_SHA})"

@@ -2963,6 +2963,16 @@ video{
   font-variant-numeric: tabular-nums;
 }
 
+#chatPanel .chat-message .name {
+  font-weight: 600;
+  color: rgba(180, 130, 255, 0.9);
+}
+
+#chatPanel .chat-message .separator {
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 4px;
+}
+
 #chatPanel .chat-message.system {
   color: rgba(255, 255, 255, 0.6);
   font-style: italic;

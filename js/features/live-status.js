@@ -30,7 +30,9 @@
     liveDot: null,
     chatPanel: null,
     chatMessages: null,
-    chatCloseBtn: null
+    chatCloseBtn: null,
+    chatInput: null,
+    chatSendBtn: null
   };
 
   /**
@@ -42,6 +44,7 @@
   let rejoined = false;
   let shouldReconnect = true;
   let startTime = null;
+  let initialized = false; // 防止重复初始化
   // messageHistory 仅用于内存中暂存，主要显示在 chatMessages 中
   const MAX_HISTORY = 50;
 
@@ -56,6 +59,8 @@
     elements.chatPanel = document.getElementById('chatPanel');
     elements.chatMessages = document.getElementById('chatMessages');
     elements.chatCloseBtn = document.getElementById('chatCloseBtn');
+    elements.chatInput = document.getElementById('chatInput');
+    elements.chatSendBtn = document.getElementById('chatSendBtn');
   }
 
   /**
@@ -70,27 +75,44 @@
 
   /**
    * 添加消息到聊天面板
-   * @param {string} message 
-   * @param {boolean} isSystem 
+   * @param {string} message - 消息内容
+   * @param {string} [name] - 发送者名称（可选）
+   * @param {number} [timestamp] - 消息时间戳（可选）
+   * @param {boolean} [isSystem=false] - 是否为系统消息
    */
-  function appendChatMessage(message, isSystem = false) {
+  function appendChatMessage(message, name = null, timestamp = null, isSystem = false) {
     if (!elements.chatMessages) return;
 
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${isSystem ? 'system' : ''}`;
     
+    // 时间
     const timeSpan = document.createElement('span');
     timeSpan.className = 'time';
-    const now = new Date();
-    timeSpan.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    
-    const contentSpan = document.createElement('span');
-    contentSpan.className = 'content';
-    contentSpan.textContent = message;
+    const time = timestamp ? new Date(timestamp) : new Date();
+    timeSpan.textContent = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
     
     if (!isSystem) {
       msgDiv.appendChild(timeSpan);
+      
+      // 发送者名称
+      if (name) {
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'name';
+        nameSpan.textContent = name;
+        msgDiv.appendChild(nameSpan);
+        
+        const separator = document.createElement('span');
+        separator.className = 'separator';
+        separator.textContent = ': ';
+        msgDiv.appendChild(separator);
+      }
     }
+    
+    // 消息内容
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'content';
+    contentSpan.textContent = message;
     msgDiv.appendChild(contentSpan);
     
     elements.chatMessages.appendChild(msgDiv);
@@ -105,16 +127,18 @@
   }
 
   /**
-   * 更新广播消息显示
+   * 更新广播消息显示（只显示 message 部分）
    * @param {string} message - 广播消息
+   * @param {string} [name] - 发送者名称（用于面板显示）
+   * @param {number} [timestamp] - 时间戳（用于面板显示）
    * @param {boolean} [addToHistory=true] - 是否添加到历史记录
    */
-  function updateBroadcastMessage(message, addToHistory = true) {
+  function updateBroadcastMessage(message, name = null, timestamp = null, addToHistory = true) {
     if (!elements.broadcastText) return;
     
-    // 添加到聊天面板
+    // 添加到聊天面板（包含 name）
     if (addToHistory && message) {
-      appendChatMessage(message);
+      appendChatMessage(message, name, timestamp);
     }
     
     const el = elements.broadcastText;
@@ -180,20 +204,24 @@
       // 用户加入
       onlineUsers.add(data.joined);
       updateOnlineCount(onlineUsers.size);
-      updateBroadcastMessage(`${data.joined} 加入了 Nightcord 作业空间`);
+      updateBroadcastMessage(`${data.joined} 加入了 Nightcord 作业空间`, null, null, true);
     } else if (data.quit) {
       // 用户离开
       onlineUsers.delete(data.quit);
       updateOnlineCount(onlineUsers.size);
     } else if (data.ready) {
       // 历史消息加载完成
-      updateBroadcastMessage('已连接到 Nightcord 作业空间');
+      updateBroadcastMessage('已连接到 Nightcord 作业空间', null, null, true);
+    } else if (data.name && data.message) {
+      // 带有 name 的消息：{"name":"xxx","message":"xxx","timestamp":123}
+      // broadcast text 只显示 message，面板显示 name + message
+      updateBroadcastMessage(data.message, data.name, data.timestamp, true);
     } else if (data.message) {
-      // 广播消息
-      updateBroadcastMessage(data.message);
+      // 普通广播消息（无 name）
+      updateBroadcastMessage(data.message, null, null, true);
     } else if (data.broadcast) {
       // 服务端广播
-      updateBroadcastMessage(data.broadcast);
+      updateBroadcastMessage(data.broadcast, null, null, true);
     } else if (data.error) {
       console.warn('[LiveStatus] Server error:', data.error);
     }
@@ -372,19 +400,17 @@
   function refreshConnection() {
     if (isConnected()) {
       // 如果已连接，显示提示
-      const originalText = elements.broadcastText.textContent;
-      updateBroadcastMessage('实时连接正常', false);
+      const originalText = elements.broadcastText ? elements.broadcastText.textContent : '';
+      updateBroadcastMessage('实时连接正常', null, null, false);
       setTimeout(() => {
-        // 恢复显示原来的消息（或者最新的历史消息）
-        if (messageHistory.length > 0) {
-           updateBroadcastMessage(messageHistory[currentMessageIndex], false);
-        } else {
-           updateBroadcastMessage(originalText, false);
+        // 恢复显示原来的消息
+        if (originalText) {
+          updateBroadcastMessage(originalText, null, null, false);
         }
       }, 2000);
     } else {
       // 如果未连接，尝试重连
-      updateBroadcastMessage('正在尝试重连...', false);
+      updateBroadcastMessage('正在尝试重连...', null, null, false);
       reconnect();
     }
   }
@@ -393,6 +419,10 @@
    * 初始化模块
    */
   function init() {
+    // 防止重复初始化
+    if (initialized) return;
+    initialized = true;
+
     initElements();
     
     // 绑定点击事件
@@ -415,6 +445,36 @@
     if (elements.chatCloseBtn) {
       elements.chatCloseBtn.addEventListener('click', () => {
         if (elements.chatPanel) elements.chatPanel.classList.add('hidden');
+      });
+    }
+
+    // 绑定消息发送功能
+    if (elements.chatInput && elements.chatSendBtn) {
+      // 启用输入框和按钮
+      elements.chatInput.disabled = false;
+      elements.chatInput.placeholder = '发送消息...';
+      elements.chatSendBtn.disabled = false;
+
+      const sendChatMessage = () => {
+        const text = elements.chatInput.value.trim();
+        if (!text) return;
+        if (!isConnected()) {
+          appendChatMessage('未连接到服务器，无法发送消息', null, null, true);
+          return;
+        }
+        // 发送消息
+        const success = sendBroadcast(text);
+        if (success) {
+          elements.chatInput.value = '';
+        }
+      };
+
+      elements.chatSendBtn.addEventListener('click', sendChatMessage);
+      elements.chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChatMessage();
+        }
       });
     }
     

@@ -129,16 +129,6 @@ video{
   100% { opacity: 1; transform: scale(1); }
 }
 
-.stat-value {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-label {
-  opacity: 0.8;
-  font-size: 12px;
-}
-
 .broadcast-msg {
   max-width: 320px;
   overflow: hidden;
@@ -666,7 +656,6 @@ video{
 
 .pomodoro-settings {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 20px;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   padding: 20px 16px 16px;
@@ -944,7 +933,11 @@ video{
 }
 
 .music-item {
-  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  gap: 12px;
   margin-bottom: 6px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 8px;
@@ -1552,13 +1545,6 @@ video{
 }
 
 /* Favorite Icon in Music Item */
-.music-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  gap: 12px;
-}
 
 .music-item-content {
   flex: 1;
@@ -2046,7 +2032,7 @@ video{
 .home-welcome-section h2 {
   font-size: 28px;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -2167,7 +2153,7 @@ video{
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 14px 0;
+  margin: ;
 }
 
 .setting-row {
@@ -2232,12 +2218,12 @@ video{
 .empty-state h3 {
   font-size: 18px;
   color: #fff;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
 }
 
 .empty-state p {
   font-size: 14px;
-  margin: 0 0 24px 0;
+  margin: 0 0 24px;
   max-width: 300px;
 }
 
@@ -2274,6 +2260,7 @@ video{
 .stat-value {
   font-size: 24px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: #fff;
   margin-bottom: 4px;
 }
@@ -2443,7 +2430,7 @@ video{
 
 .about-header h3 {
   font-size: 18px;
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
 }
 
 .about-header .version {

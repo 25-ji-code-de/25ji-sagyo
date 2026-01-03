@@ -27,7 +27,10 @@
   const elements = {
     onlineCount: null,
     broadcastText: null,
-    liveDot: null
+    liveDot: null,
+    chatPanel: null,
+    chatMessages: null,
+    chatCloseBtn: null
   };
 
   /**
@@ -39,6 +42,8 @@
   let rejoined = false;
   let shouldReconnect = true;
   let startTime = null;
+  // messageHistory 仅用于内存中暂存，主要显示在 chatMessages 中
+  const MAX_HISTORY = 50;
 
   /**
    * 初始化 DOM 元素引用
@@ -47,6 +52,10 @@
     elements.onlineCount = document.querySelector('#liveStatus .stat-value');
     elements.broadcastText = document.querySelector('#liveStatus .broadcast-text');
     elements.liveDot = document.querySelector('#liveStatus .live-dot');
+    
+    elements.chatPanel = document.getElementById('chatPanel');
+    elements.chatMessages = document.getElementById('chatMessages');
+    elements.chatCloseBtn = document.getElementById('chatCloseBtn');
   }
 
   /**
@@ -60,11 +69,53 @@
   }
 
   /**
+   * 添加消息到聊天面板
+   * @param {string} message 
+   * @param {boolean} isSystem 
+   */
+  function appendChatMessage(message, isSystem = false) {
+    if (!elements.chatMessages) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${isSystem ? 'system' : ''}`;
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'time';
+    const now = new Date();
+    timeSpan.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'content';
+    contentSpan.textContent = message;
+    
+    if (!isSystem) {
+      msgDiv.appendChild(timeSpan);
+    }
+    msgDiv.appendChild(contentSpan);
+    
+    elements.chatMessages.appendChild(msgDiv);
+    
+    // 滚动到底部
+    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+    
+    // 限制消息数量
+    while (elements.chatMessages.children.length > MAX_HISTORY) {
+      elements.chatMessages.removeChild(elements.chatMessages.firstChild);
+    }
+  }
+
+  /**
    * 更新广播消息显示
    * @param {string} message - 广播消息
+   * @param {boolean} [addToHistory=true] - 是否添加到历史记录
    */
-  function updateBroadcastMessage(message) {
+  function updateBroadcastMessage(message, addToHistory = true) {
     if (!elements.broadcastText) return;
+    
+    // 添加到聊天面板
+    if (addToHistory && message) {
+      appendChatMessage(message);
+    }
     
     const el = elements.broadcastText;
     const wrapper = el.parentElement;
@@ -307,10 +358,65 @@
   }
 
   /**
+   * 切换聊天面板显示
+   */
+  function toggleChatPanel() {
+    if (elements.chatPanel) {
+      elements.chatPanel.classList.toggle('hidden');
+    }
+  }
+
+  /**
+   * 手动刷新连接状态
+   */
+  function refreshConnection() {
+    if (isConnected()) {
+      // 如果已连接，显示提示
+      const originalText = elements.broadcastText.textContent;
+      updateBroadcastMessage('实时连接正常', false);
+      setTimeout(() => {
+        // 恢复显示原来的消息（或者最新的历史消息）
+        if (messageHistory.length > 0) {
+           updateBroadcastMessage(messageHistory[currentMessageIndex], false);
+        } else {
+           updateBroadcastMessage(originalText, false);
+        }
+      }, 2000);
+    } else {
+      // 如果未连接，尝试重连
+      updateBroadcastMessage('正在尝试重连...', false);
+      reconnect();
+    }
+  }
+
+  /**
    * 初始化模块
    */
   function init() {
     initElements();
+    
+    // 绑定点击事件
+    if (elements.onlineCount) {
+      const onlineItem = elements.onlineCount.closest('.live-stat-item');
+      if (onlineItem) {
+        onlineItem.addEventListener('click', refreshConnection);
+      }
+    }
+    
+    if (elements.broadcastText) {
+       const broadcastItem = elements.broadcastText.closest('.live-stat-item');
+       if (broadcastItem) {
+         broadcastItem.addEventListener('click', toggleChatPanel);
+         broadcastItem.style.cursor = 'pointer';
+         broadcastItem.title = "点击查看消息记录";
+       }
+    }
+
+    if (elements.chatCloseBtn) {
+      elements.chatCloseBtn.addEventListener('click', () => {
+        if (elements.chatPanel) elements.chatPanel.classList.add('hidden');
+      });
+    }
     
     // 延迟初始化 WebSocket，确保页面加载完成
     if (document.readyState === 'complete') {

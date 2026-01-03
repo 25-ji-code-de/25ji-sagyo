@@ -10,6 +10,7 @@
   // DOM 元素
   const video = document.getElementById('video');
   const videoLoader = document.getElementById('videoLoader');
+  const infoEl = document.getElementById('info');
   const localTimeEl = document.getElementById('localTime');
   const tzLabelEl = document.getElementById('tzLabel');
   const muteBtn = document.getElementById('muteBtn');
@@ -461,14 +462,21 @@
   }
 
   // 时区切换
+  const toggleTimezone = () => {
+    timezoneMode = timezoneMode === 'local' ? 'tokyo' : 'local';
+    updateControlsUI();
+    showVideoLoader();
+    resyncOnce();
+    saveSettings();
+  };
+
   if (tzToggleBtn) {
-    tzToggleBtn.addEventListener('click', () => {
-      timezoneMode = timezoneMode === 'local' ? 'tokyo' : 'local';
-      updateControlsUI();
-      showVideoLoader();
-      resyncOnce();
-      saveSettings();
-    });
+    tzToggleBtn.addEventListener('click', toggleTimezone);
+  }
+
+  if (infoEl) {
+    infoEl.addEventListener('click', toggleTimezone);
+    infoEl.title = "点击切换时区 (本地 / 东京)";
   }
 
   // 音频处理初始化

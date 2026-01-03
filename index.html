@@ -128,6 +128,24 @@
         </div>
       </div>
 
+      <!-- Chat Panel -->
+      <div id="chatPanel" class="hidden side-panel">
+        <div class="panel-header">
+          <span>💬 消息记录</span>
+          <button id="chatCloseBtn" class="close-btn" title="关闭">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-message system">
+            <span class="time">--:--</span>
+            <span class="content">欢迎来到 Nightcord 作业空间。</span>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="发送消息... (暂未开放)" disabled />
+          <button id="chatSendBtn" disabled>发送</button>
+        </div>
+      </div>
+
       <!-- CD Player Panel -->
       <div id="cdPlayerPanel" class="hidden">
         <div class="cd-player-header">

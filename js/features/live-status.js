@@ -187,7 +187,9 @@
 
       ws.addEventListener('open', () => {
         console.log('[LiveStatus] Connected to server');
-        ws.send(JSON.stringify({ name: currentUsername }));
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ name: currentUsername }));
+        }
         setConnectionStatus('connected');
       });
 

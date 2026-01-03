@@ -30,6 +30,22 @@ async function initCDPlayer() {
     return;
   }
 
+  if (elements.cdAudioPlayer) {
+    try {
+      const sliderVal = elements.cdVolumeSlider && elements.cdVolumeSlider.value;
+      const parsed = sliderVal !== undefined ? parseFloat(sliderVal) : NaN;
+      if (!Number.isNaN(parsed)) {
+        elements.cdAudioPlayer.volume = Math.max(0, Math.min(1, parsed));
+      } else {
+        // Ensure existing volume is within 0..1
+        elements.cdAudioPlayer.volume = Math.max(0, Math.min(1, elements.cdAudioPlayer.volume));
+      }
+    } catch (e) {
+      // Defensive: don't let a volume sync error block initialization
+      console.warn('Failed to sync initial audio volume with slider:', e);
+    }
+  }
+
   // Initialize local music database
   await initLocalMusic();
 

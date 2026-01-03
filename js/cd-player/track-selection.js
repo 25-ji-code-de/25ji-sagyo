@@ -15,6 +15,10 @@ export function checkMusicHasPreferredCharacters(musicId) {
     return false;
   }
   
+  if (!state.musicVocalsData || !Array.isArray(state.musicVocalsData)) {
+    return false;
+  }
+  
   const matchingVocals = state.musicVocalsData.filter(v => {
     if (v.musicId !== musicId) return false;
     if (!v.characters || v.characters.length === 0) return false;
@@ -51,6 +55,11 @@ export function checkMusicHasVocalType(musicId, type) {
  * @returns {number} Next track index
  */
 export function getNextTrackIndex(currentIndex, direction, isShuffle) {
+  // Guard against undefined or empty filteredMusicData
+  if (!state.filteredMusicData || !Array.isArray(state.filteredMusicData) || state.filteredMusicData.length === 0) {
+    return 0;
+  }
+  
   let attempts = 0;
   let nextIndex = currentIndex;
   const maxAttempts = state.filteredMusicData.length;

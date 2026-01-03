@@ -17,6 +17,13 @@ import { importLocalMusic, deleteLocalMusicFromDB } from './local-music-db.js';
  * @param {Function} pauseTrack - Function to pause playback
  */
 export function filterMusicList(query = '', loadTrack, pauseTrack) {
+  // Guard against undefined musicData
+  if (!state.musicData || !Array.isArray(state.musicData)) {
+    state.filteredMusicData = [];
+    displayMusicList([], loadTrack, pauseTrack, (q) => filterMusicList(q, loadTrack, pauseTrack));
+    return;
+  }
+  
   let list = state.musicData.filter(music => {
     const hasVocal = state.musicVocalsData.some(
       vocal => vocal.musicId === music.id

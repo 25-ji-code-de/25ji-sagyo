@@ -299,10 +299,16 @@
 
         video.addEventListener('seeked', onSeeked);
         try {
-          video.currentTime = Math.max(0, offsetSeconds);
+          if (isFinite(offsetSeconds)) {
+            video.currentTime = Math.max(0, offsetSeconds);
+          }
         } catch (err) {
           setTimeout(() => {
-            try { video.currentTime = Math.max(0, offsetSeconds); } catch (e) {}
+            try { 
+              if (isFinite(offsetSeconds)) {
+                video.currentTime = Math.max(0, offsetSeconds); 
+              }
+            } catch (e) {}
           }, 300);
         }
       };
@@ -340,10 +346,16 @@
 
         video.addEventListener('seeked', onSeeked);
         try {
-          video.currentTime = Math.max(0, offsetSeconds);
+          if (isFinite(offsetSeconds)) {
+            video.currentTime = Math.max(0, offsetSeconds);
+          }
         } catch (err) {
           setTimeout(() => {
-            try { video.currentTime = Math.max(0, offsetSeconds); } catch (e) {}
+            try { 
+              if (isFinite(offsetSeconds)) {
+                video.currentTime = Math.max(0, offsetSeconds); 
+              }
+            } catch (e) {}
           }, 300);
         }
       };

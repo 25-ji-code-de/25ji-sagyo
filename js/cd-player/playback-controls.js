@@ -174,8 +174,12 @@ export function setupPlaybackControls(loadTrack) {
   // Progress bar seek
   if (elements.progressBar) {
     elements.progressBar.addEventListener('input', (e) => {
-      const seekTime = (e.target.value / 100) * elements.cdAudioPlayer.duration;
-      elements.cdAudioPlayer.currentTime = seekTime;
+      const duration = elements.cdAudioPlayer.duration;
+      if (!isFinite(duration) || duration <= 0) return;
+      const seekTime = (e.target.value / 100) * duration;
+      if (isFinite(seekTime)) {
+        elements.cdAudioPlayer.currentTime = seekTime;
+      }
     });
   }
 
@@ -240,8 +244,8 @@ export function setupAudioEvents(loadTrack, playTrackFn) {
   elements.cdAudioPlayer.addEventListener('timeupdate', () => {
     if (elements.cdAudioPlayer.duration) {
       const progress = (elements.cdAudioPlayer.currentTime / elements.cdAudioPlayer.duration) * 100;
-      elements.progressBar.value = progress;
-      elements.currentTimeEl.textContent = formatTime(elements.cdAudioPlayer.currentTime);
+      if (elements.progressBar) elements.progressBar.value = progress;
+      if (elements.currentTimeEl) elements.currentTimeEl.textContent = formatTime(elements.cdAudioPlayer.currentTime);
       
       // Update position state periodically
       if (state.isPlaying && Math.floor(elements.cdAudioPlayer.currentTime) % 5 === 0) {
@@ -252,7 +256,7 @@ export function setupAudioEvents(loadTrack, playTrackFn) {
 
   // Metadata loaded
   elements.cdAudioPlayer.addEventListener('loadedmetadata', () => {
-    elements.totalTimeEl.textContent = formatTime(elements.cdAudioPlayer.duration);
+    if (elements.totalTimeEl) elements.totalTimeEl.textContent = formatTime(elements.cdAudioPlayer.duration);
     updateMediaSessionPositionState();
   });
 
@@ -277,8 +281,8 @@ export function setupAudioEvents(loadTrack, playTrackFn) {
         } else {
           // End of playlist
           pauseTrack();
-          elements.progressBar.value = 0;
-          elements.currentTimeEl.textContent = '0:00';
+          if (elements.progressBar) elements.progressBar.value = 0;
+          if (elements.currentTimeEl) elements.currentTimeEl.textContent = '0:00';
         }
       }
     }

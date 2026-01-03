@@ -78,8 +78,8 @@ export async function loadTrack(index, vocalId = null, playTrack = null) {
     if (items[index]) items[index].classList.add('active');
 
     saveSettings();
-    elements.progressBar.value = 0;
-    elements.currentTimeEl.textContent = '0:00';
+    if (elements.progressBar) elements.progressBar.value = 0;
+    if (elements.currentTimeEl) elements.currentTimeEl.textContent = '0:00';
 
     // Update Media Session
     const placeholderCover = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp');
@@ -235,10 +235,12 @@ export async function loadTrack(index, vocalId = null, playTrack = null) {
 
   // Skip filler at beginning
   const fillerSec = music.fillerSec || 0;
-  if (fillerSec > 0) {
+  if (fillerSec > 0 && isFinite(fillerSec)) {
     elements.cdAudioPlayer.addEventListener('loadedmetadata', function setStartTime() {
       elements.cdAudioPlayer.removeEventListener('loadedmetadata', setStartTime);
-      elements.cdAudioPlayer.currentTime = fillerSec;
+      if (isFinite(fillerSec)) {
+        elements.cdAudioPlayer.currentTime = fillerSec;
+      }
     });
   }
 
@@ -250,8 +252,8 @@ export async function loadTrack(index, vocalId = null, playTrack = null) {
   });
 
   saveSettings();
-  elements.progressBar.value = 0;
-  elements.currentTimeEl.textContent = '0:00';
+  if (elements.progressBar) elements.progressBar.value = 0;
+  if (elements.currentTimeEl) elements.currentTimeEl.textContent = '0:00';
 
   // Update Media Session
   updateMediaSession(music, selectedVocal, coverUrl);

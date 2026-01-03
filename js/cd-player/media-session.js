@@ -121,24 +121,30 @@ export function setupMediaSessionHandlers(playTrack, pauseTrack, loadTrack, getN
   });
 
   navigator.mediaSession.setActionHandler('seekto', (details) => {
+    const seekTime = details.seekTime;
+    if (!isFinite(seekTime)) return;
     if (details.fastSeek && 'fastSeek' in elements.cdAudioPlayer) {
-      elements.cdAudioPlayer.fastSeek(details.seekTime);
+      elements.cdAudioPlayer.fastSeek(seekTime);
     } else {
-      elements.cdAudioPlayer.currentTime = details.seekTime;
+      elements.cdAudioPlayer.currentTime = seekTime;
     }
   });
 
   navigator.mediaSession.setActionHandler('seekbackward', (details) => {
     const skipTime = details.seekOffset || 10;
-    elements.cdAudioPlayer.currentTime = Math.max(elements.cdAudioPlayer.currentTime - skipTime, 0);
+    const currentTime = elements.cdAudioPlayer.currentTime;
+    if (isFinite(currentTime)) {
+      elements.cdAudioPlayer.currentTime = Math.max(currentTime - skipTime, 0);
+    }
   });
 
   navigator.mediaSession.setActionHandler('seekforward', (details) => {
     const skipTime = details.seekOffset || 10;
-    elements.cdAudioPlayer.currentTime = Math.min(
-      elements.cdAudioPlayer.currentTime + skipTime,
-      elements.cdAudioPlayer.duration || 0
-    );
+    const currentTime = elements.cdAudioPlayer.currentTime;
+    const duration = elements.cdAudioPlayer.duration || 0;
+    if (isFinite(currentTime) && isFinite(duration)) {
+      elements.cdAudioPlayer.currentTime = Math.min(currentTime + skipTime, duration);
+    }
   });
 }
 

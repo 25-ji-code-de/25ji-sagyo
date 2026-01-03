@@ -135,8 +135,7 @@
       onlineUsers.delete(data.quit);
       updateOnlineCount(onlineUsers.size);
     } else if (data.ready) {
-      // 连接就绪，初始化用户列表
-      // updateOnlineCount(data.ready);
+      // 历史消息加载完成
       updateBroadcastMessage('已连接到 Nightcord 作业空间');
     } else if (data.message) {
       // 广播消息

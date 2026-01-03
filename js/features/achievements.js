@@ -262,7 +262,7 @@
     });
 
     // 更新统计 UI
-    const statValues = document.querySelectorAll('.stat-value');
+    const statValues = document.querySelectorAll('#tab-stats .stat-value');
     if (statValues.length >= 3) {
       // 检查 today_date 是否是当天，如果不是则重置 today_time
       const today = new Date().toDateString();

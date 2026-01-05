@@ -179,8 +179,8 @@
 
   // 铃声文件路径
   const ALARM_SOUNDS = {
-    work: 'sounds/Daybreak.m4a',    // 专注结束
-    break: 'sounds/Radar.m4a'       // 休息结束
+    work: 'sounds/Daybreak.mp3',    // 专注结束
+    break: 'sounds/Radar.mp3'       // 休息结束
   };
 
   function playAlarmSound(mode) {

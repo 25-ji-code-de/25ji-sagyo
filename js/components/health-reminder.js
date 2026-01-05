@@ -201,7 +201,7 @@
     stopAlarmSound();
 
     try {
-      const soundFile = 'sounds/Radar.m4a';
+      const soundFile = 'sounds/Radar.mp3';
       alarmAudio = new Audio(soundFile);
       alarmAudio.volume = 0.7;
 

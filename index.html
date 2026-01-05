@@ -256,6 +256,9 @@
             <button class="sidebar-btn active" data-tab="home">
               <span class="icon">🏠</span> <span class="label">首页</span>
             </button>
+            <button class="sidebar-btn" data-tab="settings">
+              <span class="icon">⚙️</span> <span class="label">设置</span>
+            </button>
             <button class="sidebar-btn" data-tab="sync">
               <span class="icon">☁️</span> <span class="label">数据同步</span>
             </button>
@@ -299,6 +302,46 @@
                   <span>每日贴士</span>
                 </div>
                 <p id="randomTipText" class="tips-content">休息也是工作的一部分哦。</p>
+              </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="tab-settings">
+              <div class="settings-section">
+                <h3>健康提醒</h3>
+                <div class="setting-item">
+                  <div class="setting-label">
+                    <span>久坐提醒</span>
+                    <span class="setting-desc">定时提醒起来活动一下</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="sedentaryEnabled" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <div class="setting-item" id="sedentaryIntervalContainer">
+                  <div class="setting-label">
+                    <span>提醒间隔 (分钟)</span>
+                  </div>
+                  <input type="number" id="sedentaryInterval" class="setting-input" min="15" max="180" step="5" value="60">
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-label">
+                    <span>喝水提醒</span>
+                    <span class="setting-desc">定时提醒补充水分</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="hydrationEnabled" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <div class="setting-item" id="hydrationIntervalContainer">
+                  <div class="setting-label">
+                    <span>提醒间隔 (分钟)</span>
+                  </div>
+                  <input type="number" id="hydrationInterval" class="setting-input" min="15" max="180" step="5" value="45">
+                </div>
               </div>
             </div>
 
@@ -438,6 +481,7 @@
   <script src="js/components/pomodoro.js"></script>
   <script src="js/components/world-clock.js"></script>
   <script src="js/components/settings-panel.js"></script>
+  <script src="js/components/health-reminder.js"></script>
   
   <!-- CD 播放器模块 -->
   <script type="module" src="js/cd-player/index.js"></script>

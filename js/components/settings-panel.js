@@ -375,8 +375,67 @@
     }
   }
 
+  // --- Health Reminder Elements ---
+  const sedentaryEnabled = document.getElementById('sedentaryEnabled');
+  const sedentaryInterval = document.getElementById('sedentaryInterval');
+  const hydrationEnabled = document.getElementById('hydrationEnabled');
+  const hydrationInterval = document.getElementById('hydrationInterval');
+
+  /**
+   * 初始化健康提醒设置
+   */
+  function initHealthSettings() {
+    if (!window.healthReminderSystem) return;
+
+    const config = window.healthReminderSystem.getConfig();
+
+    // 久坐提醒
+    if (sedentaryEnabled) {
+      sedentaryEnabled.checked = config.sedentary.enabled;
+      sedentaryEnabled.addEventListener('change', (e) => {
+        window.healthReminderSystem.updateConfig({
+          sedentary: { ...config.sedentary, enabled: e.target.checked }
+        });
+      });
+    }
+
+    if (sedentaryInterval) {
+      sedentaryInterval.value = config.sedentary.interval;
+      sedentaryInterval.addEventListener('change', (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (val < 15) val = 15;
+        window.healthReminderSystem.updateConfig({
+          sedentary: { ...config.sedentary, interval: val }
+        });
+      });
+    }
+
+    // 喝水提醒
+    if (hydrationEnabled) {
+      hydrationEnabled.checked = config.hydration.enabled;
+      hydrationEnabled.addEventListener('change', (e) => {
+        window.healthReminderSystem.updateConfig({
+          hydration: { ...config.hydration, enabled: e.target.checked }
+        });
+      });
+    }
+
+    if (hydrationInterval) {
+      hydrationInterval.value = config.hydration.interval;
+      hydrationInterval.addEventListener('change', (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (val < 15) val = 15;
+        window.healthReminderSystem.updateConfig({
+          hydration: { ...config.hydration, interval: val }
+        });
+      });
+    }
+  }
+
   // 初始化版本显示
   displayVersion();
+  // 初始化健康设置
+  initHealthSettings();
 
   if (!localStorage.getItem('userNickname')) {
     localStorage.setItem('userNickname', '「世界」的居民_' + [...Array(4)].map(_=>"23456789BCDFGHJKLMNPQRSTVWXY"[Math.random()*28|0]).join(''));

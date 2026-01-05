@@ -174,58 +174,50 @@
   /**
    * 播放番茄钟提示音
    */
+  let alarmAudio = null;
   let alarmInterval = null;
 
-  function playAlarmSound() {
+  // 铃声文件路径
+  const ALARM_SOUNDS = {
+    work: 'sounds/Daybreak.m4a',    // 专注结束
+    break: 'sounds/Radar.m4a'       // 休息结束
+  };
+
+  function playAlarmSound(mode) {
     // 停止之前的铃声（如果有）
     stopAlarmSound();
 
-    // 使用 Web Audio API 生成铃声
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const audioCtx = new AudioContext();
+      // 根据模式选择铃声：work 模式结束播放 Daybreak，休息模式结束播放 Radar
+      const soundFile = mode === 'work' ? ALARM_SOUNDS.work : ALARM_SOUNDS.break;
+      alarmAudio = new Audio(soundFile);
+      alarmAudio.volume = 0.7;
 
-      function playBeep() {
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+      // 播放铃声
+      alarmAudio.play().catch(e => console.warn('Audio playback error:', e));
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+      // 音频结束后重复播放，直到用户交互
+      alarmAudio.addEventListener('ended', function repeatPlay() {
+        if (alarmAudio && alarmInterval !== null) {
+          alarmAudio.currentTime = 0;
+          alarmAudio.play().catch(e => console.warn('Audio replay error:', e));
+        }
+      });
 
-        oscillator.frequency.value = 880; // A5 音符
-        oscillator.type = 'sine';
-
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-
-        oscillator.start(audioCtx.currentTime);
-        oscillator.stop(audioCtx.currentTime + 0.5);
-      }
-
-      // 播放三次短促的铃声
-      playBeep();
-      setTimeout(playBeep, 200);
-      setTimeout(playBeep, 400);
-
-      // 每隔3秒重复播放，直到用户交互
-      alarmInterval = setInterval(() => {
-        playBeep();
-        setTimeout(playBeep, 200);
-        setTimeout(playBeep, 400);
-      }, 3000);
-
-      // 30秒后自动停止
-      setTimeout(stopAlarmSound, 30000);
+      // 设置重复播放标记
+      alarmInterval = true;
     } catch (e) {
       console.warn('Audio playback error:', e);
     }
   }
 
   function stopAlarmSound() {
-    if (alarmInterval) {
-      clearInterval(alarmInterval);
-      alarmInterval = null;
+    if (alarmAudio) {
+      alarmAudio.pause();
+      alarmAudio.currentTime = 0;
+      alarmAudio = null;
     }
+    alarmInterval = null;
   }
 
   /**
@@ -292,22 +284,14 @@
 
     // 触发动画
     requestAnimationFrame(() => toast.classList.add('show'));
-
-    // 如果不点击，30秒后自动关闭
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 500);
-      }
-    }, 30000);
   }
 
   /**
    * 计时器完成处理
    */
   function handleTimerComplete() {
-    // 播放铃声提示
-    playAlarmSound();
+    // 播放铃声提示（根据当前模式选择不同铃声）
+    playAlarmSound(currentMode);
 
     // 显示应用内 toast 通知
     const title = currentMode === 'work' ? '工作完成!' : '休息结束!';

@@ -172,14 +172,152 @@
   }
 
   /**
+   * 播放番茄钟提示音
+   */
+  let alarmInterval = null;
+
+  function playAlarmSound() {
+    // 停止之前的铃声（如果有）
+    stopAlarmSound();
+
+    // 使用 Web Audio API 生成铃声
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext();
+
+      function playBeep() {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.frequency.value = 880; // A5 音符
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+      }
+
+      // 播放三次短促的铃声
+      playBeep();
+      setTimeout(playBeep, 200);
+      setTimeout(playBeep, 400);
+
+      // 每隔3秒重复播放，直到用户交互
+      alarmInterval = setInterval(() => {
+        playBeep();
+        setTimeout(playBeep, 200);
+        setTimeout(playBeep, 400);
+      }, 3000);
+
+      // 30秒后自动停止
+      setTimeout(stopAlarmSound, 30000);
+    } catch (e) {
+      console.warn('Audio playback error:', e);
+    }
+  }
+
+  function stopAlarmSound() {
+    if (alarmInterval) {
+      clearInterval(alarmInterval);
+      alarmInterval = null;
+    }
+  }
+
+  /**
+   * 显示番茄钟完成的应用内通知（toast）
+   */
+  function showPomodoroToast(text, icon) {
+    const toast = document.createElement('div');
+    toast.className = 'pomodoro-toast';
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span><button class="toast-dismiss">确定</button>`;
+    document.body.appendChild(toast);
+
+    // 动态添加样式（如果不存在）
+    if (!document.getElementById('pomodoro-toast-style')) {
+      const style = document.createElement('style');
+      style.id = 'pomodoro-toast-style';
+      style.textContent = `
+        .pomodoro-toast {
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%) translateY(-100px);
+          background: rgba(30, 30, 45, 0.95);
+          color: #fff;
+          padding: 16px 24px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          z-index: 2100;
+          transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          border: 2px solid rgba(255,107,107,0.5);
+          backdrop-filter: blur(10px);
+        }
+        .pomodoro-toast.show {
+          transform: translateX(-50%) translateY(0);
+        }
+        .pomodoro-toast .toast-icon { font-size: 28px; }
+        .pomodoro-toast .toast-text { font-size: 16px; font-weight: 600; }
+        .pomodoro-toast .toast-dismiss {
+          background: rgba(255,255,255,0.15);
+          border: none;
+          color: #fff;
+          padding: 6px 14px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 13px;
+          margin-left: 8px;
+          transition: background 0.2s;
+        }
+        .pomodoro-toast .toast-dismiss:hover {
+          background: rgba(255,255,255,0.25);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 点击确定按钮时停止铃声并关闭通知
+    toast.querySelector('.toast-dismiss').addEventListener('click', () => {
+      stopAlarmSound();
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 500);
+    });
+
+    // 触发动画
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    // 如果不点击，30秒后自动关闭
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+      }
+    }, 30000);
+  }
+
+  /**
    * 计时器完成处理
    */
   function handleTimerComplete() {
-    // 播放通知声音（浏览器通知）
+    // 播放铃声提示
+    playAlarmSound();
+
+    // 显示应用内 toast 通知
+    const title = currentMode === 'work' ? '工作完成!' : '休息结束!';
+    const body = currentMode === 'work' ? '该休息一下了 ☕' : '开始下一个番茄钟 🍅';
+    const icon = currentMode === 'work' ? '🍅' : '⏰';
+    showPomodoroToast(`${title} ${body}`, icon);
+
+    // 同时尝试浏览器通知（作为备用）
     try {
       if ('Notification' in window && Notification.permission === 'granted') {
-        const title = currentMode === 'work' ? '工作完成!' : '休息结束!';
-        const body = currentMode === 'work' ? '该休息一下了 ☕' : '开始下一个番茄钟 🍅';
         new Notification(title, { body, icon: '🍅' });
       }
     } catch (e) {

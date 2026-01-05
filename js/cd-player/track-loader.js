@@ -11,6 +11,7 @@ import {
   updateMediaSessionLocal 
 } from './media-session.js';
 import { extractColorsFromCover } from './visualizer.js';
+import { isSpecialSong } from './category.js';
 
 // R2 CDN base URL
 const R2_BASE = window.AssetLoader ? window.AssetLoader.R2_BASE : 'https://assets.nightcord.de5.net';
@@ -39,6 +40,14 @@ export async function loadTrack(index, vocalId = null, playTrack = null) {
   state.currentTrackIndex = index;
   const music = state.filteredMusicData[index];
   state.currentMusicId = music.id;
+
+  // Force loop for special songs (STUDY series)
+  if (isSpecialSong(music.id)) {
+    elements.cdAudioPlayer.loop = true;
+    if (elements.repeatBtn) {
+      elements.repeatBtn.classList.add('active');
+    }
+  }
 
   // Show loading spinner
   if (elements.trackLoadingSpinner) {

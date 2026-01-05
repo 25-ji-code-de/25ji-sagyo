@@ -63,6 +63,63 @@ export async function loadMusicData() {
     }
   });
 
+  // Add special songs (STUDY WITH MIKU series)
+  const specialSongs = [
+    {
+      id: 9001,
+      title: "STUDY WITH MIKU - part SEKAI -",
+      pronunciation: "すたでぃうぃずみく",
+      titleZhCN: "与初音未来一起学习",
+      composer: "初音ミク × Project SEKAI",
+      lyricist: "-",
+      assetbundleName: "swm_part_sekai",
+      fillerSec: 0,
+      vocals: [
+        {
+          id: 900101,
+          type: "instrumental",
+          caption: "Inst.ver.",
+          assetbundleName: "swm_part_sekai",
+          characters: []
+        }
+      ]
+    },
+    {
+      id: 9002,
+      title: "STUDY IN SEKAI",
+      pronunciation: "すたでぃいんせかい",
+      titleZhCN: "STUDY IN SEKAI",
+      composer: "Project SEKAI Official",
+      lyricist: "-",
+      assetbundleName: "study_in_sekai",
+      fillerSec: 0,
+      vocals: [
+        {
+          id: 900201,
+          type: "sekai",
+          caption: "セカイver.",
+          assetbundleName: "study_in_sekai",
+          characters: []
+        }
+      ]
+    }
+  ];
+
+  // Add special songs to musicData
+  state.musicData.push(...specialSongs);
+
+  // Add special songs vocals to musicVocalsData
+  specialSongs.forEach(music => {
+    music.vocals.forEach(vocal => {
+      state.musicVocalsData.push({
+        ...vocal,
+        musicId: music.id,
+        musicVocalType: vocal.type,
+        characters: []
+      });
+    });
+  });
+
   // Build Chinese title mapping
   state.musicTitlesZhCN = {};
   state.musicData.forEach(music => {

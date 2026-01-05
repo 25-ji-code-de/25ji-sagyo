@@ -5,12 +5,29 @@
 
 import { state } from './constants.js';
 
+// Special song IDs (STUDY WITH MIKU series)
+const SPECIAL_SONG_IDS = new Set([9001, 9002]);
+
+/**
+ * Check if a music is a special song (always loops)
+ * @param {number} musicId - Music ID
+ * @returns {boolean} True if special song
+ */
+export function isSpecialSong(musicId) {
+  return SPECIAL_SONG_IDS.has(musicId);
+}
+
 /**
  * Get the category of a music based on its vocals
  * @param {Object} music - Music object
  * @returns {string} Category name
  */
 export function getMusicCategory(music) {
+  // 0. Check for special songs first
+  if (SPECIAL_SONG_IDS.has(music.id)) {
+    return 'special';
+  }
+
   // 1. Check for Sekai Unit (Human vocals)
   const sekaiVocal = state.musicVocalsData.find(
     v => v.musicId === music.id && v.musicVocalType === 'sekai'

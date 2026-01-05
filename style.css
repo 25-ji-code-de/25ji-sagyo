@@ -1628,6 +1628,13 @@ video{
   background: rgba(136, 68, 153, 0.2);
 }
 
+.category-btn[data-category="special"].active,
+.category-btn[data-category="special"]:hover {
+  border-color: #39C5BB;
+  background: rgba(57, 197, 187, 0.2);
+  color: #39C5BB;
+}
+
 .category-btn[data-category="playlists"].active,
 .category-btn[data-category="playlists"]:hover {
   border-color: #ffd700;

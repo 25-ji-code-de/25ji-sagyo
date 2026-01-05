@@ -3127,7 +3127,7 @@ video{
   }
 }
 
-.setting-item {
+.settings-content .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3135,7 +3135,7 @@ video{
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.setting-item:last-child {
+.settings-content .setting-item:last-child {
   border-bottom: none;
 }
 

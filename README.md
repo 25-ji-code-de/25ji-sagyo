@@ -94,13 +94,13 @@
   - `localStorage`: 持久化用户偏好（音量、播放列表设置）。
   - `sessionStorage`: 保持番茄钟运行状态。
 
-## � 法律文档
+## ⚖️ 法律文档
 
 - [版权声明](./COPYRIGHT.md)
 - [隐私政策](./PRIVACY_POLICY.md)
 - [用户服务协议](./TERMS_OF_SERVICE.md)
 
-## �📝 License
+## 📝 License
 
 MIT License
 

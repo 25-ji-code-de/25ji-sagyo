@@ -35,12 +35,13 @@
 
     // 暴露给全局，以便设置面板调用
     window.healthReminderSystem = {
-      getConfig: () => ({ ...config }),
+      getConfig: () => ({
+        sedentary: { ...config.sedentary },
+        hydration: { ...config.hydration }
+      }),
       updateConfig: updateConfig,
       resetTimers: resetTimers
     };
-
-    console.log('Health Reminder System initialized');
   }
 
   /**
@@ -74,7 +75,13 @@
    * @param {Object} newConfig 
    */
   function updateConfig(newConfig) {
-    config = { ...config, ...newConfig };
+    // 深层合并配置
+    if (newConfig.sedentary) {
+      config.sedentary = { ...config.sedentary, ...newConfig.sedentary };
+    }
+    if (newConfig.hydration) {
+      config.hydration = { ...config.hydration, ...newConfig.hydration };
+    }
     saveConfig();
     resetTimers();
   }

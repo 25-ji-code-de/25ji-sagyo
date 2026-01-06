@@ -393,8 +393,9 @@
     if (sedentaryEnabled) {
       sedentaryEnabled.checked = config.sedentary.enabled;
       sedentaryEnabled.addEventListener('change', (e) => {
+        const currentConfig = window.healthReminderSystem.getConfig();
         window.healthReminderSystem.updateConfig({
-          sedentary: { ...config.sedentary, enabled: e.target.checked }
+          sedentary: { ...currentConfig.sedentary, enabled: e.target.checked }
         });
       });
     }
@@ -404,8 +405,9 @@
       sedentaryInterval.addEventListener('change', (e) => {
         let val = parseInt(e.target.value, 10);
         if (val < 15) val = 15;
+        const currentConfig = window.healthReminderSystem.getConfig();
         window.healthReminderSystem.updateConfig({
-          sedentary: { ...config.sedentary, interval: val }
+          sedentary: { ...currentConfig.sedentary, interval: val }
         });
       });
     }
@@ -414,8 +416,9 @@
     if (hydrationEnabled) {
       hydrationEnabled.checked = config.hydration.enabled;
       hydrationEnabled.addEventListener('change', (e) => {
+        const currentConfig = window.healthReminderSystem.getConfig();
         window.healthReminderSystem.updateConfig({
-          hydration: { ...config.hydration, enabled: e.target.checked }
+          hydration: { ...currentConfig.hydration, enabled: e.target.checked }
         });
       });
     }
@@ -425,8 +428,9 @@
       hydrationInterval.addEventListener('change', (e) => {
         let val = parseInt(e.target.value, 10);
         if (val < 15) val = 15;
+        const currentConfig = window.healthReminderSystem.getConfig();
         window.healthReminderSystem.updateConfig({
-          hydration: { ...config.hydration, interval: val }
+          hydration: { ...currentConfig.hydration, interval: val }
         });
       });
     }
@@ -434,8 +438,13 @@
 
   // 初始化版本显示
   displayVersion();
-  // 初始化健康设置
-  initHealthSettings();
+  // 初始化健康设置 - 延迟执行以确保 healthReminderSystem 已初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHealthSettings);
+  } else {
+    // DOM 已加载，但 healthReminderSystem 可能仍在初始化中，稍微延迟
+    setTimeout(initHealthSettings, 0);
+  }
 
   if (!localStorage.getItem('userNickname')) {
     localStorage.setItem('userNickname', '「世界」的居民_' + [...Array(4)].map(_=>"23456789BCDFGHJKLMNPQRSTVWXY"[Math.random()*28|0]).join(''));

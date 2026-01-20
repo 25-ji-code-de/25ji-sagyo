@@ -407,7 +407,8 @@
     if (isConnected()) {
       // 如果已连接，显示提示
       const originalText = elements.broadcastText ? elements.broadcastText.textContent : '';
-      updateBroadcastMessage('实时连接正常', null, null, false);
+      const statusOkMsg = window.I18n?.t('broadcast.status_ok') || '实时连接正常';
+      updateBroadcastMessage(statusOkMsg, null, null, false);
       setTimeout(() => {
         // 恢复显示原来的消息
         if (originalText) {
@@ -416,7 +417,8 @@
       }, 2000);
     } else {
       // 如果未连接，尝试重连
-      updateBroadcastMessage('正在尝试重连...', null, null, false);
+      const reconnectingMsg = window.I18n?.t('broadcast.reconnecting') || '正在尝试重连...';
+      updateBroadcastMessage(reconnectingMsg, null, null, false);
       reconnect();
     }
   }
@@ -444,7 +446,7 @@
        if (broadcastItem) {
          broadcastItem.addEventListener('click', toggleChatPanel);
          broadcastItem.style.cursor = 'pointer';
-         broadcastItem.title = "点击查看消息记录";
+         broadcastItem.title = window.I18n?.t('broadcast.click_to_view') || "点击查看消息记录";
        }
     }
 
@@ -458,14 +460,15 @@
     if (elements.chatInput && elements.chatSendBtn) {
       // 启用输入框和按钮
       elements.chatInput.disabled = false;
-      elements.chatInput.placeholder = '发送消息...';
+      elements.chatInput.placeholder = window.I18n?.t('broadcast.send_placeholder') || '发送消息...';
       elements.chatSendBtn.disabled = false;
 
       const sendChatMessage = () => {
         const text = elements.chatInput.value.trim();
         if (!text) return;
         if (!isConnected()) {
-          appendChatMessage('未连接到服务器，无法发送消息', null, null, true);
+          const offlineMsg = window.I18n?.t('broadcast.not_connected') || '未连接到服务器，无法发送消息';
+          appendChatMessage(offlineMsg, null, null, true);
           return;
         }
         // 发送消息

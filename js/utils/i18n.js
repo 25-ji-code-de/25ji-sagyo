@@ -82,6 +82,8 @@
      * Apply translations to DOM elements with data-i18n attributes
      */
     applyTranslations() {
+      document.title = this.t('app.title');
+      
       // Text content
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');

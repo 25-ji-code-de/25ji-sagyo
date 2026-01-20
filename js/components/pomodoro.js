@@ -102,13 +102,13 @@
     // 更新状态文本
     if (pomodoroStatus) {
       if (currentMode === 'work') {
-        pomodoroStatus.textContent = '工作时间 🎯';
+        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.work') || '工作时间 🎯';
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#ff6b6b';
       } else if (currentMode === 'short-break') {
-        pomodoroStatus.textContent = '短休息 ☕';
+        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.short_break') || '短休息 ☕';
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#51cf66';
       } else if (currentMode === 'long-break') {
-        pomodoroStatus.textContent = '长休息 🌟';
+        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.long_break') || '长休息 🌟';
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#339af0';
       }
     }
@@ -226,7 +226,8 @@
   function showPomodoroToast(text, icon) {
     const toast = document.createElement('div');
     toast.className = 'pomodoro-toast';
-    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span><button class="toast-dismiss">确定</button>`;
+    const dismissText = window.I18n?.t('pomodoro.toast.dismiss') || '确定';
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span><button class="toast-dismiss">${dismissText}</button>`;
     document.body.appendChild(toast);
 
     // 动态添加样式（如果不存在）
@@ -294,9 +295,14 @@
     playAlarmSound(currentMode);
 
     // 显示应用内 toast 通知
-    const title = currentMode === 'work' ? '工作完成!' : '休息结束!';
-    const body = currentMode === 'work' ? '该休息一下了 ☕' : '开始下一个番茄钟 🍅';
-    const icon = currentMode === 'work' ? '🍅' : '⏰';
+    const isWork = currentMode === 'work';
+    const title = isWork
+      ? (window.I18n?.t('pomodoro.notifications.work_complete.title') || '工作完成!')
+      : (window.I18n?.t('pomodoro.notifications.break_complete.title') || '休息结束!');
+    const body = isWork
+      ? (window.I18n?.t('pomodoro.notifications.work_complete.body') || '该休息一下了 ☕')
+      : (window.I18n?.t('pomodoro.notifications.break_complete.body') || '开始下一个番茄钟 🍅');
+    const icon = isWork ? '🍅' : '⏰';
     showPomodoroToast(`${title} ${body}`, icon);
 
     // 同时尝试浏览器通知（作为备用）
@@ -420,6 +426,11 @@
   // 初始化显示并加载保存的状态
   updateDisplay();
   loadPomodoroState();
+
+  // 监听语言变化事件
+  window.addEventListener('languagechange', () => {
+    updateDisplay();
+  });
 
   // 导出到全局命名空间（如果需要外部访问）
   window.PomodoroTimer = {

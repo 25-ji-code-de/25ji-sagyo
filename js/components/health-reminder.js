@@ -18,6 +18,22 @@
     }
   };
 
+  /**
+   * 获取翻译后的消息
+   */
+  function getTranslatedMessage(type) {
+    const key = `health_reminder.${type}.message`;
+    return window.I18n?.t(key) || DEFAULT_CONFIG[type].message;
+  }
+
+  /**
+   * 获取翻译后的标题
+   */
+  function getTranslatedTitle(type) {
+    const key = `health_reminder.${type}.title`;
+    return window.I18n?.t(key) || (type === 'sedentary' ? '久坐提醒' : '喝水提醒');
+  }
+
   // 状态
   let config = { ...DEFAULT_CONFIG };
   let sedentaryTimer = null;
@@ -123,7 +139,8 @@
     const elapsed = (now - lastSedentaryReminder) / 1000 / 60; // 分钟
 
     if (elapsed >= config.sedentary.interval) {
-      showToast(config.sedentary.message, 'sedentary');
+      const message = getTranslatedMessage('sedentary');
+      showToast(message, 'sedentary');
       lastSedentaryReminder = now;
     }
   }
@@ -138,7 +155,8 @@
     const elapsed = (now - lastHydrationReminder) / 1000 / 60; // 分钟
 
     if (elapsed >= config.hydration.interval) {
-      showToast(config.hydration.message, 'hydration');
+      const message = getTranslatedMessage('hydration');
+      showToast(message, 'hydration');
       lastHydrationReminder = now;
     }
   }
@@ -156,7 +174,7 @@
 
   /**
    * 显示 Toast 通知
-   * @param {string} message 
+   * @param {string} message
    * @param {string} type 'sedentary' | 'hydration'
    */
   function showToast(message, type) {
@@ -167,11 +185,12 @@
     toast.className = `health-toast ${type}`;
 
     const icon = type === 'sedentary' ? '🧘' : '💧';
+    const title = getTranslatedTitle(type);
 
     toast.innerHTML = `
       <div class="toast-icon">${icon}</div>
       <div class="toast-content">
-        <div class="toast-title">${type === 'sedentary' ? '久坐提醒' : '喝水提醒'}</div>
+        <div class="toast-title">${title}</div>
         <div class="toast-message">${message}</div>
       </div>
       <button class="toast-close">×</button>

@@ -204,14 +204,16 @@
       // 用户加入
       onlineUsers.add(data.joined);
       updateOnlineCount(onlineUsers.size);
-      updateBroadcastMessage(`${data.joined} 加入了 Nightcord 作业空间`, null, null, true);
+      const message = window.I18n?.t('broadcast.user_joined', { username: data.joined }) || `${data.joined} 加入了 Nightcord 作业空间`;
+      updateBroadcastMessage(message, null, null, true);
     } else if (data.quit) {
       // 用户离开
       onlineUsers.delete(data.quit);
       updateOnlineCount(onlineUsers.size);
     } else if (data.ready) {
       // 历史消息加载完成
-      updateBroadcastMessage('已连接到 Nightcord 作业空间', null, null, true);
+      const message = window.I18n?.t('broadcast.connected') || '已连接到 Nightcord 作业空间';
+      updateBroadcastMessage(message, null, null, true);
     } else if (data.name && data.message) {
       // 带有 name 的消息：{"name":"xxx","message":"xxx","timestamp":123}
       // broadcast text 只显示 message，面板显示 name + message
@@ -252,13 +254,14 @@
   function connect() {
     // 每次连接时重新获取用户名（可能已更新）
     currentUsername = CONFIG.getUsername();
-    
+
     rejoined = false;
     shouldReconnect = true;
     startTime = Date.now();
-    
+
     setConnectionStatus('connecting');
-    updateBroadcastMessage('正在连接 Nightcord...');
+    const connectingMsg = window.I18n?.t('broadcast.connecting') || '正在连接 Nightcord...';
+    updateBroadcastMessage(connectingMsg);
 
     try {
       const url = `wss://${CONFIG.hostname}/api/room/${CONFIG.roomname}/websocket`;
@@ -284,7 +287,8 @@
       ws.addEventListener('close', (event) => {
         console.log('[LiveStatus] Disconnected:', event.code, event.reason);
         setConnectionStatus('disconnected');
-        updateBroadcastMessage('连接已断开，正在重连...');
+        const disconnectedMsg = window.I18n?.t('broadcast.disconnected') || '连接已断开，正在重连...';
+        updateBroadcastMessage(disconnectedMsg);
         onlineUsers.clear();
         if (shouldReconnect) rejoin();
       });
@@ -298,7 +302,8 @@
     } catch (e) {
       console.error('[LiveStatus] Failed to create WebSocket:', e);
       setConnectionStatus('disconnected');
-      updateBroadcastMessage('连接失败');
+      const failedMsg = window.I18n?.t('broadcast.failed') || '连接失败';
+      updateBroadcastMessage(failedMsg);
     }
   }
 
@@ -347,7 +352,8 @@
       ws = null;
     }
     setConnectionStatus('disconnected');
-    updateBroadcastMessage('已离线');
+    const offlineMsg = window.I18n?.t('broadcast.offline') || '已离线';
+    updateBroadcastMessage(offlineMsg);
   }
 
   /**

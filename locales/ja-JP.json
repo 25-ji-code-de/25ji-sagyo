@@ -1,0 +1,195 @@
+{
+  "app": {
+    "title": "『25時、ナイトコードで。』メンバーたちの24時間作業日常"
+  },
+  "pomodoro": {
+    "title": "ポモドーロ & 世界時計",
+    "display": {
+      "default": "25:00"
+    },
+    "status": {
+      "ready": "作業準備",
+      "work": "作業時間 🎯",
+      "short_break": "短い休憩 ☕",
+      "long_break": "長い休憩 🌟"
+    },
+    "buttons": {
+      "start": "開始",
+      "pause": "一時停止",
+      "reset": "リセット"
+    },
+    "settings": {
+      "work_duration": "作業時間 (分):",
+      "short_break": "短い休憩 (分):",
+      "long_break": "長い休憩 (分):",
+      "round": "作業ラウンド:"
+    },
+    "notifications": {
+      "work_complete": {
+        "title": "作業完了！",
+        "body": "休憩しましょう ☕"
+      },
+      "break_complete": {
+        "title": "休憩終了！",
+        "body": "次のポモドーロを始めましょう 🍅"
+      }
+    },
+    "toast": {
+      "dismiss": "OK"
+    }
+  },
+  "world_clock": {
+    "local_time": "ローカル時間",
+    "toggle_hint": "時計を表示/非表示"
+  },
+  "settings": {
+    "title": "コントロールセンター",
+    "sidebar": {
+      "home": "ホーム",
+      "settings": "設定",
+      "sync": "データ同期",
+      "stats": "集中統計",
+      "achievements": "実績システム",
+      "about": "について"
+    },
+    "home": {
+      "greeting": {
+        "morning": "おはようございます、",
+        "afternoon": "こんにちは、",
+        "evening": "こんばんは、",
+        "night": "夜遅くですね、",
+        "default": "こんにちは、"
+      },
+      "default_nickname": "「世界」の住人",
+      "edit_nickname": "ニックネームを編集",
+      "streak_summary": "25時と共に {days} 日間過ごしました",
+      "time_summary": "累計集中時間: {hours} 時間。頑張りましょう！",
+      "tips_title": "今日のヒント"
+    },
+    "language": {
+      "title": "言語 / Language",
+      "label": "インターフェース言語",
+      "desc": "お好みの言語を選択してください"
+    },
+    "health": {
+      "title": "健康リマインダー",
+      "sedentary": {
+        "label": "座りすぎリマインダー",
+        "desc": "定期的に動くようリマインド",
+        "interval": "リマインド間隔 (分)"
+      },
+      "hydration": {
+        "label": "水分補給リマインダー",
+        "desc": "水を飲むようリマインド",
+        "interval": "リマインド間隔 (分)"
+      }
+    },
+    "sync": {
+      "title": "クラウド同期",
+      "desc": "サインインして集中時間、実績、設定を同期します。",
+      "login_btn": "サインイン / 登録"
+    },
+    "stats": {
+      "today_focus": "今日の集中 (分)",
+      "total_focus": "累計集中 (時間)",
+      "pomodoro_count": "完了したポモドーロ",
+      "recent_activity": "最近のアクティビティ",
+      "no_activity": "記録なし"
+    },
+    "about": {
+      "version": "バージョン",
+      "description": "ポモドーロタイマー、CDプレーヤー、世界時計、オーディオビジュアライゼーションを備えた没入型学習コンパニオン。",
+      "legal_title": "法的事項",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "copyright": "著作権",
+      "license": "オープンソースライセンス",
+      "disclaimer_title": "免責事項 / Disclaimer"
+    }
+  },
+  "cd_player": {
+    "title": "SEKAI ミュージックプレーヤー",
+    "search_placeholder": "曲を検索...",
+    "loading": "読み込み中...",
+    "loading_list": "音楽リストを読み込み中...",
+    "load_failed": "読み込みに失敗しました。再試行してください",
+    "no_track": "曲を選択してください",
+    "no_artist": "-",
+    "toggle_visualization": "オーディオビジュアライゼーションを表示/非表示",
+    "categories": {
+      "all": "すべての曲",
+      "favorites": "お気に入り",
+      "playlists": "マイプレイリスト",
+      "local": "ローカル音楽",
+      "special": "STUDYシリーズ"
+    },
+    "controls": {
+      "prev": "前へ",
+      "play": "再生",
+      "pause": "一時停止",
+      "next": "次へ",
+      "shuffle": "シャッフル",
+      "repeat": "リピート"
+    }
+  },
+  "health_reminder": {
+    "sedentary": {
+      "title": "座りすぎリマインダー",
+      "message": "長時間座っています。少し動きましょう！"
+    },
+    "hydration": {
+      "title": "水分補給リマインダー",
+      "message": "水を飲んで水分補給しましょう！"
+    }
+  },
+  "broadcast": {
+    "connecting": "Nightcordに接続中...",
+    "connected": "Nightcord ワークスペースに接続しました",
+    "disconnected": "切断されました、再接続中...",
+    "failed": "接続に失敗しました",
+    "offline": "オフライン",
+    "reconnecting": "再接続を試みています...",
+    "status_ok": "接続は正常です",
+    "user_joined": "{username} が Nightcord ワークスペースに参加しました",
+    "click_to_view": "クリックしてメッセージ履歴を表示",
+    "send_placeholder": "メッセージを送信...",
+    "not_connected": "サーバーに接続されていません。メッセージを送信できません",
+    "pomodoro_start": [
+      "{username} が新しいポモドーロを開始しました。",
+      "{username} は集中しています...",
+      "遠くから {username} が作業を始めました。"
+    ],
+    "pomodoro_complete": [
+      "{username} が25分間の集中を完了しました！",
+      "{username} がポモドーロを完了しました。",
+      "{username} がさらに25分間頑張りました、素晴らしい！"
+    ],
+    "pomodoro_break": [
+      "{username} が休憩を始めました。",
+      "{username} は短い休憩中です..."
+    ],
+    "music_play": [
+      "{username} が「{value}」を聴いています。",
+      "誰かが「{value}」を再生しました。",
+      "「{value}」のメロディーが流れています。"
+    ],
+    "achievement_unlock": [
+      "{username} が実績「{value}」を解除しました！",
+      "{username} が「{value}」を達成しました、おめでとうございます！",
+      "{username} が新しい実績を獲得しました：{value}"
+    ],
+    "user_join": [
+      "{username} が Nightcord ワークスペースに参加しました。",
+      "{username} さん、ようこそ。",
+      "{username} がオンラインになりました。"
+    ],
+    "user_leave": [
+      "{username} が退出しました。",
+      "{username} がオフラインになりました。"
+    ],
+    "system": [
+      "システムリマインダー：適度に休憩を取り、目を保護してください。",
+      "Nightcord は今この瞬間、世界中の作業者を繋いでいます。"
+    ]
+  }
+}

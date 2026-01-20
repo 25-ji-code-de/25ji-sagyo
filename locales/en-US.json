@@ -1,0 +1,195 @@
+{
+  "app": {
+    "title": "25-ji, Nightcord de. - 24 Hour Work Companion"
+  },
+  "pomodoro": {
+    "title": "Pomodoro & World Clock",
+    "display": {
+      "default": "25:00"
+    },
+    "status": {
+      "ready": "Ready to Work",
+      "work": "Work Time 🎯",
+      "short_break": "Short Break ☕",
+      "long_break": "Long Break 🌟"
+    },
+    "buttons": {
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset"
+    },
+    "settings": {
+      "work_duration": "Work Duration (minutes):",
+      "short_break": "Short Break (minutes):",
+      "long_break": "Long Break (minutes):",
+      "round": "Work Rounds:"
+    },
+    "notifications": {
+      "work_complete": {
+        "title": "Work Complete!",
+        "body": "Time for a break ☕"
+      },
+      "break_complete": {
+        "title": "Break Over!",
+        "body": "Start next pomodoro 🍅"
+      }
+    },
+    "toast": {
+      "dismiss": "OK"
+    }
+  },
+  "world_clock": {
+    "local_time": "Local Time",
+    "toggle_hint": "Show/Hide Clock"
+  },
+  "settings": {
+    "title": "Control Center",
+    "sidebar": {
+      "home": "Home",
+      "settings": "Settings",
+      "sync": "Data Sync",
+      "stats": "Focus Stats",
+      "achievements": "Achievements",
+      "about": "About"
+    },
+    "home": {
+      "greeting": {
+        "morning": "Good morning, ",
+        "afternoon": "Good afternoon, ",
+        "evening": "Good evening, ",
+        "night": "It's late, ",
+        "default": "Hello, "
+      },
+      "default_nickname": "Resident of the World",
+      "edit_nickname": "Edit Nickname",
+      "streak_summary": "You've spent {days} days with 25-ji",
+      "time_summary": "Total focus time: {hours} hours. Keep it up!",
+      "tips_title": "Daily Tip"
+    },
+    "language": {
+      "title": "Language / 语言",
+      "label": "Interface Language",
+      "desc": "Select your preferred language"
+    },
+    "health": {
+      "title": "Health Reminders",
+      "sedentary": {
+        "label": "Sedentary Reminder",
+        "desc": "Reminds you to move around",
+        "interval": "Reminder Interval (minutes)"
+      },
+      "hydration": {
+        "label": "Hydration Reminder",
+        "desc": "Reminds you to drink water",
+        "interval": "Reminder Interval (minutes)"
+      }
+    },
+    "sync": {
+      "title": "Cloud Sync",
+      "desc": "Sign in to sync your focus time, achievements, and preferences.",
+      "login_btn": "Sign In / Register"
+    },
+    "stats": {
+      "today_focus": "Today's Focus (minutes)",
+      "total_focus": "Total Focus (hours)",
+      "pomodoro_count": "Pomodoros Completed",
+      "recent_activity": "Recent Activity",
+      "no_activity": "No records yet"
+    },
+    "about": {
+      "version": "Version",
+      "description": "An immersive study companion featuring pomodoro timer, CD player, world clock, and audio visualization.",
+      "legal_title": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "copyright": "Copyright",
+      "license": "Open Source License",
+      "disclaimer_title": "Disclaimer"
+    }
+  },
+  "cd_player": {
+    "title": "SEKAI Music Player",
+    "search_placeholder": "Search songs...",
+    "loading": "Loading...",
+    "loading_list": "Loading music list...",
+    "load_failed": "Failed to load, please retry",
+    "no_track": "Select a song",
+    "no_artist": "-",
+    "toggle_visualization": "Show/Hide Audio Visualization",
+    "categories": {
+      "all": "All Songs",
+      "favorites": "Favorites",
+      "playlists": "My Playlists",
+      "local": "Local Music",
+      "special": "STUDY Series"
+    },
+    "controls": {
+      "prev": "Previous",
+      "play": "Play",
+      "pause": "Pause",
+      "next": "Next",
+      "shuffle": "Shuffle",
+      "repeat": "Repeat"
+    }
+  },
+  "health_reminder": {
+    "sedentary": {
+      "title": "Sedentary Reminder",
+      "message": "You've been sitting for a while. Time to move around!"
+    },
+    "hydration": {
+      "title": "Hydration Reminder",
+      "message": "Remember to drink water and stay hydrated!"
+    }
+  },
+  "broadcast": {
+    "connecting": "Connecting to Nightcord...",
+    "connected": "Connected to Nightcord workspace",
+    "disconnected": "Disconnected, reconnecting...",
+    "failed": "Connection failed",
+    "offline": "Offline",
+    "reconnecting": "Attempting to reconnect...",
+    "status_ok": "Connection is stable",
+    "user_joined": "{username} joined the Nightcord workspace",
+    "click_to_view": "Click to view message history",
+    "send_placeholder": "Send message...",
+    "not_connected": "Not connected to server, cannot send message",
+    "pomodoro_start": [
+      "{username} started a new pomodoro.",
+      "{username} is focusing now...",
+      "{username} from afar has started working."
+    ],
+    "pomodoro_complete": [
+      "{username} completed 25 minutes of focus!",
+      "{username} just finished a pomodoro.",
+      "{username} persisted for another 25 minutes, amazing!"
+    ],
+    "pomodoro_break": [
+      "{username} is taking a break.",
+      "{username} is resting for a moment..."
+    ],
+    "music_play": [
+      "{username} is listening to \"{value}\".",
+      "Someone played \"{value}\".",
+      "The melody of \"{value}\" is playing."
+    ],
+    "achievement_unlock": [
+      "{username} unlocked achievement \"{value}\"!",
+      "Congratulations to {username} for achieving \"{value}\"!",
+      "{username} earned a new achievement: {value}"
+    ],
+    "user_join": [
+      "{username} joined the Nightcord workspace.",
+      "Welcome {username}.",
+      "{username} is online."
+    ],
+    "user_leave": [
+      "{username} left.",
+      "{username} is offline."
+    ],
+    "system": [
+      "System reminder: Remember to take breaks and protect your eyes.",
+      "Nightcord connects workers from around the world at this moment."
+    ]
+  }
+}

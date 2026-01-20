@@ -3170,6 +3170,27 @@ video{
   border-color: rgba(100, 200, 255, 0.5);
 }
 
+.setting-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  min-width: 150px;
+  cursor: pointer;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: rgba(100, 200, 255, 0.5);
+}
+
+.setting-select option {
+  background: rgba(30, 30, 45, 0.95);
+  color: #fff;
+}
+
 /* Toggle Switch */
 .switch {
   position: relative;

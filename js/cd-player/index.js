@@ -121,16 +121,17 @@ async function initCDPlayer() {
   // Load music data and initialize
   async function loadMusicDataAndInit() {
     try {
-      elements.musicList.innerHTML = '<div class="loading">加载音乐列表中...</div>';
-      
+      const loadingText = window.I18n?.t('cd_player.loading_list') || '加载音乐列表中...';
+      elements.musicList.innerHTML = `<div class="loading">${loadingText}</div>`;
+
       await loadMusicData();
-      
+
       // Initial filter
       filterMusicListWrapper('');
-      
+
       // Load saved settings
       loadSettings();
-      
+
       // Setup Media Session handlers
       setupMediaSessionHandlers(
         () => playTrackWrapper(),
@@ -138,12 +139,13 @@ async function initCDPlayer() {
         loadTrackWrapper,
         getNextTrackIndex
       );
-      
+
       // Restore last track
       restoreLastTrack(loadTrackWrapper);
     } catch (error) {
       console.error('Error loading music data:', error);
-      elements.musicList.innerHTML = '<div class="loading">加载失败，请重试</div>';
+      const failedText = window.I18n?.t('cd_player.load_failed') || '加载失败，请重试';
+      elements.musicList.innerHTML = `<div class="loading">${failedText}</div>`;
     }
   }
 

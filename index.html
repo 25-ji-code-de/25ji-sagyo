@@ -31,7 +31,7 @@
           <div class="live-stat-item broadcast-msg">
             <span class="broadcast-icon">📢</span>
             <div class="broadcast-text-wrapper">
-              <span class="broadcast-text">正在连接 Nightcord...</span>
+              <span class="broadcast-text" data-i18n="broadcast.connecting">正在连接 Nightcord...</span>
             </div>
           </div>
         </div>
@@ -50,19 +50,19 @@
         <!-- Pomodoro Timer Panel -->
         <div id="pomodoroPanel" class="hidden">
           <div class="pomodoro-header">
-            <span>番茄钟 & 世界时钟</span>
+            <span data-i18n="pomodoro.title">番茄钟 & 世界时钟</span>
             <div class="header-controls">
-              <button id="toggleClockWidget" class="toggle-btn" title="显示/隐藏时钟">🕐</button>
+              <button id="toggleClockWidget" class="toggle-btn" data-i18n-title="world_clock.toggle_hint" title="显示/隐藏时钟">🕐</button>
               <button id="pomodoroCloseBtn" class="close-btn" title="关闭">✕</button>
             </div>
           </div>
-          
+
           <!-- Main Content: Left-Right Layout -->
           <div class="pomodoro-main-content">
             <!-- Left Side: World Clock Section -->
             <div class="world-clock-section" id="worldClockSection">
               <div class="clock-item main-clock">
-                <div class="clock-label">本地时间</div>
+                <div class="clock-label" data-i18n="world_clock.local_time">本地时间</div>
                 <div class="clock-time-large">
                   <span class="time-hours" id="localHours">00</span>
                   <span class="time-separator">:</span>
@@ -99,27 +99,27 @@
             <!-- Right Side: Pomodoro Timer -->
             <div class="pomodoro-body">
               <div id="pomodoroDisplay" class="pomodoro-display">25:00</div>
-              <div class="pomodoro-status">准备工作</div>
+              <div class="pomodoro-status" data-i18n="pomodoro.status.ready">准备工作</div>
               <div class="pomodoro-controls">
-                <button id="pomodoroStartBtn" class="pomodoro-btn primary">开始</button>
-                <button id="pomodoroPauseBtn" class="pomodoro-btn" disabled>暂停</button>
-                <button id="pomodoroResetBtn" class="pomodoro-btn">重置</button>
+                <button id="pomodoroStartBtn" class="pomodoro-btn primary" data-i18n="pomodoro.buttons.start">开始</button>
+                <button id="pomodoroPauseBtn" class="pomodoro-btn" data-i18n="pomodoro.buttons.pause" disabled>暂停</button>
+                <button id="pomodoroResetBtn" class="pomodoro-btn" data-i18n="pomodoro.buttons.reset">重置</button>
               </div>
               <div class="pomodoro-settings">
                 <div class="setting-item">
-                  <label for="workDuration">工作时长 (分钟):</label>
+                  <label for="workDuration" data-i18n="pomodoro.settings.work_duration">工作时长 (分钟):</label>
                   <input type="number" id="workDuration" min="1" max="60" value="25" />
                 </div>
                 <div class="setting-item">
-                  <label for="shortBreak">短休息 (分钟):</label>
+                  <label for="shortBreak" data-i18n="pomodoro.settings.short_break">短休息 (分钟):</label>
                   <input type="number" id="shortBreak" min="1" max="30" value="5" />
                 </div>
                 <div class="setting-item">
-                  <label for="longBreak">长休息 (分钟):</label>
+                  <label for="longBreak" data-i18n="pomodoro.settings.long_break">长休息 (分钟):</label>
                   <input type="number" id="longBreak" min="1" max="60" value="15" />
                 </div>
                 <div class="setting-item">
-                  <label for="pomodoroRound">工作轮次:</label>
+                  <label for="pomodoroRound" data-i18n="pomodoro.settings.round">工作轮次:</label>
                   <span id="pomodoroRound">0 / 4</span>
                 </div>
               </div>
@@ -149,24 +149,24 @@
       <!-- CD Player Panel -->
       <div id="cdPlayerPanel" class="hidden">
         <div class="cd-player-header">
-          <span>🎵 SEKAI 留声机</span>
+          <span data-i18n="cd_player.title">🎵 SEKAI 留声机</span>
           <div class="header-controls">
-            <button id="toggleVisualization" class="toggle-btn" title="显示/隐藏音频可视化">🌀</button>
+            <button id="toggleVisualization" class="toggle-btn" data-i18n-title="cd_player.toggle_visualization" title="显示/隐藏音频可视化">🌀</button>
             <button id="cdPlayerCloseBtn" class="close-btn" title="关闭">✕</button>
           </div>
         </div>
-        
+
         <div class="cd-player-body">
           <!-- Music List -->
           <div class="music-list-section">
             <!-- Category Sidebar -->
             <div class="music-categories" id="musicCategories">
-              <button class="category-btn active" data-category="all" title="全部歌曲">🎵</button>
-              <button class="category-btn" data-category="favorites" title="我喜欢的音乐">⭐</button>
-              <button class="category-btn" data-category="playlists" title="我的歌单">📂</button>
-              <button class="category-btn" data-category="local" title="本地音乐">📥</button>
+              <button class="category-btn active" data-category="all" data-i18n-title="cd_player.categories.all" title="全部歌曲">🎵</button>
+              <button class="category-btn" data-category="favorites" data-i18n-title="cd_player.categories.favorites" title="我喜欢的音乐">⭐</button>
+              <button class="category-btn" data-category="playlists" data-i18n-title="cd_player.categories.playlists" title="我的歌单">📂</button>
+              <button class="category-btn" data-category="local" data-i18n-title="cd_player.categories.local" title="本地音乐">📥</button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
-              <button class="category-btn" data-category="special" title="STUDY系列">📚</button>
+              <button class="category-btn" data-category="special" data-i18n-title="cd_player.categories.special" title="STUDY系列">📚</button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
               <button class="category-btn" data-category="virtual_singer" title="Virtual Singer">
                 <img src="/unit_logos/vs.webp" alt="VS" />
@@ -191,10 +191,10 @@
 
             <div class="music-list-container">
               <div class="music-search">
-                <input type="text" id="musicSearchInput" placeholder="搜索歌曲..." />
+                <input type="text" id="musicSearchInput" data-i18n-placeholder="cd_player.search_placeholder" placeholder="搜索歌曲..." />
               </div>
               <div class="music-list" id="musicList">
-                <div class="loading">加载中...</div>
+                <div class="loading" data-i18n="cd_player.loading">加载中...</div>
               </div>
             </div>
           </div>
@@ -209,10 +209,10 @@
                 <div class="spinner-icon"></div>
               </div>
             </div>
-            
+
             <div class="track-info">
-              <div class="track-title" id="trackTitle">选择一首歌曲</div>
-              <div class="track-artist" id="trackArtist">-</div>
+              <div class="track-title" id="trackTitle" data-i18n="cd_player.no_track">选择一首歌曲</div>
+              <div class="track-artist" id="trackArtist" data-i18n="cd_player.no_artist">-</div>
               <div class="track-vocal" id="trackVocal">-</div>
             </div>
 
@@ -224,11 +224,11 @@
             </div>
 
             <div class="player-controls">
-              <button id="prevBtn" class="control-btn" title="上一首">⏮</button>
-              <button id="playPauseBtn" class="control-btn play-btn" title="播放/暂停">▶️</button>
-              <button id="nextBtn" class="control-btn" title="下一首">⏭</button>
-              <button id="shuffleBtn" class="control-btn" title="随机播放">🔀</button>
-              <button id="repeatBtn" class="control-btn" title="循环播放">🔁</button>
+              <button id="prevBtn" class="control-btn" data-i18n-title="cd_player.controls.prev" title="上一首">⏮</button>
+              <button id="playPauseBtn" class="control-btn play-btn" data-i18n-title="cd_player.controls.play" title="播放/暂停">▶️</button>
+              <button id="nextBtn" class="control-btn" data-i18n-title="cd_player.controls.next" title="下一首">⏭</button>
+              <button id="shuffleBtn" class="control-btn" data-i18n-title="cd_player.controls.shuffle" title="随机播放">🔀</button>
+              <button id="repeatBtn" class="control-btn" data-i18n-title="cd_player.controls.repeat" title="循环播放">🔁</button>
             </div>
 
             <div class="volume-control">
@@ -245,7 +245,7 @@
       <!-- Settings Panel (Expanded) -->
       <div id="settingsPanel" class="hidden expanded-panel">
         <div class="settings-header">
-          <span>控制中心</span>
+          <span data-i18n="settings.title">控制中心</span>
           <div class="header-controls">
             <button id="settingsCloseBtn" class="close-btn" title="关闭">✕</button>
           </div>
@@ -254,22 +254,22 @@
           <!-- Sidebar -->
           <div class="settings-sidebar">
             <button class="sidebar-btn active" data-tab="home">
-              <span class="icon">🏠</span> <span class="label">首页</span>
+              <span class="icon">🏠</span> <span class="label" data-i18n="settings.sidebar.home">首页</span>
             </button>
             <button class="sidebar-btn" data-tab="settings">
-              <span class="icon">⚙️</span> <span class="label">设置</span>
+              <span class="icon">⚙️</span> <span class="label" data-i18n="settings.sidebar.settings">设置</span>
             </button>
             <button class="sidebar-btn" data-tab="sync">
-              <span class="icon">☁️</span> <span class="label">数据同步</span>
+              <span class="icon">☁️</span> <span class="label" data-i18n="settings.sidebar.sync">数据同步</span>
             </button>
             <button class="sidebar-btn" data-tab="stats">
-              <span class="icon">📊</span> <span class="label">专注统计</span>
+              <span class="icon">📊</span> <span class="label" data-i18n="settings.sidebar.stats">专注统计</span>
             </button>
             <button class="sidebar-btn" data-tab="achievements">
-              <span class="icon">🏆</span> <span class="label">成就系统</span>
+              <span class="icon">🏆</span> <span class="label" data-i18n="settings.sidebar.achievements">成就系统</span>
             </button>
             <button class="sidebar-btn" data-tab="about">
-              <span class="icon">ℹ️</span> <span class="label">关于</span>
+              <span class="icon">ℹ️</span> <span class="label" data-i18n="settings.sidebar.about">关于</span>
             </button>
           </div>
 
@@ -281,10 +281,10 @@
                 <h2 id="greetingText">晚上好，</h2>
                 <div class="user-nickname-container">
                   <span id="userNickname" class="nickname-text">「世界」的居民</span>
-                  <button id="editNicknameBtn" class="icon-btn" title="修改昵称">✏️</button>
+                  <button id="editNicknameBtn" class="icon-btn" data-i18n-title="settings.home.edit_nickname" title="修改昵称">✏️</button>
                 </div>
               </div>
-              
+
               <div class="home-stats-summary">
                 <div class="summary-card">
                   <div class="summary-icon">🔥</div>
@@ -299,7 +299,7 @@
               <div class="home-tips-card">
                 <div class="tips-header">
                   <span class="tips-icon">💡</span>
-                  <span>每日贴士</span>
+                  <span data-i18n="settings.home.tips_title">每日贴士</span>
                 </div>
                 <p id="randomTipText" class="tips-content">休息也是工作的一部分哦。</p>
               </div>
@@ -308,11 +308,27 @@
             <!-- Settings Tab -->
             <div class="tab-content" id="tab-settings">
               <div class="settings-section">
-                <h3>健康提醒</h3>
+                <h3 data-i18n="settings.language.title">语言 / Language</h3>
                 <div class="setting-item">
                   <div class="setting-label">
-                    <span>久坐提醒</span>
-                    <span class="setting-desc">定时提醒起来活动一下</span>
+                    <span data-i18n="settings.language.label">界面语言</span>
+                    <span class="setting-desc" data-i18n="settings.language.desc">选择您偏好的语言</span>
+                  </div>
+                  <select id="languageSelect" class="setting-select">
+                    <option value="zh-CN">简体中文</option>
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en-US">English</option>
+                    <option value="ja-JP">日本語</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3 data-i18n="settings.health.title">健康提醒</h3>
+                <div class="setting-item">
+                  <div class="setting-label">
+                    <span data-i18n="settings.health.sedentary.label">久坐提醒</span>
+                    <span class="setting-desc" data-i18n="settings.health.sedentary.desc">定时提醒起来活动一下</span>
                   </div>
                   <label class="switch">
                     <input type="checkbox" id="sedentaryEnabled" checked>
@@ -321,15 +337,15 @@
                 </div>
                 <div class="setting-item" id="sedentaryIntervalContainer">
                   <div class="setting-label">
-                    <span>提醒间隔 (分钟)</span>
+                    <span data-i18n="settings.health.sedentary.interval">提醒间隔 (分钟)</span>
                   </div>
                   <input type="number" id="sedentaryInterval" class="setting-input" min="15" max="180" step="5" value="60">
                 </div>
 
                 <div class="setting-item">
                   <div class="setting-label">
-                    <span>喝水提醒</span>
-                    <span class="setting-desc">定时提醒补充水分</span>
+                    <span data-i18n="settings.health.hydration.label">喝水提醒</span>
+                    <span class="setting-desc" data-i18n="settings.health.hydration.desc">定时提醒补充水分</span>
                   </div>
                   <label class="switch">
                     <input type="checkbox" id="hydrationEnabled" checked>
@@ -338,7 +354,7 @@
                 </div>
                 <div class="setting-item" id="hydrationIntervalContainer">
                   <div class="setting-label">
-                    <span>提醒间隔 (分钟)</span>
+                    <span data-i18n="settings.health.hydration.interval">提醒间隔 (分钟)</span>
                   </div>
                   <input type="number" id="hydrationInterval" class="setting-input" min="15" max="180" step="5" value="45">
                 </div>
@@ -349,9 +365,9 @@
             <div class="tab-content" id="tab-sync">
               <div class="empty-state">
                 <div class="empty-icon">☁️</div>
-                <h3>云端同步</h3>
-                <p>登录以同步您的专注时长、成就和偏好设置。</p>
-                <button class="primary-btn">登录 / 注册</button>
+                <h3 data-i18n="settings.sync.title">云端同步</h3>
+                <p data-i18n="settings.sync.desc">登录以同步您的专注时长、成就和偏好设置。</p>
+                <button class="primary-btn" data-i18n="settings.sync.login_btn">登录 / 注册</button>
               </div>
             </div>
 
@@ -360,21 +376,21 @@
               <div class="stats-grid">
                 <div class="stat-card">
                   <div class="stat-value">0</div>
-                  <div class="stat-label">今日专注 (分钟)</div>
+                  <div class="stat-label" data-i18n="settings.stats.today_focus">今日专注 (分钟)</div>
                 </div>
                 <div class="stat-card">
                   <div class="stat-value">0</div>
-                  <div class="stat-label">累计专注 (小时)</div>
+                  <div class="stat-label" data-i18n="settings.stats.total_focus">累计专注 (小时)</div>
                 </div>
                 <div class="stat-card">
                   <div class="stat-value">0</div>
-                  <div class="stat-label">完成番茄钟</div>
+                  <div class="stat-label" data-i18n="settings.stats.pomodoro_count">完成番茄钟</div>
                 </div>
               </div>
               <div class="settings-section">
-                <h3>近期活动</h3>
+                <h3 data-i18n="settings.stats.recent_activity">近期活动</h3>
                 <div class="activity-list">
-                  <div class="activity-item">暂无记录</div>
+                  <div class="activity-item" data-i18n="settings.stats.no_activity">暂无记录</div>
                 </div>
               </div>
             </div>
@@ -397,7 +413,7 @@
                 <p class="version" id="appVersion">Loading...</p>
               </div>
               <div class="settings-section">
-                <p class="about-desc">
+                <p class="about-desc" data-i18n="settings.about.description">
                   沉浸式作业陪伴工具，提供番茄钟、CD 播放器、世界时钟与音频可视化等实用功能。
                 </p>
                 <div class="links-row">
@@ -408,17 +424,17 @@
                 </div>
               </div>
               <div class="settings-section">
-                <div class="section-title">📜 法律条款</div>
+                <div class="section-title" data-i18n="settings.about.legal_title">📜 法律条款</div>
                 <div class="legal-links-row">
-                  <a href="./docs.html?file=TERMS_OF_SERVICE.md" target="_blank" class="legal-link-btn">用户协议</a>
-                  <a href="./docs.html?file=PRIVACY_POLICY.md" target="_blank" class="legal-link-btn">隐私政策</a>
-                  <a href="./docs.html?file=COPYRIGHT.md" target="_blank" class="legal-link-btn">版权声明</a>
-                  <a href="./docs.html?file=LICENSE" target="_blank" class="legal-link-btn">开源许可</a>
+                  <a href="./docs.html?file=TERMS_OF_SERVICE.md" target="_blank" class="legal-link-btn" data-i18n="settings.about.terms">用户协议</a>
+                  <a href="./docs.html?file=PRIVACY_POLICY.md" target="_blank" class="legal-link-btn" data-i18n="settings.about.privacy">隐私政策</a>
+                  <a href="./docs.html?file=COPYRIGHT.md" target="_blank" class="legal-link-btn" data-i18n="settings.about.copyright">版权声明</a>
+                  <a href="./docs.html?file=LICENSE" target="_blank" class="legal-link-btn" data-i18n="settings.about.license">开源许可</a>
                 </div>
               </div>
               <div class="settings-section">
                 <div class="legal-text">
-                  <p><strong>免责声明 / Disclaimer</strong></p>
+                  <p><strong data-i18n="settings.about.disclaimer_title">免责声明 / Disclaimer</strong></p>
                   <p>本项目（25ji-sagyo）为非官方粉丝作品（Fan Art），与 SEGA、Colorful Palette 或 Crypton Future Media 无任何关联。</p>
                   <p>本项目中使用的所有游戏素材（包括但不限于视频、音频、图像、角色设计、剧本等）的版权均归 <strong>© SEGA</strong>、<strong>© Colorful Palette Inc.</strong> 及 <strong>© Crypton Future Media, INC.</strong> 所有。</p>
                   <p>本项目仅供学习、研究及个人欣赏使用，<strong>严禁用于任何形式的商业用途或营利活动</strong>。开发者不对因使用本项目而产生的任何直接或间接损失承担责任。</p>
@@ -467,6 +483,7 @@
 
   <!-- 工具模块 -->
   <script src="js/utils/helpers.js"></script>
+  <script src="js/utils/i18n.js"></script>
   <script src="js/utils/storage.js"></script>
   <script src="js/utils/asset-loader.js"></script>
   

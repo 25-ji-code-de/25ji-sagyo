@@ -109,16 +109,19 @@
   function updateHomeTab() {
     // 更新问候语
     const hour = new Date().getHours();
-    let greeting = '你好，';
-    if (hour >= 5 && hour < 12) greeting = '早上好，';
-    else if (hour >= 12 && hour < 18) greeting = '下午好，';
-    else if (hour >= 18 && hour < 23) greeting = '晚上好，';
-    else greeting = '夜深了，';
-    
-    if (greetingText) greetingText.textContent = greeting;
+    let greetingKey = 'settings.home.greeting.default';
+    if (hour >= 5 && hour < 12) greetingKey = 'settings.home.greeting.morning';
+    else if (hour >= 12 && hour < 18) greetingKey = 'settings.home.greeting.afternoon';
+    else if (hour >= 18 && hour < 23) greetingKey = 'settings.home.greeting.evening';
+    else greetingKey = 'settings.home.greeting.night';
+
+    if (greetingText && window.I18n) {
+      greetingText.textContent = window.I18n.t(greetingKey);
+    }
 
     // 更新昵称
-    const savedNickname = localStorage.getItem('userNickname') || '「世界」的居民';
+    const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
+    const savedNickname = localStorage.getItem('userNickname') || defaultNickname;
     if (userNickname) userNickname.textContent = savedNickname;
 
     // 更新统计摘要
@@ -126,10 +129,12 @@
     if (savedStats) {
       try {
         const stats = JSON.parse(savedStats);
-        if (streakSummary) streakSummary.textContent = `你已与 25时 共同度过了 ${stats.streak_days || 1} 天的时光`;
-        if (timeSummary) {
+        if (streakSummary && window.I18n) {
+          streakSummary.textContent = window.I18n.t('settings.home.streak_summary', { days: stats.streak_days || 1 });
+        }
+        if (timeSummary && window.I18n) {
           const hours = ((stats.total_time || 0) / 3600).toFixed(1);
-          timeSummary.textContent = `累计专注 ${hours} 小时，继续加油！`;
+          timeSummary.textContent = window.I18n.t('settings.home.time_summary', { hours });
         }
       } catch (e) {}
     }
@@ -375,6 +380,25 @@
     }
   }
 
+  // --- Language Selector ---
+  const languageSelect = document.getElementById('languageSelect');
+
+  /**
+   * 初始化语言选择器
+   */
+  function initLanguageSelector() {
+    if (!languageSelect || !window.I18n) return;
+
+    const currentLang = window.I18n.getCurrentLanguage();
+    languageSelect.value = currentLang;
+
+    languageSelect.addEventListener('change', async (e) => {
+      const newLang = e.target.value;
+      await window.I18n.setLanguage(newLang);
+      updateHomeTab();
+    });
+  }
+
   // --- Health Reminder Elements ---
   const sedentaryEnabled = document.getElementById('sedentaryEnabled');
   const sedentaryInterval = document.getElementById('sedentaryInterval');
@@ -438,6 +462,12 @@
 
   // 初始化版本显示
   displayVersion();
+  // 初始化语言选择器
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLanguageSelector);
+  } else {
+    setTimeout(initLanguageSelector, 0);
+  }
   // 初始化健康设置 - 延迟执行以确保 healthReminderSystem 已初始化
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHealthSettings);
@@ -449,6 +479,11 @@
   if (!localStorage.getItem('userNickname')) {
     localStorage.setItem('userNickname', '「世界」的居民_' + [...Array(4)].map(_=>"23456789BCDFGHJKLMNPQRSTVWXY"[Math.random()*28|0]).join(''));
   }
+
+  // 监听语言变化事件
+  window.addEventListener('languagechange', () => {
+    updateHomeTab();
+  });
 
   // 导出到全局命名空间
   window.SettingsPanel = {

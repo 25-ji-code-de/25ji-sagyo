@@ -8,13 +8,13 @@
       "default": "25:00"
     },
     "status": {
-      "ready": "作業準備",
-      "work": "作業時間 🎯",
-      "short_break": "短い休憩 ☕",
-      "long_break": "長い休憩 🌟"
+      "ready": "準備完了",
+      "work": "作業中 🎯",
+      "short_break": "休憩（短） ☕",
+      "long_break": "休憩（長） 🌟"
     },
     "buttons": {
-      "start": "開始",
+      "start": "スタート",
       "pause": "一時停止",
       "reset": "リセット"
     },
@@ -22,16 +22,16 @@
       "work_duration": "作業時間 (分):",
       "short_break": "短い休憩 (分):",
       "long_break": "長い休憩 (分):",
-      "round": "作業ラウンド:"
+      "round": "セット数:"
     },
     "notifications": {
       "work_complete": {
-        "title": "作業完了！",
-        "body": "休憩しましょう ☕"
+        "title": "作業終了！",
+        "body": "少し休憩しましょう ☕"
       },
       "break_complete": {
         "title": "休憩終了！",
-        "body": "次のポモドーロを始めましょう 🍅"
+        "body": "次のセッションを始めましょう 🍅"
       }
     },
     "toast": {
@@ -39,8 +39,8 @@
     }
   },
   "world_clock": {
-    "local_time": "ローカル時間",
-    "toggle_hint": "時計を表示/非表示"
+    "local_time": "現地時間",
+    "toggle_hint": "時計の表示/非表示"
   },
   "settings": {
     "title": "コントロールセンター",
@@ -48,58 +48,58 @@
       "home": "ホーム",
       "settings": "設定",
       "sync": "データ同期",
-      "stats": "集中統計",
-      "achievements": "実績システム",
-      "about": "について"
+      "stats": "統計データ",
+      "achievements": "実績",
+      "about": "アプリ情報"
     },
     "home": {
       "greeting": {
         "morning": "おはようございます、",
         "afternoon": "こんにちは、",
         "evening": "こんばんは、",
-        "night": "夜遅くですね、",
+        "night": "夜も更けましたね、",
         "default": "こんにちは、"
       },
-      "default_nickname": "「世界」の住人",
-      "edit_nickname": "ニックネームを編集",
+      "default_nickname": "「セカイ」の住人",
+      "edit_nickname": "ニックネーム変更",
       "streak_summary": "25時と共に {days} 日間過ごしました",
-      "time_summary": "累計集中時間: {hours} 時間。頑張りましょう！",
+      "time_summary": "累計作業時間: {hours} 時間。この調子です！",
       "tips_title": "今日のヒント"
     },
     "language": {
       "title": "言語 / Language",
-      "label": "インターフェース言語",
-      "desc": "お好みの言語を選択してください"
+      "label": "表示言語",
+      "desc": "言語を選択してください"
     },
     "health": {
       "title": "健康リマインダー",
       "sedentary": {
-        "label": "座りすぎリマインダー",
-        "desc": "定期的に動くようリマインド",
-        "interval": "リマインド間隔 (分)"
+        "label": "座りすぎ通知",
+        "desc": "定期的に立ち上がるよう通知します",
+        "interval": "通知間隔 (分)"
       },
       "hydration": {
-        "label": "水分補給リマインダー",
-        "desc": "水を飲むようリマインド",
-        "interval": "リマインド間隔 (分)"
+        "label": "水分補給通知",
+        "desc": "水を飲むよう通知します",
+        "interval": "通知間隔 (分)"
       }
     },
     "sync": {
       "title": "クラウド同期",
-      "desc": "サインインして集中時間、実績、設定を同期します。",
-      "login_btn": "サインイン / 登録"
+      "desc": "ログインして、作業時間、実績、設定を同期します。",
+      "login_btn": "ログイン / 新規登録"
     },
     "stats": {
-      "today_focus": "今日の集中 (分)",
-      "total_focus": "累計集中 (時間)",
-      "pomodoro_count": "完了したポモドーロ",
+      "today_focus": "今日の作業 (分)",
+      "total_focus": "累計作業 (時間)",
+      "pomodoro_count": "完了したセット数",
       "recent_activity": "最近のアクティビティ",
       "no_activity": "記録なし"
     },
     "about": {
       "version": "バージョン",
-      "description": "ポモドーロタイマー、CDプレーヤー、世界時計、オーディオビジュアライゼーションを備えた没入型学習コンパニオン。",
-      "legal_title": "法的事項",
+      "description": "ポモドーロタイマー、音楽プレーヤー、世界時計、オーディオビジュアライザーを備えた没入型作業ツール。",
+      "legal_title": "法的情報",
       "terms": "利用規約",
       "privacy": "プライバシーポリシー",
       "copyright": "著作権",
@@ -108,19 +108,19 @@
     }
   },
   "cd_player": {
-    "title": "SEKAI ミュージックプレーヤー",
+    "title": "セカイの蓄音機",
     "search_placeholder": "曲を検索...",
     "loading": "読み込み中...",
-    "loading_list": "音楽リストを読み込み中...",
-    "load_failed": "読み込みに失敗しました。再試行してください",
+    "loading_list": "リストを読み込み中...",
+    "load_failed": "読み込みに失敗しました",
     "no_track": "曲を選択してください",
     "no_artist": "-",
-    "toggle_visualization": "オーディオビジュアライゼーションを表示/非表示",
+    "toggle_visualization": "ビジュアライザーの表示切り替え",
     "categories": {
       "all": "すべての曲",
       "favorites": "お気に入り",
-      "playlists": "マイプレイリスト",
-      "local": "ローカル音楽",
+      "playlists": "プレイリスト",
+      "local": "ローカル",
       "special": "STUDYシリーズ"
     },
     "controls": {
@@ -134,53 +134,53 @@
   },
   "health_reminder": {
     "sedentary": {
-      "title": "座りすぎリマインダー",
-      "message": "長時間座っています。少し動きましょう！"
+      "title": "座りすぎ通知",
+      "message": "長時間座っています。少し体を動かしましょう！"
     },
     "hydration": {
-      "title": "水分補給リマインダー",
-      "message": "水を飲んで水分補給しましょう！"
+      "title": "水分補給通知",
+      "message": "水分補給を忘れないでくださいね！"
     }
   },
   "broadcast": {
     "connecting": "Nightcordに接続中...",
-    "connected": "Nightcord ワークスペースに接続しました",
-    "disconnected": "切断されました、再接続中...",
+    "connected": "Nightcord作業スペースに接続しました",
+    "disconnected": "切断されました。再接続中...",
     "failed": "接続に失敗しました",
     "offline": "オフライン",
-    "reconnecting": "再接続を試みています...",
-    "status_ok": "接続は正常です",
-    "user_joined": "{username} が Nightcord ワークスペースに参加しました",
-    "click_to_view": "クリックしてメッセージ履歴を表示",
+    "reconnecting": "再接続を試行中...",
+    "status_ok": "接続状態: 良好",
+    "user_joined": "{username} が入室しました",
+    "click_to_view": "クリックして履歴を表示",
     "send_placeholder": "メッセージを送信...",
-    "not_connected": "サーバーに接続されていません。メッセージを送信できません",
+    "not_connected": "サーバーに接続されていないため、送信できません",
     "pomodoro_start": [
-      "{username} が新しいポモドーロを開始しました。",
-      "{username} は集中しています...",
-      "遠くから {username} が作業を始めました。"
+      "{username} が作業を開始しました。",
+      "{username} は集中モードに入りました。",
+      "どこかの {username} が作業を始めました。"
     ],
     "pomodoro_complete": [
-      "{username} が25分間の集中を完了しました！",
-      "{username} がポモドーロを完了しました。",
-      "{username} がさらに25分間頑張りました、素晴らしい！"
+      "{username} が25分間の作業を完了しました！",
+      "{username} が1セット完了しました。",
+      "{username} がさらに25分間頑張りました。えらい！"
     ],
     "pomodoro_break": [
-      "{username} が休憩を始めました。",
-      "{username} は短い休憩中です..."
+      "{username} が休憩に入りました。",
+      "{username} は少し休憩しています..."
     ],
     "music_play": [
       "{username} が「{value}」を聴いています。",
-      "誰かが「{value}」を再生しました。",
+      "誰かが「{value}」を流しました。",
       "「{value}」のメロディーが流れています。"
     ],
     "achievement_unlock": [
       "{username} が実績「{value}」を解除しました！",
-      "{username} が「{value}」を達成しました、おめでとうございます！",
-      "{username} が新しい実績を獲得しました：{value}"
+      "{username} が「{value}」を達成しました、おめでとう！",
+      "{username} が新しい実績を獲得：{value}"
     ],
     "user_join": [
-      "{username} が Nightcord ワークスペースに参加しました。",
-      "{username} さん、ようこそ。",
+      "{username} がNightcordに来ました。",
+      "ようこそ、{username}。",
       "{username} がオンラインになりました。"
     ],
     "user_leave": [
@@ -188,8 +188,8 @@
       "{username} がオフラインになりました。"
     ],
     "system": [
-      "システムリマインダー：適度に休憩を取り、目を保護してください。",
-      "Nightcord は今この瞬間、世界中の作業者を繋いでいます。"
+      "システム通知：適度に休憩を取り、目を休めてください。",
+      "Nightcordは今この瞬間、世界中の作業者を繋いでいます。"
     ]
   }
 }

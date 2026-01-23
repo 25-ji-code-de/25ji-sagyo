@@ -30,7 +30,7 @@
         "body": "Time for a break ☕"
       },
       "break_complete": {
-        "title": "Break's Over!",
+        "title": "Break Over!",
         "body": "Ready for the next session? 🍅"
       }
     },
@@ -43,7 +43,7 @@
     "toggle_hint": "Show/Hide Clock"
   },
   "settings": {
-    "title": "Control Center",
+    "title": "Control Centre",
     "sidebar": {
       "home": "Home",
       "settings": "Settings",
@@ -62,7 +62,7 @@
       },
       "default_nickname": "Resident of SEKAI",
       "edit_nickname": "Edit Nickname",
-      "streak_summary": "You've spent {days} days with 25-ji",
+      "streak_summary": "You have spent {days} days with 25-ji",
       "time_summary": "Total focus time: {hours} hours. Keep it up!",
       "tips_title": "Daily Tip"
     },
@@ -75,7 +75,7 @@
       "title": "Health Reminders",
       "sedentary": {
         "label": "Stand Up Reminder",
-        "desc": "Reminds you to move around",
+        "desc": "Reminds you to move about",
         "interval": "Interval (minutes)"
       },
       "hydration": {
@@ -98,27 +98,27 @@
     },
     "about": {
       "version": "Version",
-      "description": "An immersive study companion featuring a pomodoro timer, music player, world clock, and audio visualizer.",
+      "description": "An immersive study companion featuring a pomodoro timer, music player, world clock, and audio visualisation.",
       "legal_title": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "copyright": "Copyright",
-      "license": "Open Source License",
+      "license": "Open Source Licence",
       "disclaimer_title": "Disclaimer"
     }
   },
   "cd_player": {
-    "title": "SEKAI Phonograph",
+    "title": "SEKAI Music Player",
     "search_placeholder": "Search songs...",
     "loading": "Loading...",
     "loading_list": "Loading playlist...",
     "load_failed": "Load failed. Please try again.",
     "no_track": "Select a song",
     "no_artist": "-",
-    "toggle_visualization": "Toggle Visualizer",
+    "toggle_visualization": "Toggle Visualisation",
     "categories": {
       "all": "All Songs",
-      "favorites": "Favorites",
+      "favorites": "Favourites",
       "playlists": "My Playlists",
       "local": "Local Music",
       "special": "STUDY Series"
@@ -135,7 +135,7 @@
   "health_reminder": {
     "sedentary": {
       "title": "Time to Move",
-      "message": "You've been sitting for a while. Get up and stretch!"
+      "message": "You've been sitting for a while. Get up and have a stretch!"
     },
     "hydration": {
       "title": "Stay Hydrated",
@@ -162,7 +162,7 @@
     "pomodoro_complete": [
       "{username} completed 25 minutes of focus!",
       "{username} just finished a session.",
-      "{username} stayed focused for another 25 minutes. Amazing!"
+      "{username} stayed focused for another 25 minutes. Brilliant!"
     ],
     "pomodoro_break": [
       "{username} is taking a break.",

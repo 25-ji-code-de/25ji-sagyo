@@ -190,7 +190,7 @@ video{
 }
 
 /* Responsive: on narrow devices stack info and controls vertically to avoid overlap */
-@media (max-width:520px){
+@media (max-width:750px){
   /* make overlay use document flow and stack children */
   #overlay{
     display:flex;
@@ -4427,4 +4427,126 @@ input:checked + .slider:before {
   color: rgba(255, 255, 255, 0.5);
   text-align: center;
   line-height: 1.4;
+}
+
+/* Breathing Panel Responsive */
+@media (max-width: 1000px) {
+  #breathingPanel {
+    width: 95vw;
+    max-width: 550px;
+    right: 2.5vw;
+    bottom: 70px;
+    right: 2.5vw;
+    min-width: 300px;
+    height: auto;
+    max-height: 70vh;
+  }
+
+  #breathingPanel.hidden {
+    transform: scale(0.95);
+  }
+
+  .breathing-content {
+    padding: 16px;
+    flex-direction: row;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .breathing-circle-container {
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+
+  .breathing-guide-ring {
+    width: 140px;
+    height: 140px;
+  }
+
+  .breathing-circle {
+    width: 42px;
+    height: 42px;
+  }
+
+  .breathing-circle.inhale,
+  .breathing-circle.hold {
+    transform: scale(3.3);
+  }
+
+  .breathing-circle-text {
+    font-size: 11px;
+  }
+
+  .breathing-controls-area {
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .breathing-instruction {
+    font-size: 18px;
+    min-height: 28px;
+  }
+
+  .breathing-mode-description-container {
+    max-width: 100%;
+    gap: 3px;
+  }
+
+  .breathing-mode-rhythm {
+    font-size: 11px;
+  }
+
+  .breathing-mode-detail {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .breathing-modes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .breathing-mode-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .breathing-action-btn {
+    width: 100%;
+    max-width: none;
+    padding: 8px 24px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 400px) {
+  .breathing-circle-container {
+    width: 120px;
+    height: 120px;
+  }
+
+  .breathing-guide-ring {
+    width: 120px;
+    height: 120px;
+  }
+
+  .breathing-circle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .breathing-instruction {
+    font-size: 16px;
+  }
+
+  .breathing-mode-btn {
+    font-size: 10px;
+    padding: 5px 6px;
+  }
 }

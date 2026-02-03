@@ -45,6 +45,7 @@
           <button id="pomodoroBtn" title="Pomodoro Timer">🍅</button>
           <button id="cdPlayerBtn" title="CD Player">💿</button>
           <button id="todoListBtn" title="Todo List">📋</button>
+          <button id="breathingBtn" title="呼吸练习" data-i18n-title="breathing.title">🌬️</button>
           <button id="settingsBtn" title="设置">⚙️</button>
         </div>
 
@@ -324,6 +325,45 @@
         </div>
       </div>
 
+      <!-- Breathing Exercise Panel -->
+      <div id="breathingPanel" class="hidden">
+        <div class="breathing-header">
+          <span data-i18n="breathing.title">呼吸练习</span>
+          <div class="header-controls">
+            <button id="breathingCloseBtn" class="close-btn" title="关闭">✕</button>
+          </div>
+        </div>
+
+        <div class="breathing-content">
+          <div class="breathing-circle-container">
+            <!-- Text is now inside circle to scale with it -->
+            <div id="breathingCircle" class="breathing-circle">
+               <div id="breathingCircleText" class="breathing-circle-text"></div>
+            </div>
+            <div class="breathing-guide-ring"></div>
+          </div>
+          
+          <div class="breathing-controls-area">
+            <div class="breathing-instruction" id="breathingInstruction" data-i18n="breathing.instructions.ready">点击开始</div>
+             <div class="breathing-mode-description-container">
+                 <div class="breathing-mode-rhythm" id="breathingModeRhythm" data-i18n="breathing.descriptions.sleep">吸气 4s · 屏息 7s · 呼气 8s</div>
+                 <div class="breathing-mode-detail" id="breathingModeDetail" data-i18n="breathing.details.sleep">通过长时间呼气激活副交感神经，帮助身体深度放松，适合睡前使用。</div>
+             </div>
+
+            <div class="breathing-modes">
+              <button class="breathing-mode-btn active" data-mode="sleep" data-i18n="breathing.modes.sleep">4-7-8 助眠呼吸</button>
+              <button class="breathing-mode-btn" data-mode="box" data-i18n="breathing.modes.box">箱式呼吸 (专注)</button>
+              <button class="breathing-mode-btn" data-mode="resonance" data-i18n="breathing.modes.resonance">共振呼吸 (心流)</button>
+            </div>
+
+            <div class="breathing-main-btn">
+              <button id="breathingStartBtn" class="breathing-action-btn" data-i18n="breathing.buttons.start">开始</button>
+              <button id="breathingStopBtn" class="breathing-action-btn stop hidden" data-i18n="breathing.buttons.stop">结束</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Settings Panel (Expanded) -->
       <div id="settingsPanel" class="hidden expanded-panel">
         <div class="settings-header">
@@ -582,6 +622,7 @@
   <script src="js/components/health-reminder.js"></script>
   <script src="js/components/settings-panel.js"></script>
   <script src="js/components/todo-list.js"></script>
+  <script src="js/components/breathing.js"></script>
   
   <!-- CD 播放器模块 -->
   <script type="module" src="js/cd-player/index.js"></script>

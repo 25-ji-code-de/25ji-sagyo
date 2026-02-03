@@ -221,6 +221,45 @@
    * 播放提示音
    */
   let alarmAudio = null;
+  let fadeInTimer = null;
+
+  // 闹铃音量配置
+  const ALARM_VOLUME_CONFIG = {
+    min: 0.15,           // 最小音量，确保能听到
+    max: 0.7,            // 最大音量
+    fadeInDuration: 1500, // 渐进增加时间（毫秒）
+    fadeInSteps: 15       // 渐进步数
+  };
+
+  /**
+   * 获取自适应闹铃音量
+   * 基于当前视频/CD播放器音量计算合适的闹铃音量
+   */
+  function getAdaptiveAlarmVolume() {
+    let referenceVolume = 0.5; // 默认参考音量
+
+    // 尝试获取视频播放器音量
+    const video = document.getElementById('video');
+    if (video && !video.muted && video.volume > 0) {
+      referenceVolume = video.volume;
+    }
+
+    // 尝试获取 CD 播放器音量
+    const cdAudio = document.getElementById('cdAudioPlayer');
+    if (cdAudio && !cdAudio.muted && cdAudio.volume > 0) {
+      // 如果两者都有，取较高的
+      referenceVolume = Math.max(referenceVolume, cdAudio.volume);
+    }
+
+    // 计算自适应音量：比参考音量略高
+    // 音量 = 参考音量 * 1.2，限制在 min-max 范围内
+    const adaptiveVolume = Math.min(
+      ALARM_VOLUME_CONFIG.max,
+      Math.max(ALARM_VOLUME_CONFIG.min, referenceVolume * 1.2)
+    );
+
+    return adaptiveVolume;
+  }
 
   function playAlarmSound() {
     // 停止之前的铃声（如果有）
@@ -229,16 +268,39 @@
     try {
       const soundFile = 'sounds/Radar.mp3';
       alarmAudio = new Audio(soundFile);
-      alarmAudio.volume = 0.7;
+      
+      // 使用自适应音量
+      const targetVolume = getAdaptiveAlarmVolume();
+      const startVolume = targetVolume * 0.3; // 从目标音量的30%开始
+      alarmAudio.volume = startVolume;
 
       // 播放铃声
       alarmAudio.play().catch(e => console.warn('Audio playback error:', e));
+
+      // 渐进式增加音量
+      const stepDuration = ALARM_VOLUME_CONFIG.fadeInDuration / ALARM_VOLUME_CONFIG.fadeInSteps;
+      const volumeStep = (targetVolume - startVolume) / ALARM_VOLUME_CONFIG.fadeInSteps;
+      let currentStep = 0;
+
+      fadeInTimer = setInterval(() => {
+        currentStep++;
+        if (alarmAudio && currentStep <= ALARM_VOLUME_CONFIG.fadeInSteps) {
+          alarmAudio.volume = Math.min(targetVolume, startVolume + volumeStep * currentStep);
+        } else {
+          clearInterval(fadeInTimer);
+          fadeInTimer = null;
+        }
+      }, stepDuration);
     } catch (e) {
       console.warn('Audio playback error:', e);
     }
   }
 
   function stopAlarmSound() {
+    if (fadeInTimer) {
+      clearInterval(fadeInTimer);
+      fadeInTimer = null;
+    }
     if (alarmAudio) {
       alarmAudio.pause();
       alarmAudio.currentTime = 0;

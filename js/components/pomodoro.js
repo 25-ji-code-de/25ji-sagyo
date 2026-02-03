@@ -287,11 +287,25 @@
   /**
    * 显示番茄钟完成的应用内通知（toast）
    */
-  function showPomodoroToast(text, icon) {
+  function showPomodoroToast(text, icon, onConfirm) {
     const toast = document.createElement('div');
     toast.className = 'pomodoro-toast';
     const dismissText = window.I18n?.t('pomodoro.toast.dismiss') || '确定';
-    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span><button class="toast-dismiss">${dismissText}</button>`;
+    
+    // Check if there's an active task to show
+    const activeTask = window.TodoList?.getActiveTask?.();
+    const taskInfo = activeTask 
+      ? `<div class="toast-task-info">📝 已记录到: ${activeTask.text}</div>` 
+      : '';
+    
+    toast.innerHTML = `
+      <span class="toast-icon">${icon}</span>
+      <div class="toast-content">
+        <span class="toast-text">${text}</span>
+        ${taskInfo}
+      </div>
+      <button class="toast-dismiss">${dismissText}</button>
+    `;
     document.body.appendChild(toast);
 
     // 动态添加样式（如果不存在）
@@ -321,7 +335,19 @@
           transform: translateX(-50%) translateY(0);
         }
         .pomodoro-toast .toast-icon { font-size: 28px; }
+        .pomodoro-toast .toast-content { display: flex; flex-direction: column; gap: 4px; }
         .pomodoro-toast .toast-text { font-size: 16px; font-weight: 600; }
+        .pomodoro-toast .toast-task-info { 
+          font-size: 12px; 
+          color: rgba(255,255,255,0.7); 
+          background: rgba(255,107,107,0.2);
+          padding: 4px 8px;
+          border-radius: 4px;
+          max-width: 200px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         .pomodoro-toast .toast-dismiss {
           background: rgba(255,255,255,0.15);
           border: none;
@@ -395,6 +421,11 @@
         const message = window.BroadcastMessages.generate('pomodoro_complete', username);
         window.LiveStatus.sendBroadcast(message);
       }
+      
+      // 触发番茄钟完成事件，通知待办事项组件
+      document.dispatchEvent(new CustomEvent('pomodoroComplete', {
+        detail: { mode: 'work', rounds: workRounds }
+      }));
       
       if (workRounds >= maxRounds) {
         currentMode = 'long-break';
@@ -495,6 +526,130 @@
   window.addEventListener('languagechange', () => {
     updateDisplay();
   });
+  
+  // ======= 待办事项联动 =======
+  const activeTaskIndicator = document.getElementById('activeTaskIndicator');
+  const activeTaskName = document.getElementById('activeTaskName');
+  const activeTaskPomoTrack = document.getElementById('activeTaskPomoTrack');
+  const clearActiveTaskBtn = document.getElementById('clearActiveTaskBtn');
+  const quickIntInternal = document.getElementById('quickIntInternal');
+  const quickIntExternal = document.getElementById('quickIntExternal');
+  
+  /**
+   * 渲染番茄追踪可视化 (Tomato Tokens)
+   */
+  function renderPomoTrack(task) {
+    if (!activeTaskPomoTrack) return;
+    
+    if (!task) {
+      activeTaskPomoTrack.innerHTML = '';
+      return;
+    }
+    
+    let html = '<div class="pomo-token-container" style="justify-content: flex-start;">';
+    
+    // Logic: Show max(est, act) tokens. 
+    // If act > est, we just show more done tokens.
+    // If est > act, we show done tokens then est (outlined) tokens.
+    // Minimum 1 to act as placeholder/start.
+    const countToShow = Math.max(task.estPomo, task.actPomo, 1);
+    
+    for (let i = 0; i < countToShow; i++) {
+        let classes = 'pomo-token';
+        if (i < task.actPomo) {
+            classes += ' done'; 
+        } else if (i < task.estPomo) {
+            classes += ' est';
+        }
+        
+        html += `<div class="${classes}" title="Pomodoro ${i+1}"></div>`;
+    }
+    
+    html += '</div>';
+    activeTaskPomoTrack.innerHTML = html;
+  }
+  
+  /**
+   * 更新活动任务显示
+   */
+  function updateActiveTaskDisplay() {
+    if (!activeTaskIndicator || !activeTaskName) return;
+    
+    const task = window.TodoList?.getActiveTask?.();
+    
+    if (task) {
+      activeTaskIndicator.classList.add('has-task');
+      activeTaskName.textContent = task.text;
+      activeTaskName.classList.remove('empty');
+      renderPomoTrack(task);
+    } else {
+      activeTaskIndicator.classList.remove('has-task');
+      activeTaskName.textContent = window.I18n?.t('todo.no_active_task') || '未选择任务';
+      activeTaskName.classList.add('empty');
+      renderPomoTrack(null);
+    }
+    
+    // Update running state
+    if (isRunning && currentMode === 'work') {
+      activeTaskIndicator.classList.add('running');
+    } else {
+      activeTaskIndicator.classList.remove('running');
+    }
+  }
+  
+  // 监听待办事项选择变化
+  document.addEventListener('todoActiveTaskChanged', () => {
+    updateActiveTaskDisplay();
+  });
+  
+  // 监听待办事项数据变化（番茄数更新等）
+  document.addEventListener('todoDataChanged', () => {
+    updateActiveTaskDisplay();
+  });
+  
+  // 清除活动任务按钮
+  if (clearActiveTaskBtn) {
+    clearActiveTaskBtn.addEventListener('click', () => {
+      if (window.TodoList?.setActiveTask) {
+        window.TodoList.setActiveTask(null);
+      }
+    });
+  }
+  
+  // 快速干扰记录按钮
+  if (quickIntInternal) {
+    quickIntInternal.addEventListener('click', () => {
+      const taskId = window.TodoList?.getActiveTaskId?.();
+      if (taskId && window.todoListInstance) {
+        window.todoListInstance.addInterruption(taskId, 'internal');
+      }
+    });
+  }
+  
+  if (quickIntExternal) {
+    quickIntExternal.addEventListener('click', () => {
+      const taskId = window.TodoList?.getActiveTaskId?.();
+      if (taskId && window.todoListInstance) {
+        window.todoListInstance.addInterruption(taskId, 'external');
+      }
+    });
+  }
+  
+  // 初始化时检查活动任务
+  setTimeout(updateActiveTaskDisplay, 500);
+  
+  // 番茄钟状态变化时更新显示
+  const originalStartTimer = startTimer;
+  startTimer = function() {
+    originalStartTimer();
+    updateActiveTaskDisplay();
+  };
+  
+  const originalPauseTimer = pauseTimer;
+  pauseTimer = function() {
+    originalPauseTimer();
+    updateActiveTaskDisplay();
+  };
 
   // 导出到全局命名空间（如果需要外部访问）
   window.PomodoroTimer = {

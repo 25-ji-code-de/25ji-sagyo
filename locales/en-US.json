@@ -2,6 +2,28 @@
   "app": {
     "title": "25-ji, Nightcord de. - 24-Hour Work Companion"
   },
+  "todo": {
+    "title": "📋 To-Do List",
+    "input_placeholder": "Add a new task...",
+    "input_placeholder_today": "Add to Today...",
+    "input_placeholder_inbox": "Add to Inbox...",
+    "add_button_title": "Add Task",
+    "empty": "No tasks yet. Take a break~",
+    "clear_completed": "Clear Completed",
+    "active_task": "🎯 Current Task",
+    "no_active_task": "No task selected",
+    "clear_active_task": "Clear Focus",
+    "section_today": "Today's Focus",
+    "section_inventory": "Inbox",
+    "empty_today": "All tasks done for today?\nOr just getting started?",
+    "empty_inbox": "Inbox is empty...",
+    "add_estimation": "Add Estimation",
+    "interruption_internal": "Internal Interruption",
+    "interruption_external": "External Interruption",
+    "move_to_today": "Move to Today",
+    "move_to_inventory": "Move to Inbox",
+    "unplanned": "Unplanned"
+  },
   "pomodoro": {
     "title": "Pomodoro & World Clock",
     "display": {

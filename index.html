@@ -44,6 +44,7 @@
           <button id="tzToggleBtn" title="Toggle timezone">Toggle TZ</button>
           <button id="pomodoroBtn" title="Pomodoro Timer">🍅</button>
           <button id="cdPlayerBtn" title="CD Player">💿</button>
+          <button id="todoListBtn" title="Todo List">📋</button>
           <button id="settingsBtn" title="设置">⚙️</button>
         </div>
 
@@ -104,6 +105,25 @@
                 <button id="pomodoroStartBtn" class="pomodoro-btn primary" data-i18n="pomodoro.buttons.start">开始</button>
                 <button id="pomodoroPauseBtn" class="pomodoro-btn" data-i18n="pomodoro.buttons.pause" disabled>暂停</button>
                 <button id="pomodoroResetBtn" class="pomodoro-btn" data-i18n="pomodoro.buttons.reset">重置</button>
+              </div>
+
+              <!-- Active Task Indicator (from Todo List) -->
+              <div id="activeTaskIndicator" class="active-task-indicator">
+                <div class="active-task-top-row">
+                  <span class="active-task-label-icon">🎯</span>
+                  <span class="active-task-name-text" id="activeTaskName" data-i18n="todo.no_active_task">未选择任务</span>
+                  <button class="active-task-close-btn" id="clearActiveTaskBtn" data-i18n-title="todo.clear_active_task" title="取消关联">✕</button>
+                </div>
+                
+                <div class="active-task-bottom-row">
+                   <div class="active-task-pomo-track" id="activeTaskPomoTrack">
+                      <!-- Rendered by JS -->
+                   </div>
+                   <div class="active-task-int-btns">
+                      <button class="int-btn internal" id="quickIntInternal" data-i18n-title="todo.interruption_internal" title="内部干扰">'</button>
+                      <button class="int-btn external" id="quickIntExternal" data-i18n-title="todo.interruption_external" title="外部干扰">-</button>
+                   </div>
+                </div>
               </div>
               <div class="pomodoro-settings">
                 <div class="setting-item">
@@ -240,6 +260,68 @@
 
         <!-- Hidden Audio Element -->
         <audio id="cdAudioPlayer" preload="metadata"></audio>
+      </div>
+
+      <!-- Todo List Panel -->
+      <div id="todoPanel" class="hidden side-panel">
+        <div class="panel-header">
+          <span data-i18n="todo.title">📋 待办事项</span>
+          <div class="header-controls">
+            <button id="todoCloseBtn" class="close-btn" title="关闭">✕</button>
+          </div>
+        </div>
+        
+        <div class="todo-body">
+          <div class="todo-scroll-area">
+            <!-- Today's Plan -->
+            <div class="todo-section today-section">
+              <div class="section-header-v2">
+                <span class="section-icon">🍅</span>
+                <span class="section-title-v2" data-i18n="todo.section_today">Today's Focus</span>
+                <span class="section-count" id="todayCount">0</span>
+              </div>
+              
+              <!-- Quick Add to Today -->
+              <div class="todo-input-area v2-input">
+                 <input type="text" id="newTodoInputToday" data-i18n-placeholder="todo.input_placeholder_today" placeholder="Add to Today..." autocomplete="off"/>
+                 <button id="addTodoBtnToday" class="todo-btn primary" data-i18n-title="todo.add_button_title" title="添加任务">➕</button>
+              </div>
+
+              <div class="todo-list-container today-list-container">
+                 <ul id="todoListToday" class="todo-items-v2">
+                    <!-- Items will be injected here -->
+                 </ul>
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Activity Inventory -->
+            <div class="todo-section inventory-section">
+              <div class="section-header-v2">
+                <span class="section-icon">📥</span>
+                <span class="section-title-v2" data-i18n="todo.section_inventory">Inbox</span>
+              </div>
+              <div class="todo-input-area v2-input">
+                 <input type="text" id="newTodoInputInbox" data-i18n-placeholder="todo.input_placeholder_inbox" placeholder="Add to Inbox..." autocomplete="off"/>
+                 <button id="addTodoBtnInbox" class="todo-btn secondary" data-i18n-title="todo.add_button_title" title="添加任务">➕</button>
+              </div>
+              <div class="todo-list-container inventory-list-container">
+                 <ul id="todoListInventory" class="todo-items-v2">
+                    <li class="todo-item-placeholder" style="text-align:center; opacity: 0.5; padding: 20px; font-size: 13px;">
+                        <span style="display:block; font-size: 24px; margin-bottom: 8px;">✨</span>
+                        <span data-i18n="todo.empty_inbox">Collect your ideas here</span>
+                    </li>
+                 </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="todo-footer">
+             <span class="todo-stats">0 items left</span>
+             <button id="clearCompletedBtn" class="text-btn" data-i18n="todo.clear_completed">清除已完成</button>
+          </div>
+        </div>
       </div>
 
       <!-- Settings Panel (Expanded) -->
@@ -499,6 +581,7 @@
   <script src="js/components/world-clock.js"></script>
   <script src="js/components/health-reminder.js"></script>
   <script src="js/components/settings-panel.js"></script>
+  <script src="js/components/todo-list.js"></script>
   
   <!-- CD 播放器模块 -->
   <script type="module" src="js/cd-player/index.js"></script>

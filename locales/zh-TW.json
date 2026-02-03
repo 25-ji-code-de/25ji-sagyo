@@ -2,6 +2,28 @@
   "app": {
     "title": "『25時、Nightcord見。』成員們的 24 小時工作日常"
   },
+  "todo": {
+    "title": "📋 待辦事項",
+    "input_placeholder": "新增任務...",
+    "input_placeholder_today": "新增到今日作業...",
+    "input_placeholder_inbox": "新增到收集箱...",
+    "add_button_title": "新增任務",
+    "empty": "暫時沒有任務，休息一下吧~",
+    "clear_completed": "清除已完成",
+    "active_task": "🎯 目前任務",
+    "no_active_task": "未選擇任務",
+    "clear_active_task": "取消關聯",
+    "section_today": "今日作業 (Today)",
+    "section_inventory": "收集箱 (Inbox)",
+    "empty_today": "今晚的作業都做完了嗎？\n還是說...還沒開始呢？",
+    "empty_inbox": "沒有積壓的任務...\n真難得。",
+    "add_estimation": "增加預估",
+    "interruption_internal": "內部干擾",
+    "interruption_external": "外部干擾",
+    "move_to_today": "移至今日",
+    "move_to_inventory": "移回收集箱",
+    "unplanned": "計畫外"
+  },
   "pomodoro": {
     "title": "番茄鐘 & 世界時鐘",
     "display": {

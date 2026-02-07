@@ -143,6 +143,8 @@
         handleTimerComplete();
       }
     }, 1000);
+
+    updateActiveTaskDisplay();
   }
 
   /**
@@ -155,6 +157,8 @@
     if (startBtn) startBtn.disabled = false;
     if (pauseBtn) pauseBtn.disabled = true;
     savePomodoroState();
+
+    updateActiveTaskDisplay();
   }
 
   /**
@@ -638,19 +642,6 @@
   // 初始化时检查活动任务
   setTimeout(updateActiveTaskDisplay, 500);
   
-  // 番茄钟状态变化时更新显示
-  const originalStartTimer = startTimer;
-  startTimer = function() {
-    originalStartTimer();
-    updateActiveTaskDisplay();
-  };
-  
-  const originalPauseTimer = pauseTimer;
-  pauseTimer = function() {
-    originalPauseTimer();
-    updateActiveTaskDisplay();
-  };
-
   // 导出到全局命名空间（如果需要外部访问）
   window.PomodoroTimer = {
     start: startTimer,

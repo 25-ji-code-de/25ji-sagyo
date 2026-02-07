@@ -2585,9 +2585,12 @@ video{
 
 .section-title {
   font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 4px;
 }
 
 /* Responsive for Settings Panel */
@@ -3316,6 +3319,7 @@ input:checked + .slider:before {
   flex-direction: column;
   padding: 16px;
   overflow: hidden;
+  height: 100%;
 }
 
 .todo-input-area {
@@ -3380,18 +3384,24 @@ input:checked + .slider:before {
 }
 
 .todo-item {
-  display: flex;
+  display: grid;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
+  gap: 8px 12px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  margin-bottom: 8px;
-  transition: background 0.2s;
+  margin-bottom: 6px;
+  transition: all 0.2s ease;
+  grid-template-columns: 24px 1fr auto auto; /* Checkbox | Text | Pomo | Controls */
+  grid-template-rows: auto auto; /* Main Row | Meta Row (if needed) */
+  position: relative;
 }
 
 .todo-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
 }
 
 .todo-item.completed .todo-text {
@@ -3407,6 +3417,8 @@ input:checked + .slider:before {
   border-radius: 4px;
   cursor: pointer;
   position: relative;
+  grid-column: 1;
+  margin: 0;
 }
 
 .todo-checkbox:checked {
@@ -3428,6 +3440,9 @@ input:checked + .slider:before {
   flex: 1;
   font-size: 14px;
   word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .todo-delete-btn {
@@ -3482,8 +3497,8 @@ input:checked + .slider:before {
 
 /* Todo Item Active Task */
 .todo-item.active-task {
-  background: rgba(255, 107, 107, 0.15);
   border: 1px solid rgba(255, 107, 107, 0.3);
+  background: rgba(255, 107, 107, 0.08); /* Red tint for focus */
 }
 
 .todo-focus-btn {
@@ -3522,14 +3537,17 @@ input:checked + .slider:before {
 .active-task-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;            /* Tighter gap */
   padding: 8px 12px;
-  background: rgba(255, 107, 107, 0.1);
-  border: 1px solid rgba(255, 107, 107, 0.2);
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
+  border-radius: 10px;
+  padding: 8px 12px;   /* More compact padding */
+  margin-top: 16px;    /* Space from controls above */
+  margin-bottom: 8px;  /* Space from settings below */
   font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
+  flex-direction: column;
 }
 
 .active-task-indicator .task-label {
@@ -3555,15 +3573,6 @@ input:checked + .slider:before {
 
 .active-task-indicator .clear-task-btn:hover {
   color: #fff;
-}
-
-/* --- Enhanced Todo List Styling (Pomodoro Style) --- */
-
-.todo-body {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
 }
 
 .todo-scroll-area {
@@ -3600,16 +3609,6 @@ input:checked + .slider:before {
   padding-right: 8px;
 }
 
-.section-title {
-  margin: 0;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 600;
-  padding-left: 4px;
-}
-
 .section-info {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.3);
@@ -3621,41 +3620,8 @@ input:checked + .slider:before {
   margin: 4px 0;
 }
 
-/* Updated Todo Item Layout */
-.todo-item {
-  display: grid;
-  grid-template-columns: 24px 1fr auto auto; /* Checkbox | Text | Pomo | Controls */
-  grid-template-rows: auto auto; /* Main Row | Meta Row (if needed) */
-  gap: 8px 12px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  margin-bottom: 6px;
-  align-items: center;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.todo-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(2px);
-}
-
-.todo-item.active-task {
-  background: rgba(255, 107, 107, 0.08); /* Red tint for focus */
-  border-color: rgba(255, 107, 107, 0.3);
-}
-
 .todo-item.completed {
   opacity: 0.6;
-}
-
-/* Checkbox */
-.todo-checkbox {
-  grid-column: 1;
-  margin: 0;
 }
 
 /* Task Text & Unplanned Label */
@@ -3665,13 +3631,6 @@ input:checked + .slider:before {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-}
-
-.todo-text {
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .todo-meta-badges {
@@ -3799,19 +3758,6 @@ input:checked + .slider:before {
 .action-btn.btn-delete:hover { color: #ff6b6b; }
 .action-btn.btn-up:hover { color: #4ade80; }
 
-
-/* --- Active Task Indicator in Pomodoro Panel --- */
-.active-task-indicator {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
-  border-radius: 10px;
-  padding: 8px 12px;   /* More compact padding */
-  margin-top: 16px;    /* Space from controls above */
-  margin-bottom: 8px;  /* Space from settings below */
-  display: flex;
-  flex-direction: column;
-  gap: 6px;            /* Tighter gap */
-}
 
 .active-task-indicator.has-task {
   background: rgba(255, 107, 107, 0.08);

@@ -68,56 +68,14 @@
     const src = sources[key];
     if (!src) return Promise.reject(new Error('Missing source for part ' + key));
 
-    return new Promise((resolve) => {
-      const doSeek = () => {
-        let targetOffset = offsetSeconds;
-        try {
-          if (video.duration && targetOffset > video.duration) {
-            targetOffset = targetOffset % video.duration;
-          }
-        } catch (e) {}
-
-        function onSeeked() {
-          video.removeEventListener('seeked', onSeeked);
-          resolve();
-        }
-
-        video.addEventListener('seeked', onSeeked);
-        try {
-          if (isFinite(targetOffset)) {
-            video.currentTime = Math.max(0, targetOffset);
-          }
-        } catch (err) {
-          setTimeout(() => {
-            try {
-              if (isFinite(targetOffset)) {
-                video.currentTime = Math.max(0, targetOffset);
-              }
-            } catch (e) {}
-          }, 300);
-        }
-      };
-
-      if (!video.src || !video.src.endsWith(src)) {
-        lastPartIndex = partIndex;
-        video.src = src;
-        video.load();
-        video.addEventListener('loadedmetadata', function onMeta() {
-          video.removeEventListener('loadedmetadata', onMeta);
-          doSeek();
-          video.play().catch(() => {});
-        });
-      } else {
-        if (video.readyState >= 1) {
-          doSeek();
-        } else {
-          video.addEventListener('loadedmetadata', function onMeta2() {
-            video.removeEventListener('loadedmetadata', onMeta2);
-            doSeek();
-          });
-        }
-      }
-    });
+    if (!video.src || !video.src.endsWith(src)) {
+      lastPartIndex = partIndex;
+      video.src = src;
+      video.load();
+      return AppHelpers.seekVideoWhenReady(video, offsetSeconds, true);
+    } else {
+      return AppHelpers.seekVideoWhenReady(video, offsetSeconds, false);
+    }
   }
 
   // HLS 回退处理

@@ -114,6 +114,68 @@
     };
   }
 
+  /**
+   * 通用视频 Seek 工具：处理 duration 溢出、seeked 事件监听、readyState 兼容
+   * @param {HTMLVideoElement} video - 视频元素
+   * @param {number} offsetSeconds - 目标位置（秒）
+   * @returns {Promise<void>}
+   */
+  function seekVideo(video, offsetSeconds) {
+    return new Promise((resolve) => {
+      let targetOffset = offsetSeconds;
+      try {
+        if (video.duration && targetOffset > video.duration) {
+          targetOffset = targetOffset % video.duration;
+        }
+      } catch (e) {}
+
+      function onSeeked() {
+        video.removeEventListener('seeked', onSeeked);
+        resolve();
+      }
+
+      video.addEventListener('seeked', onSeeked);
+      try {
+        if (isFinite(targetOffset)) {
+          video.currentTime = Math.max(0, targetOffset);
+        }
+      } catch (err) {
+        setTimeout(() => {
+          try {
+            if (isFinite(targetOffset)) {
+              video.currentTime = Math.max(0, targetOffset);
+            }
+          } catch (e) {}
+        }, 300);
+      }
+    });
+  }
+
+  /**
+   * 等待视频 metadata 加载完成后执行 Seek
+   * @param {HTMLVideoElement} video - 视频元素
+   * @param {number} offsetSeconds - 目标位置（秒）
+   * @param {boolean} [autoPlay=false] - seek 后是否自动播放
+   * @returns {Promise<void>}
+   */
+  function seekVideoWhenReady(video, offsetSeconds, autoPlay = false) {
+    const doSeek = () => {
+      const p = seekVideo(video, offsetSeconds);
+      if (autoPlay) video.play().catch(() => {});
+      return p;
+    };
+
+    if (video.readyState >= 1) {
+      return doSeek();
+    }
+    return new Promise((resolve) => {
+      video.addEventListener('loadedmetadata', function onMeta() {
+        video.removeEventListener('loadedmetadata', onMeta);
+        doSeek().then(resolve);
+      });
+    });
+  }
+
   // 导出到全局命名空间
   window.AppHelpers = {
     formatTimeSeconds,
@@ -121,6 +183,8 @@
     escapeHtml,
     debounce,
     throttle,
-    rgbToHsl
+    rgbToHsl,
+    seekVideo,
+    seekVideoWhenReady
   };
 })();

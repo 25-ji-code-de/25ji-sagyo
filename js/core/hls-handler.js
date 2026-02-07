@@ -183,46 +183,7 @@
    * @returns {Promise<void>}
    */
   function seekTo(video, offsetSeconds) {
-    return new Promise((resolve) => {
-      const doSeek = () => {
-        let targetOffset = offsetSeconds;
-        try {
-          if (video.duration && targetOffset > video.duration) {
-            targetOffset = targetOffset % video.duration;
-          }
-        } catch (e) {}
-
-        function onSeeked() {
-          video.removeEventListener('seeked', onSeeked);
-          resolve();
-        }
-
-        video.addEventListener('seeked', onSeeked);
-        try {
-          if (isFinite(targetOffset)) {
-            video.currentTime = Math.max(0, targetOffset);
-          }
-        } catch (err) {
-          setTimeout(() => {
-            try {
-              if (isFinite(targetOffset)) {
-                video.currentTime = Math.max(0, targetOffset);
-              }
-            } catch (e) {}
-          }, 300);
-        }
-      };
-
-      if (video.readyState >= 1) {
-        doSeek();
-      } else {
-        video.addEventListener('loadedmetadata', function onMeta() {
-          video.removeEventListener('loadedmetadata', onMeta);
-          doSeek();
-          video.play().catch(() => {});
-        });
-      }
-    });
+    return AppHelpers.seekVideoWhenReady(video, offsetSeconds, true);
   }
 
   /**

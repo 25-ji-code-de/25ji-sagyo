@@ -3538,11 +3538,10 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 6px;            /* Tighter gap */
-  padding: 8px 12px;
+  padding: 8px 12px;   /* More compact padding */
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
   border-radius: 10px;
-  padding: 8px 12px;   /* More compact padding */
   margin-top: 16px;    /* Space from controls above */
   margin-bottom: 8px;  /* Space from settings below */
   font-size: 13px;

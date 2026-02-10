@@ -30,17 +30,17 @@
       }
 
       if (headResp.status === 404) {
-        // 404 时触发上传
+        // 404 时触发预取
         try {
-          const uploadResp = await fetch(`${R2_BASE}/upload?path=${encodeURIComponent(path)}`);
+          const uploadResp = await fetch(`https://api.nightcord.de5.net/assets/prefetch?path=${encodeURIComponent(path)}`);
           const result = await uploadResp.json();
-          
-          if (result.status === 'uploaded' || result.status === 'exists') {
+
+          if (result.status === 'prefetched' || result.status === 'exists') {
             knownAssets.add(path);
             return r2Url;
           }
         } catch (e) {
-          console.warn('Upload trigger failed:', e);
+          console.warn('Prefetch trigger failed:', e);
         }
       }
     } catch (e) {

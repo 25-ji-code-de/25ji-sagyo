@@ -5,7 +5,7 @@
 
 import { state } from './constants.js';
 
-const API_URL = 'https://storage.nightcord.de5.net/music_data.json';
+const API_URL = 'https://api.nightcord.de5.net/sekai/music_data.json';
 
 /**
  * Load music data from unified API

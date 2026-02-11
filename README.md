@@ -244,8 +244,8 @@ Web Audio API 播放
 ## ⚖️ 法律文档
 
 - [版权声明](./COPYRIGHT.md)
-- [隐私政策](./PRIVACY_POLICY.md)
-- [用户服务协议](./TERMS_OF_SERVICE.md)
+- [隐私政策](https://docs.nightcord.de5.net/legal/complete/privacy-25ji)
+- [用户服务协议](https://docs.nightcord.de5.net/legal/complete/terms-25ji)
 
 ## 📧 联系方式
 

@@ -93,7 +93,6 @@ python3 -m http.server
 │       └── search.js         # 搜索功能
 │
 ├── tutorials/                # 教程文档
-├── CLAUDE.md                 # Claude Code 指南
 ├── README.md
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md

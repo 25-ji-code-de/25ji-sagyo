@@ -334,11 +334,25 @@
       userStats.pomodoro_count++;
       addActivity('pomodoro', `完成了第 ${userStats.pomodoro_count} 个番茄钟`);
       checkAchievements('pomodoro_count');
+
+      // 上报到 Gateway
+      if (window.SekaiAPI) {
+        window.SekaiAPI.reportEvent('pomodoro_completed', {
+          count: userStats.pomodoro_count
+        });
+      }
     },
     incrementSongs: () => {
       userStats.songs_played++;
       saveStats();
       checkAchievements('songs_played');
+
+      // 上报到 Gateway
+      if (window.SekaiAPI) {
+        window.SekaiAPI.reportEvent('song_played', {
+          count: userStats.songs_played
+        });
+      }
     },
     addFocusTime: (seconds) => {
       // 更新今日时间
@@ -352,6 +366,15 @@
       saveStats();
       checkAchievements('total_time');
       if (seconds >= 3600) checkAchievements('session_duration', seconds);
+
+      // 上报到 Gateway（每次学习时长更新）
+      if (window.SekaiAPI) {
+        window.SekaiAPI.reportEvent('study_time', {
+          seconds: seconds,
+          total_time: userStats.total_time,
+          today_time: userStats.today_time
+        });
+      }
     },
     updateUI: updateAchievementsUI,
     getStats,

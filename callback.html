@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录中... | 25時作業風景</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f8fafc;
+            font-family: system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            padding: 2rem;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #ef4444;
+            margin-top: 1rem;
+        }
+        a {
+            color: #a78bfa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div id="status">正在验证您的身份...</div>
+    </div>
+
+    <script src="js/utils/config.js"></script>
+    <script src="js/utils/auth.js"></script>
+    <script>
+        async function handleCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            if (error) {
+                document.getElementById('status').innerHTML =
+                    `<div class="error">认证失败: ${error}</div>`;
+                return;
+            }
+
+            if (!code || !state) {
+                document.getElementById('status').innerHTML =
+                    '参数无效，正在返回...<br><a href="/">返回首页</a>';
+                setTimeout(() => window.location.href = '/', 2000);
+                return;
+            }
+
+            try {
+                await window.SekaiAuth.handleCallback(code, state);
+                document.getElementById('status').textContent = '登录成功，正在跳转...';
+                setTimeout(() => window.location.href = '/', 1000);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status').innerHTML =
+                    `<div class="error">登录失败: ${err.message}</div><br><a href="/">返回首页</a>`;
+            }
+        }
+
+        handleCallback();
+    </script>
+</body>
+</html>

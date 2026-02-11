@@ -12,13 +12,23 @@
     }
 
     // 检查登录状态并更新 UI
-    function updateLoginUI() {
+    async function updateLoginUI() {
       if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
         loginBtn.textContent = '已登录 ✓';
         loginBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+
+        // 更新设置面板中的昵称显示
+        if (window.SettingsPanel && window.SettingsPanel.updateHomeTab) {
+          await window.SettingsPanel.updateHomeTab();
+        }
       } else {
         loginBtn.textContent = '登录 / 注册';
         loginBtn.style.background = '';
+
+        // 更新设置面板中的昵称显示
+        if (window.SettingsPanel && window.SettingsPanel.updateHomeTab) {
+          await window.SettingsPanel.updateHomeTab();
+        }
       }
     }
 
@@ -46,9 +56,9 @@
     updateLoginUI();
 
     // 监听登录状态变化
-    window.addEventListener('storage', (e) => {
+    window.addEventListener('storage', async (e) => {
       if (e.key === 'sekai_access_token') {
-        updateLoginUI();
+        await updateLoginUI();
       }
     });
   });

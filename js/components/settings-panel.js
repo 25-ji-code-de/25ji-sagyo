@@ -106,7 +106,7 @@
   /**
    * 更新主页标签
    */
-  function updateHomeTab() {
+  async function updateHomeTab() {
     // 更新问候语
     const hour = new Date().getHours();
     let greetingKey = 'settings.home.greeting.default';
@@ -119,10 +119,48 @@
       greetingText.textContent = window.I18n.t(greetingKey);
     }
 
-    // 更新昵称
-    const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
-    const savedNickname = localStorage.getItem('userNickname') || defaultNickname;
-    if (userNickname) userNickname.textContent = savedNickname;
+    // 更新昵称 - 登录后使用用户名
+    let displayNickname;
+    let isLoggedIn = false;
+
+    if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
+      const userInfo = await window.SekaiAuth.getUserInfo();
+      if (userInfo) {
+        displayNickname = userInfo.preferred_username || userInfo.name || userInfo.email;
+        isLoggedIn = true;
+        // 登录后，将用户名保存到 localStorage（用于其他功能）
+        const oldNickname = localStorage.getItem('userNickname');
+        if (oldNickname !== displayNickname) {
+          localStorage.setItem('userNickname', displayNickname);
+          // 通知 LiveStatus 更新用户名（重新连接）
+          if (window.LiveStatus && window.LiveStatus.updateUsername) {
+            window.LiveStatus.updateUsername();
+          }
+        }
+      }
+    }
+
+    if (!isLoggedIn) {
+      const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
+      displayNickname = localStorage.getItem('userNickname') || defaultNickname;
+    }
+
+    if (userNickname) userNickname.textContent = displayNickname;
+
+    // 更新编辑按钮状态
+    if (editNicknameBtn) {
+      if (isLoggedIn) {
+        editNicknameBtn.disabled = true;
+        editNicknameBtn.style.opacity = '0.5';
+        editNicknameBtn.style.cursor = 'not-allowed';
+        editNicknameBtn.title = '登录后昵称锁定为用户名';
+      } else {
+        editNicknameBtn.disabled = false;
+        editNicknameBtn.style.opacity = '1';
+        editNicknameBtn.style.cursor = 'pointer';
+        editNicknameBtn.title = '编辑昵称';
+      }
+    }
 
     // 更新统计摘要
     const savedStats = localStorage.getItem('userStats');
@@ -160,12 +198,18 @@
 
   // 编辑昵称
   if (editNicknameBtn) {
-    editNicknameBtn.addEventListener('click', () => {
+    editNicknameBtn.addEventListener('click', async () => {
+      // 检查是否已登录
+      if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
+        alert('登录后昵称已锁定为用户名，无法修改。');
+        return;
+      }
+
       const currentName = localStorage.getItem('userNickname') || '「世界」的居民';
       const newName = prompt('请输入你的昵称:', currentName);
       if (newName && newName.trim() !== '') {
         localStorage.setItem('userNickname', newName.trim());
-        updateHomeTab();
+        await updateHomeTab();
         // 通知 LiveStatus 更新用户名
         if (window.LiveStatus && window.LiveStatus.updateUsername) {
           window.LiveStatus.updateUsername();

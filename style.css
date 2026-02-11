@@ -4494,3 +4494,76 @@ input:checked + .slider:before {
     padding: 5px 6px;
   }
 }
+
+/* Sync Panel Styles */
+.settings-content-inner {
+  padding: 0 10px;
+}
+.settings-content-inner.hidden {
+  display: none;
+}
+.user-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  background: rgba(255,255,255,0.05);
+  padding: 16px;
+  border-radius: 12px;
+}
+.user-avatar-circle {
+  width: 48px;
+  height: 48px;
+  background: #64b5f6;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+}
+.user-details {
+  flex: 1;
+  overflow: hidden;
+}
+.user-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-email {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sync-status-box {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+}
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.status-label {
+  color: rgba(255,255,255,0.6);
+}
+.status-value {
+  color: #fff;
+  font-family: monospace;
+}
+.settings-actions {
+  margin-top: 24px;
+}
+.full-width {
+  width: 100%;
+}

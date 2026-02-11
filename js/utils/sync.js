@@ -255,6 +255,7 @@
           this.applyCloudData(result.data);
 
           localStorage.setItem('sync_version', result.version.toString());
+          localStorage.setItem('last_sync_time', Date.now().toString());
 
           console.log(`Data synced successfully, version: ${result.version}`);
 

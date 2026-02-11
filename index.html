@@ -485,11 +485,42 @@
 
             <!-- Sync Tab -->
             <div class="tab-content" id="tab-sync">
-              <div class="empty-state">
+              <!-- Logged out state -->
+              <div id="sync-logged-out" class="empty-state">
                 <div class="empty-icon">☁️</div>
                 <h3 data-i18n="settings.sync.title">云端同步</h3>
                 <p data-i18n="settings.sync.desc">登录以同步您的专注时长、成就和偏好设置。</p>
-                <button class="primary-btn" data-i18n="settings.sync.login_btn">登录 / 注册</button>
+                <button class="primary-btn" id="syncLoginBtn" data-i18n="settings.sync.login_btn">登录 / 注册</button>
+              </div>
+
+              <!-- Logged in state -->
+              <div id="sync-logged-in" class="settings-content-inner hidden">
+                <div class="user-profile-header">
+                  <div class="user-avatar-circle" id="syncUserAvatar">U</div>
+                  <div class="user-details">
+                    <div class="user-name" id="syncUserName">User</div>
+                    <div class="user-email" id="syncUserEmail">user@example.com</div>
+                  </div>
+                </div>
+
+                <div class="settings-section">
+                  <h3>同步状态</h3>
+                  <div class="sync-status-box">
+                    <div class="status-item">
+                      <span class="status-label">上次同步</span>
+                      <span class="status-value" id="lastSyncTime">从未同步</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-actions">
+                  <button class="primary-btn full-width" id="manualSyncBtn">
+                    🔄 立即同步
+                  </button>
+                  <button class="secondary-btn full-width" id="syncLogoutBtn" style="margin-top: 12px; color: #ff6b6b; border-color: rgba(255,107,107,0.3);">
+                    退出登录
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -627,6 +658,7 @@
   <script src="js/components/world-clock.js"></script>
   <script src="js/components/health-reminder.js"></script>
   <script src="js/components/settings-panel.js"></script>
+  <script src="js/components/sync-panel.js"></script>
   <script src="js/components/todo-list.js"></script>
   <script src="js/components/breathing.js"></script>
   

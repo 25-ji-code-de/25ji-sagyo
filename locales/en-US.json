@@ -109,7 +109,16 @@
     "sync": {
       "title": "Cloud Sync",
       "desc": "Sign in to sync your focus time, achievements, and preferences.",
-      "login_btn": "Sign In / Sign Up"
+      "login_btn": "Sign In / Sign Up",
+      "status_title": "Sync Status",
+      "last_sync": "Last Sync",
+      "never_synced": "Never synced",
+      "sync_now": "🔄 Sync Now",
+      "syncing": "⏳ Syncing...",
+      "logout": "Sign Out",
+      "logout_confirm": "Are you sure you want to sign out?",
+      "sync_module_not_loaded": "Sync module not loaded",
+      "sync_failed": "Sync failed"
     },
     "stats": {
       "today_focus": "Today's Focus (min)",

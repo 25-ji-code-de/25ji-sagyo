@@ -109,7 +109,16 @@
     "sync": {
       "title": "クラウド同期",
       "desc": "ログインして、作業時間、実績、設定を同期します。",
-      "login_btn": "ログイン / 新規登録"
+      "login_btn": "ログイン / 新規登録",
+      "status_title": "同期状態",
+      "last_sync": "最終同期",
+      "never_synced": "未同期",
+      "sync_now": "🔄 今すぐ同期",
+      "syncing": "⏳ 同期中...",
+      "logout": "ログアウト",
+      "logout_confirm": "ログアウトしてもよろしいですか？",
+      "sync_module_not_loaded": "同期モジュールが読み込まれていません",
+      "sync_failed": "同期に失敗しました"
     },
     "stats": {
       "today_focus": "今日の作業 (分)",

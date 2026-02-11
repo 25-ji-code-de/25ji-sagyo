@@ -23,15 +23,17 @@
 
 
   function formatTime(timestamp) {
-    if (!timestamp) return '从未同步';
+    if (!timestamp) return window.I18n?.t('settings.sync.never_synced') || 'Never synced';
     try {
         const date = new Date(parseInt(timestamp));
-        if (isNaN(date.getTime())) return '从未同步';
-        return date.toLocaleString('zh-CN', {
-            month: '2-digit', day: '2-digit', 
+        if (isNaN(date.getTime())) return window.I18n?.t('settings.sync.never_synced') || 'Never synced';
+        return date.toLocaleString(window.I18n?.getCurrentLanguage() || 'zh-CN', {
+            month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
         });
-    } catch(e) { return '从未同步'; }
+    } catch(e) {
+        return window.I18n?.t('settings.sync.never_synced') || 'Never synced';
+    }
   }
 
   async function updateSyncUI() {
@@ -41,8 +43,8 @@
     const isAuth = window.SekaiAuth && window.SekaiAuth.isAuthenticated();
 
     if (isAuth) {
-      loggedOutView.classList.add('hidden');
-      loggedInView.classList.remove('hidden');
+      loggedOutView.classList.add('sekai-hidden');
+      loggedInView.classList.remove('sekai-hidden');
 
       // Update User Info
       try {
@@ -65,8 +67,8 @@
       if (lastSyncTime) lastSyncTime.textContent = formatTime(lastSync);
 
     } else {
-      loggedOutView.classList.remove('hidden');
-      loggedInView.classList.add('hidden');
+      loggedOutView.classList.remove('sekai-hidden');
+      loggedInView.classList.add('sekai-hidden');
     }
   }
 
@@ -77,19 +79,19 @@
       
       manualSyncBtn.disabled = true;
       const originalText = manualSyncBtn.innerHTML;
-      manualSyncBtn.innerHTML = '<span>⏳</span> 同步中...';
-      
+      manualSyncBtn.innerHTML = window.I18n?.t('settings.sync.syncing') || '⏳ Syncing...';
+
       try {
         if (window.DataSync) {
             await window.DataSync.manualSync();
             // DataSync.manualSync alerts on finish, we just update UI
             updateSyncUI();
         } else {
-            alert('同步模块未加载');
+            alert(window.I18n?.t('settings.sync.sync_module_not_loaded') || 'Sync module not loaded');
         }
       } catch(e) {
         console.error(e);
-        alert('同步失败');
+        alert(window.I18n?.t('settings.sync.sync_failed') || 'Sync failed');
       } finally {
         manualSyncBtn.disabled = false;
         manualSyncBtn.innerHTML = originalText;
@@ -100,7 +102,8 @@
   // Handle Logout
   if (syncLogoutBtn) {
       syncLogoutBtn.addEventListener('click', () => {
-        if (confirm('确定要退出登录吗？')) {
+        const confirmMsg = window.I18n?.t('settings.sync.logout_confirm') || 'Are you sure you want to logout?';
+        if (confirm(confirmMsg)) {
             if (window.SekaiAuth) {
                 window.SekaiAuth.logout();
                 // Logout usually reloads or we manually update

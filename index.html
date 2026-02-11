@@ -494,7 +494,7 @@
               </div>
 
               <!-- Logged in state -->
-              <div id="sync-logged-in" class="settings-content-inner hidden">
+              <div id="sync-logged-in" class="settings-content-inner sekai-hidden">
                 <div class="user-profile-header">
                   <div class="user-avatar-circle" id="syncUserAvatar">U</div>
                   <div class="user-details">
@@ -504,20 +504,20 @@
                 </div>
 
                 <div class="settings-section">
-                  <h3>同步状态</h3>
+                  <h3 data-i18n="settings.sync.status_title">同步状态</h3>
                   <div class="sync-status-box">
                     <div class="status-item">
-                      <span class="status-label">上次同步</span>
-                      <span class="status-value" id="lastSyncTime">从未同步</span>
+                      <span class="status-label" data-i18n="settings.sync.last_sync">上次同步</span>
+                      <span class="status-value" id="lastSyncTime" data-i18n="settings.sync.never_synced">从未同步</span>
                     </div>
                   </div>
                 </div>
 
                 <div class="settings-actions">
-                  <button class="primary-btn full-width" id="manualSyncBtn">
+                  <button class="primary-btn full-width" id="manualSyncBtn" data-i18n="settings.sync.sync_now">
                     🔄 立即同步
                   </button>
-                  <button class="secondary-btn danger-btn full-width" id="syncLogoutBtn">
+                  <button class="sekai-secondary-btn sekai-danger-btn full-width" id="syncLogoutBtn" data-i18n="settings.sync.logout">
                     退出登录
                   </button>
                 </div>

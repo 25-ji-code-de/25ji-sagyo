@@ -12,17 +12,109 @@
     }
 
     /**
+     * 收集本地数据准备上传
+     */
+    collectLocalData() {
+      const data = {};
+
+      // 1. 用户统计数据（总是包含）
+      const userStats = localStorage.getItem('userStats');
+      if (userStats) {
+        data.userStats = JSON.parse(userStats);
+      }
+
+      // 2. 偏好设置（只在用户修改过时包含）
+      const preferencesModified = localStorage.getItem('preferences_modified');
+      if (preferencesModified) {
+        data.preferences = {
+          language: localStorage.getItem('app_language'),
+          worldClockTimeZones: JSON.parse(localStorage.getItem('worldClockTimeZones') || 'null'),
+          healthReminderConfig: JSON.parse(localStorage.getItem('health_reminder_config') || 'null'),
+          visualizationEnabled: localStorage.getItem('visualizationEnabled'),
+          clockWidgetVisible: localStorage.getItem('clockWidgetVisible'),
+          userNickname: localStorage.getItem('userNickname')
+        };
+        data.preferences_modified = true;
+      }
+
+      // 3. CD 播放器设置（只在用户使用过时包含）
+      const cdPlayerUsed = localStorage.getItem('cdPlayer_used');
+      if (cdPlayerUsed) {
+        data.cdPlayer = {
+          volume: localStorage.getItem('cd_player_volume'),
+          favorites: JSON.parse(localStorage.getItem('cd_player_favorites') || '[]'),
+          playlists: JSON.parse(localStorage.getItem('cd_player_playlists') || '[]'),
+          lastTrackId: localStorage.getItem('cd_player_last_track_id'),
+          lastVocalId: localStorage.getItem('cd_player_last_vocal_id'),
+          vocalPreference: localStorage.getItem('cd_player_vocal_preference'),
+          repeat: localStorage.getItem('cd_player_repeat'),
+          shuffle: localStorage.getItem('cd_player_shuffle'),
+          preferredCharacters: JSON.parse(localStorage.getItem('cd_player_preferred_characters') || '[]')
+        };
+        data.cdPlayer_used = true;
+      }
+
+      return data;
+    }
+
+    /**
+     * 应用云端数据到本地
+     */
+    applyCloudData(cloudData) {
+      // 1. 用户统计数据
+      if (cloudData.userStats) {
+        localStorage.setItem('userStats', JSON.stringify(cloudData.userStats));
+      }
+
+      // 2. 偏好设置
+      if (cloudData.preferences) {
+        const prefs = cloudData.preferences;
+        if (prefs.language) localStorage.setItem('app_language', prefs.language);
+        if (prefs.worldClockTimeZones) localStorage.setItem('worldClockTimeZones', JSON.stringify(prefs.worldClockTimeZones));
+        if (prefs.healthReminderConfig) localStorage.setItem('health_reminder_config', JSON.stringify(prefs.healthReminderConfig));
+        if (prefs.visualizationEnabled !== undefined) localStorage.setItem('visualizationEnabled', prefs.visualizationEnabled);
+        if (prefs.clockWidgetVisible !== undefined) localStorage.setItem('clockWidgetVisible', prefs.clockWidgetVisible);
+        if (prefs.userNickname) localStorage.setItem('userNickname', prefs.userNickname);
+
+        localStorage.setItem('preferences_modified', 'true');
+      }
+
+      // 3. CD 播放器设置
+      if (cloudData.cdPlayer) {
+        const cd = cloudData.cdPlayer;
+        if (cd.volume !== undefined) localStorage.setItem('cd_player_volume', cd.volume);
+        if (cd.favorites) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
+        if (cd.playlists) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
+        if (cd.lastTrackId) localStorage.setItem('cd_player_last_track_id', cd.lastTrackId);
+        if (cd.lastVocalId) localStorage.setItem('cd_player_last_vocal_id', cd.lastVocalId);
+        if (cd.vocalPreference) localStorage.setItem('cd_player_vocal_preference', cd.vocalPreference);
+        if (cd.repeat !== undefined) localStorage.setItem('cd_player_repeat', cd.repeat);
+        if (cd.shuffle !== undefined) localStorage.setItem('cd_player_shuffle', cd.shuffle);
+        if (cd.preferredCharacters) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
+
+        localStorage.setItem('cdPlayer_used', 'true');
+      }
+    }
+
+    /**
      * 首次登录时的数据迁移
      */
     async migrateLocalData() {
-      const localStats = localStorage.getItem('userStats');
       const migrated = localStorage.getItem('data_migrated');
 
-      if (!localStats || migrated) {
+      if (migrated) {
         return { migrated: false };
       }
 
-      const stats = JSON.parse(localStats);
+      // 收集本地数据
+      const localData = this.collectLocalData();
+
+      // 检查是否有数据需要迁移
+      if (!localData.userStats || Object.keys(localData.userStats).length === 0) {
+        return { migrated: false, noData: true };
+      }
+
+      const stats = localData.userStats;
 
       // 显示迁移确认
       const confirm = window.confirm(
@@ -41,9 +133,12 @@
 
       try {
         // 上传本地数据
-        const response = await this.uploadData(stats);
+        const response = await this.uploadData(localData);
 
         if (response.success) {
+          // 应用合并后的数据
+          this.applyCloudData(response.data);
+
           localStorage.setItem('data_migrated', 'true');
           localStorage.setItem('sync_version', response.version.toString());
 
@@ -144,21 +239,21 @@
       }
 
       try {
-        // 1. 获取本地数据
-        const localStats = localStorage.getItem('userStats');
-        if (!localStats) {
+        // 1. 收集本地数据
+        const localData = this.collectLocalData();
+
+        if (!localData.userStats) {
           console.log('No local data to sync');
           return;
         }
-
-        const localData = JSON.parse(localStats);
 
         // 2. 上传并获取合并后的数据
         const result = await this.uploadData(localData);
 
         if (result.success) {
-          // 3. 更新本地数据为合并后的数据
-          localStorage.setItem('userStats', JSON.stringify(result.data));
+          // 3. 应用合并后的数据到本地
+          this.applyCloudData(result.data);
+
           localStorage.setItem('sync_version', result.version.toString());
 
           console.log(`Data synced successfully, version: ${result.version}`);

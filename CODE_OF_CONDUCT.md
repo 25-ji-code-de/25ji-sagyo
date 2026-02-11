@@ -34,10 +34,14 @@
 
 ## 执行
 
-如遇滥用、骚扰或其他不可接受的行为，可通过联系项目维护者报告。所有投诉都将得到审查和调查，并产生被认为必要且适合具体情况的回应。维护者有义务对事件报告者保密。具体执行政策的更多细节可能会单独发布。
+如遇滥用、骚扰或其他不可接受的行为，可通过 GitHub Issues 或联系项目维护者报告。所有投诉都将得到审查和调查，并产生被认为必要且适合具体情况的回应。维护者有义务对事件报告者保密。具体执行政策的更多细节可能会单独发布。
 
 不真诚地遵守或执行本行为准则的维护者可能会面临项目领导层其他成员确定的暂时或永久性后果。
 
 ## 归属
 
-本行为准则改编自 [Contributor Covenant](https://www.contributor-covenant.org)，版本 1.4，可在 https://www.contributor-covenant.org/version/1/4/code-of-conduct.html 获取。
+本行为准则改编自 [Contributor Covenant](https://www.contributor-covenant.org)，版本 2.1，可在 https://www.contributor-covenant.org/version/2/1/code_of_conduct.html 获取。
+
+社区影响指南受 [Mozilla 行为准则执行阶梯](https://github.com/mozilla/diversity) 启发。
+
+有关此行为准则的常见问题解答，请参阅 https://www.contributor-covenant.org/faq。翻译版本可在 https://www.contributor-covenant.org/translations 获取。

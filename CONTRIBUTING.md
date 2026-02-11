@@ -1,75 +1,195 @@
-# 贡献指南
+# 贡献指南 (Contributing Guide)
 
-感谢你对 **25时、Nightcord见。作业陪伴 (25ji-sagyo)** 项目感兴趣！我们需要你的帮助来让这个项目变得更好。
+感谢你对 **SEKAI 生态**的关注！我们欢迎任何形式的贡献。
 
-## 👋 欢迎
+## 🌐 SEKAI 生态
 
-无论你是想修复 bug、改进文档、添加新功能，还是仅仅想提出建议，我们都非常欢迎！
+本项目是 SEKAI 生态的一部分。查看完整的项目列表：**[SEKAI 门户](https://sekai.nightcord.de5.net)**
 
-## 🛠️ 开发环境设置
+## 🤝 如何贡献
 
-本项目是一个纯静态网页应用，不需要复杂的构建工具。
+### 报告 Bug
 
-1. **Fork 本仓库**：点击右上角的 "Fork" 按钮。
-2. **克隆代码**：
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/25ji-sagyo.git
-   cd 25ji-sagyo
-   ```
-3. **运行项目**：
-   - 你可以直接在浏览器中打开 `index.html`。
-   - 或者使用 VS Code 的 Live Server 插件。
-   - 或者使用 Python 启动简单的 HTTP 服务器：
-     ```bash
-     python3 -m http.server
-     ```
+如果你发现了 Bug，请通过 GitHub Issues 报告：
 
-## 🐛 提交 Bug
+1. 检查是否已有相同的 Issue
+2. 使用清晰的标题描述问题
+3. 提供详细的复现步骤
+4. 说明预期行为和实际行为
+5. 提供环境信息（浏览器、操作系统等）
+6. 如果可能，提供截图或错误日志
 
-如果你发现了 bug，请在提交 Issue 之前：
+### 提出新功能
 
-1. 搜索现有的 Issue，看看是否已经有人报告过。
-2. 如果没有，请创建一个新的 Issue，并使用 **Bug Report** 模板。
-3. 请提供清晰的复现步骤、预期行为和实际行为。
+我们欢迎新功能建议：
 
-## 💡 提交新功能建议
+1. 先在 Issues 中讨论你的想法
+2. 说明功能的使用场景和价值
+3. 如果可能，提供设计草图或示例
+4. 等待维护者反馈后再开始开发
 
-如果你有新的想法：
+### 提交代码
 
-1. 搜索现有的 Issue，看看是否已经有人提过类似的建议。
-2. 创建一个新的 Issue，并使用 **Feature Request** 模板。
-3. 详细描述你的想法以及它能解决什么问题。
+#### 1. Fork 并克隆仓库
 
-## 💻 提交代码 (Pull Request)
+```bash
+# Fork 仓库后克隆到本地
+git clone https://github.com/your-username/25ji-sagyo.git
+cd 25ji-sagyo
 
-1. **创建一个新分支**：
-   ```bash
-   git checkout -b feature/my-new-feature
-   # 或者
-   git checkout -b fix/my-bug-fix
-   ```
-2. **进行修改**：请保持代码风格与现有代码一致。
-3. **提交更改**：
-   ```bash
-   git commit -m "feat: 添加了某个很棒的功能"
-   ```
-   请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范。
-4. **推送到你的 Fork**：
-   ```bash
-   git push origin feature/my-new-feature
-   ```
-5. **提交 Pull Request**：
-   - 访问 GitHub 上的原始仓库。
-   - 点击 "New Pull Request"。
-   - 填写 PR 模板，描述你的更改。
+# 添加上游仓库
+git remote add upstream https://github.com/25-ji-code-de/25ji-sagyo.git
+```
 
-## 🎨 代码风格
+#### 2. 创建分支
 
-- **HTML/CSS/JS**：请保持缩进和格式的一致性（本项目主要使用 2 空格或 4 空格缩进，请参考现有文件）。
-- **注释**：关键逻辑请添加注释。
+```bash
+# 从 main 分支创建新分支
+git checkout -b feature/your-feature-name
+# 或
+git checkout -b fix/your-bug-fix
+```
 
-## 📜 许可证
+#### 3. 进行修改
 
-参与本项目即表示你同意你的贡献将根据项目的 [MIT License](LICENSE) 授权。
+- 遵循项目的代码风格
+- 添加必要的注释
+- 确保代码可以正常运行
+- 如果需要，更新文档
 
-感谢你的贡献！✨
+#### 4. 提交更改
+
+我们使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+
+```bash
+# 提交格式
+<type>: <description>
+
+# 类型 (type)
+feat:     新功能
+fix:      Bug 修复
+docs:     文档更新
+style:    代码格式（不影响功能）
+refactor: 重构
+test:     测试相关
+chore:    构建/工具相关
+perf:     性能优化
+
+# 示例
+git commit -m "feat: 添加用户头像上传功能"
+git commit -m "fix: 修复聊天消息重复显示的问题"
+git commit -m "docs: 更新 API 文档"
+```
+
+#### 5. 推送并创建 Pull Request
+
+```bash
+# 推送到你的 Fork
+git push origin feature/your-feature-name
+
+# 在 GitHub 上创建 Pull Request
+```
+
+**Pull Request 要求：**
+- 清晰的标题和描述
+- 关联相关的 Issue（如果有）
+- 通过所有测试（如果有）
+- 代码审查通过
+
+## 📝 开发规范
+
+### 代码风格
+
+**JavaScript/TypeScript 项目：**
+- 使用 2 空格缩进
+- 使用 ES6+ 语法
+- 变量命名使用 camelCase
+- 常量使用 UPPER_SNAKE_CASE
+- 类名使用 PascalCase
+
+**关键逻辑必须添加注释：**
+```javascript
+// ✅ 好的注释
+// 计算视频片段和偏移量，基于当前时间
+const { part, offset } = computePartAndOffset(currentTime);
+
+// ❌ 不必要的注释
+// 设置变量 x 为 10
+const x = 10;
+```
+
+### Git 工作流
+
+1. **保持分支更新**
+```bash
+git fetch upstream
+git rebase upstream/main
+```
+
+2. **小步提交**
+- 每个 commit 只做一件事
+- commit 信息要清晰明确
+
+3. **避免强制推送**
+- 不要使用 `git push --force` 到公共分支
+- 如果必须，使用 `git push --force-with-lease`
+
+### 测试
+
+- 如果项目有测试，确保所有测试通过
+- 为新功能添加测试（如果适用）
+- 手动测试你的更改
+
+## 🔍 代码审查
+
+所有 Pull Request 都需要经过代码审查：
+
+- 维护者会审查你的代码
+- 可能会要求修改
+- 请及时响应反馈
+- 保持友好和专业的态度
+
+## 📚 文档
+
+如果你的更改影响了用户使用方式：
+
+- 更新 README.md
+- 更新相关文档
+- 添加代码注释
+- 如果需要，添加示例
+
+## 🎯 优先级
+
+我们特别欢迎以下类型的贡献：
+
+- 🐛 Bug 修复
+- 📝 文档改进
+- ♿ 可访问性改进
+- 🌐 国际化/本地化
+- ⚡ 性能优化
+- 🧪 测试覆盖
+
+## ❓ 需要帮助？
+
+- 查看项目的 [README.md](./README.md)
+- 浏览现有的 [Issues](https://github.com/25-ji-code-de/25ji-sagyo/issues)
+- 在 Issue 中提问
+- 查看其他 SEKAI 生态项目的实现
+
+## 📜 行为准则
+
+参与本项目即表示你同意遵守我们的 [行为准则](./CODE_OF_CONDUCT.md)。
+
+## 📄 许可证
+
+通过贡献代码，你同意你的贡献将在 MIT 许可证下发布。
+
+---
+
+再次感谢你的贡献！🎉
+
+<div align="center">
+
+Made with 💜 by the [25-ji-code-de](https://github.com/25-ji-code-de) team
+
+</div>

@@ -313,15 +313,20 @@
   window.DataSync = new DataSync();
 
   // 登录后自动启动同步
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     if (Auth.isAuthenticated()) {
       // 检查是否需要迁移
-      DataSync.migrateLocalData().then(result => {
+      try {
+        const result = await DataSync.migrateLocalData();
         if (result.migrated || result.cancelled === false) {
           // 启动自动同步
           DataSync.startAutoSync();
         }
-      });
+      } catch (error) {
+        console.error('Migration check failed:', error);
+        // 即使迁移失败，也启动自动同步
+        DataSync.startAutoSync();
+      }
     }
   });
 })();

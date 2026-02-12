@@ -117,17 +117,19 @@
       const stats = localData.userStats;
 
       // 显示迁移确认
-      const confirm = window.confirm(
-        '检测到本地数据，是否同步到云端？\n\n' +
+      const msg = '检测到本地数据，是否同步到云端？\n\n' +
         `已完成：\n` +
         `• ${stats.pomodoro_count || 0} 个番茄钟\n` +
         `• ${Math.floor((stats.total_time || 0) / 3600)} 小时学习时长\n` +
         `• ${stats.songs_played || 0} 首歌曲\n\n` +
         `同步后将自动解锁对应成就。\n` +
-        `注意：连续天数等特殊成就需要重新达成。`
-      );
+        `注意：连续天数等特殊成就需要重新达成。`;
 
-      if (!confirm) {
+      const confirmed = window.SekaiModal ? 
+        await window.SekaiModal.confirm('数据同步', msg, '同步', '暂不') :
+        window.confirm(msg);
+
+      if (!confirmed) {
         return { migrated: false, cancelled: true };
       }
 
@@ -143,7 +145,11 @@
           localStorage.setItem('sync_version', response.version.toString());
 
           // 显示迁移结果
-          alert(`数据同步成功！\n版本：${response.version}`);
+          if (window.SekaiNotification) {
+            window.SekaiNotification.success(`数据同步成功！版本：${response.version}`);
+          } else {
+            alert(`数据同步成功！\n版本：${response.version}`);
+          }
 
           return {
             migrated: true,
@@ -153,7 +159,11 @@
         }
       } catch (error) {
         console.error('Migration failed:', error);
-        alert('数据同步失败，请稍后重试');
+        if (window.SekaiNotification) {
+          window.SekaiNotification.error('数据同步失败，请稍后重试');
+        } else {
+          alert('数据同步失败，请稍后重试');
+        }
         return { migrated: false, error };
       }
     }
@@ -305,7 +315,11 @@
     async manualSync() {
       console.log('Manual sync triggered');
       await this.syncData();
-      alert('数据同步完成！');
+      if (window.SekaiNotification) {
+        window.SekaiNotification.success('数据同步完成！');
+      } else {
+        alert('数据同步完成！');
+      }
     }
   }
 

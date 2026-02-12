@@ -4608,7 +4608,30 @@ input:checked + .slider:before {
 }
 .settings-actions {
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+.settings-actions .primary-btn {
+  padding: 12px;
+  font-size: 15px;
+}
+
+.settings-actions-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.settings-actions-row button {
+  flex: 1;
+  margin-top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .full-width {
   width: 100%;
 }

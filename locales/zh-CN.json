@@ -115,6 +115,7 @@
       "never_synced": "从未同步",
       "sync_now": "🔄 立即同步",
       "syncing": "⏳ 同步中...",
+      "account_settings": "⚙️ 账户设置",
       "logout": "退出登录",
       "logout_confirm": "确定要退出登录吗？",
       "sync_module_not_loaded": "同步模块未加载",

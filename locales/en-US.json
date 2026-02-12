@@ -115,6 +115,7 @@
       "never_synced": "Never synced",
       "sync_now": "🔄 Sync Now",
       "syncing": "⏳ Syncing...",
+      "account_settings": "⚙️ Account Settings",
       "logout": "Sign Out",
       "logout_confirm": "Are you sure you want to sign out?",
       "sync_module_not_loaded": "Sync module not loaded",

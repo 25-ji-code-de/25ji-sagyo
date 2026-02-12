@@ -16,6 +16,7 @@
   
   // Action buttons
   const manualSyncBtn = document.getElementById('manualSyncBtn');
+  const accountSettingsBtn = document.getElementById('accountSettingsBtn');
   const syncLogoutBtn = document.getElementById('syncLogoutBtn');
 
   // Sidebar Button for Sync (to trigger update on click)
@@ -106,6 +107,13 @@
         manualSyncBtn.disabled = false;
         manualSyncBtn.innerHTML = originalText;
       }
+    });
+  }
+
+  // Handle Account Settings
+  if (accountSettingsBtn) {
+    accountSettingsBtn.addEventListener('click', () => {
+      window.open('https://id.nightcord.de5.net/settings', '_blank');
     });
   }
 

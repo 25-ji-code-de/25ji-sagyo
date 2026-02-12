@@ -147,17 +147,11 @@
 
     if (userNickname) userNickname.textContent = displayNickname;
 
-    // 更新编辑按钮状态
+    // 更新编辑按钮提示文本
     if (editNicknameBtn) {
       if (isLoggedIn) {
-        editNicknameBtn.disabled = true;
-        editNicknameBtn.style.opacity = '0.5';
-        editNicknameBtn.style.cursor = 'not-allowed';
-        editNicknameBtn.title = '登录后昵称锁定为用户名';
+        editNicknameBtn.title = '前往账户设置修改昵称';
       } else {
-        editNicknameBtn.disabled = false;
-        editNicknameBtn.style.opacity = '1';
-        editNicknameBtn.style.cursor = 'pointer';
         editNicknameBtn.title = '编辑昵称';
       }
     }

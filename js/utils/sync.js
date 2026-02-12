@@ -64,6 +64,11 @@
       // 1. 用户统计数据
       if (cloudData.userStats) {
         localStorage.setItem('userStats', JSON.stringify(cloudData.userStats));
+
+        // 同时更新内存中的 userStats（如果存在）
+        if (window.achievementSystem && window.achievementSystem.updateStats) {
+          window.achievementSystem.updateStats(cloudData.userStats);
+        }
       }
 
       // 2. 偏好设置
@@ -83,14 +88,14 @@
       if (cloudData.cdPlayer) {
         const cd = cloudData.cdPlayer;
         if (cd.volume !== undefined) localStorage.setItem('cd_player_volume', cd.volume);
-        if (cd.favorites) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
-        if (cd.playlists) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
+        if (cd.favorites !== undefined) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
+        if (cd.playlists !== undefined) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
         if (cd.lastTrackId) localStorage.setItem('cd_player_last_track_id', cd.lastTrackId);
         if (cd.lastVocalId) localStorage.setItem('cd_player_last_vocal_id', cd.lastVocalId);
         if (cd.vocalPreference) localStorage.setItem('cd_player_vocal_preference', cd.vocalPreference);
         if (cd.repeat !== undefined) localStorage.setItem('cd_player_repeat', cd.repeat);
         if (cd.shuffle !== undefined) localStorage.setItem('cd_player_shuffle', cd.shuffle);
-        if (cd.preferredCharacters) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
+        if (cd.preferredCharacters !== undefined) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
 
         localStorage.setItem('cdPlayer_used', 'true');
       }

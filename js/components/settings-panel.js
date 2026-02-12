@@ -201,12 +201,19 @@
     editNicknameBtn.addEventListener('click', async () => {
       // 检查是否已登录
       if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
-        alert('登录后昵称已锁定为用户名，无法修改。');
+        if (window.SekaiNotification) {
+          window.SekaiNotification.info('登录后昵称已锁定为用户名，无法修改。');
+        } else {
+          alert('登录后昵称已锁定为用户名，无法修改。');
+        }
         return;
       }
 
       const currentName = localStorage.getItem('userNickname') || '「世界」的居民';
-      const newName = prompt('请输入你的昵称:', currentName);
+      const newName = window.SekaiModal ? 
+        await window.SekaiModal.prompt('修改昵称', currentName) :
+        prompt('请输入你的昵称:', currentName);
+
       if (newName && newName.trim() !== '') {
         localStorage.setItem('userNickname', newName.trim());
         await updateHomeTab();

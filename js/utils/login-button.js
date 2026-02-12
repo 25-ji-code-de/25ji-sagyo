@@ -41,8 +41,11 @@
         const userInfo = await window.SekaiAuth.getUserInfo();
         if (userInfo) {
           const username = userInfo.preferred_username || userInfo.name || userInfo.email;
-          const action = confirm(`已登录为: ${username}\n\n点击"确定"登出`);
-          if (action) {
+          const confirmed = window.SekaiModal ? 
+            await window.SekaiModal.confirm('账户信息', `已登录为: ${username}\n是否退出登录？`, '退出登录', '取消') :
+            confirm(`已登录为: ${username}\n\n点击"确定"登出`);
+            
+          if (confirmed) {
             window.SekaiAuth.logout();
           }
         }

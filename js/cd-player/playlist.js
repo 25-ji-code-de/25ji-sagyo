@@ -10,8 +10,11 @@ import { saveSettings } from './storage.js';
  * Create a new playlist
  * @param {Function} displayPlaylists - Function to refresh playlist display
  */
-export function createPlaylist(displayPlaylists) {
-  const name = prompt('请输入歌单名称:');
+export async function createPlaylist(displayPlaylists) {
+  const name = window.SekaiModal ? 
+    await window.SekaiModal.prompt('新建歌单', '') :
+    prompt('请输入歌单名称:');
+    
   if (name && name.trim()) {
     const id = 'playlist_' + Date.now();
     state.playlists.push({
@@ -29,8 +32,12 @@ export function createPlaylist(displayPlaylists) {
  * @param {string} id - Playlist ID
  * @param {Function} displayPlaylists - Function to refresh playlist display
  */
-export function deletePlaylist(id, displayPlaylists) {
-  if (confirm('确定要删除这个歌单吗？')) {
+export async function deletePlaylist(id, displayPlaylists) {
+  const confirmed = window.SekaiModal ? 
+    await window.SekaiModal.confirm('删除歌单', '确定要删除这个歌单吗？', '删除', '取消') :
+    confirm('确定要删除这个歌单吗？');
+
+  if (confirmed) {
     state.playlists = state.playlists.filter(p => p.id !== id);
     saveSettings();
     if (displayPlaylists) displayPlaylists();
@@ -43,15 +50,19 @@ export function deletePlaylist(id, displayPlaylists) {
  * @param {HTMLElement} buttonElement - Button element that triggered the dropdown
  * @param {Function} filterMusicList - Function to refresh the music list
  */
-export function addToPlaylist(musicId, buttonElement, filterMusicList) {
+export async function addToPlaylist(musicId, buttonElement, filterMusicList) {
   // Close any other open dropdowns
   document.querySelectorAll('.playlist-dropdown.show').forEach(dropdown => {
     dropdown.classList.remove('show');
   });
 
   if (state.playlists.length === 0) {
-    if (confirm('还没有创建歌单，是否现在创建？')) {
-      createPlaylist(null);
+    const confirmed = window.SekaiModal ? 
+      await window.SekaiModal.confirm('创建歌单', '还没有创建歌单，是否现在创建？', '创建', '取消') :
+      confirm('还没有创建歌单，是否现在创建？');
+      
+    if (confirmed) {
+      await createPlaylist(null);
     }
     return;
   }

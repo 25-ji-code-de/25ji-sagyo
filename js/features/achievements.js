@@ -118,20 +118,23 @@
       const lastLogin = userStats.last_login_date ? new Date(userStats.last_login_date) : null;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      
+
       if (lastLogin && lastLogin.toDateString() === yesterday.toDateString()) {
         userStats.streak_days++;
       } else {
         userStats.streak_days = 1;
       }
       userStats.last_login_date = today;
-      
+
+      // 立即保存到 localStorage，防止数据同步时读取旧数据
+      saveStats();
+
       // 记录登录活动
       addActivity('login', `新的一天开始了，连续第 ${userStats.streak_days} 天`);
-      
+
       checkAchievements('streak_days');
     }
-    
+
     // 检查时间相关成就
     const hour = new Date().getHours();
     if (hour === 1) checkAchievements('night_owl');
@@ -375,6 +378,16 @@
           today_time: userStats.today_time
         });
       }
+    },
+    updateStats: (newStats) => {
+      // 更新内存中的 userStats，但不覆盖 last_login_date（避免重复触发 checkDailyLogin）
+      const currentLoginDate = userStats.last_login_date;
+      userStats = { ...userStats, ...newStats };
+      // 如果当前已经登录过今天，保留当前的 last_login_date
+      if (currentLoginDate === new Date().toDateString()) {
+        userStats.last_login_date = currentLoginDate;
+      }
+      updateAchievementsUI();
     },
     updateUI: updateAchievementsUI,
     getStats,

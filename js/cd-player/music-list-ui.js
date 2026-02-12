@@ -190,7 +190,11 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
       if (deleteBtn) {
         deleteBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          if (confirm(`确定要删除「${music.title}」吗？`)) {
+          const confirmed = window.SekaiModal ? 
+              await window.SekaiModal.confirm('删除音乐', `确定要删除「${music.title}」吗？`, '删除', '取消') : 
+              confirm(`确定要删除「${music.title}」吗？`);
+
+          if (confirmed) {
             try {
               await deleteLocalMusicFromDB(music.id);
 
@@ -211,7 +215,11 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
               }
             } catch (error) {
               console.error('Failed to delete music:', error);
-              alert('删除失败，请重试');
+              if (window.SekaiNotification) {
+                window.SekaiNotification.error('删除失败，请重试');
+              } else {
+                alert('删除失败，请重试');
+              }
             }
           }
         });

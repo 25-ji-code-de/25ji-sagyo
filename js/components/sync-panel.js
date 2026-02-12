@@ -87,11 +87,21 @@
             // DataSync.manualSync alerts on finish, we just update UI
             updateSyncUI();
         } else {
-            alert(window.I18n?.t('settings.sync.sync_module_not_loaded') || 'Sync module not loaded');
+            const msg = window.I18n?.t('settings.sync.sync_module_not_loaded') || 'Sync module not loaded';
+            if (window.SekaiNotification) {
+                window.SekaiNotification.error(msg);
+            } else {
+                alert(msg);
+            }
         }
       } catch(e) {
         console.error(e);
-        alert(window.I18n?.t('settings.sync.sync_failed') || 'Sync failed');
+        const msg = window.I18n?.t('settings.sync.sync_failed') || 'Sync failed';
+        if (window.SekaiNotification) {
+            window.SekaiNotification.error(msg);
+        } else {
+            alert(msg);
+        }
       } finally {
         manualSyncBtn.disabled = false;
         manualSyncBtn.innerHTML = originalText;
@@ -101,9 +111,13 @@
 
   // Handle Logout
   if (syncLogoutBtn) {
-      syncLogoutBtn.addEventListener('click', () => {
+      syncLogoutBtn.addEventListener('click', async () => {
         const confirmMsg = window.I18n?.t('settings.sync.logout_confirm') || 'Are you sure you want to logout?';
-        if (confirm(confirmMsg)) {
+        const confirmed = window.SekaiModal ? 
+            await window.SekaiModal.confirm('退出登录', confirmMsg, '退出', '取消') :
+            confirm(confirmMsg);
+
+        if (confirmed) {
             if (window.SekaiAuth) {
                 window.SekaiAuth.logout();
                 // Logout usually reloads or we manually update

@@ -201,16 +201,23 @@
     editNicknameBtn.addEventListener('click', async () => {
       // 检查是否已登录
       if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
-        if (window.SekaiNotification) {
-          window.SekaiNotification.info('登录后昵称已锁定为用户名，无法修改。');
-        } else {
-          alert('登录后昵称已锁定为用户名，无法修改。');
+        const confirmed = window.SekaiModal ?
+          await window.SekaiModal.confirm(
+            '修改昵称',
+            '登录后昵称已锁定为用户名。\n是否前往账户设置页面修改？',
+            '前往设置',
+            '取消'
+          ) :
+          confirm('登录后昵称已锁定为用户名。\n是否前往账户设置页面修改？');
+
+        if (confirmed) {
+          window.open('https://id.nightcord.de5.net/settings', '_blank');
         }
         return;
       }
 
       const currentName = localStorage.getItem('userNickname') || '「世界」的居民';
-      const newName = window.SekaiModal ? 
+      const newName = window.SekaiModal ?
         await window.SekaiModal.prompt('修改昵称', currentName) :
         prompt('请输入你的昵称:', currentName);
 

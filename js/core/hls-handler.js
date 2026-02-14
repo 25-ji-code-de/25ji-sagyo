@@ -15,7 +15,9 @@
     enableSoftwareAES: true,
     manifestLoadingTimeOut: 10000,
     levelLoadingTimeOut: 10000,
-    fragLoadingTimeOut: 20000,
+    fragLoadingTimeOut: 60000,
+    fragLoadingMaxRetry: 3,
+    fragLoadingRetryDelay: 2000,
     startFragPrefetch: true
   };
 

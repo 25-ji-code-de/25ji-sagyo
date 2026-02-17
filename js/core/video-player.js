@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
+
 // js/core/video-player.js
 // 主视频播放器核心逻辑
 

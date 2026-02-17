@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
+
 /**
  * Audio Visualizer Module
  * Handles the circular audio visualization around the album cover

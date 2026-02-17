@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
+
 // js/features/live-status.js
 // 实时状态模块 - 管理在线人数和广播消息
 (function() {

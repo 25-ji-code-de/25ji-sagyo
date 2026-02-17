@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
+
 // 设置修改监听器 - 自动标记用户修改过的设置
 (function() {
   'use strict';

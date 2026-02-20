@@ -188,6 +188,7 @@
               <button class="category-btn" data-category="favorites" data-i18n-title="cd_player.categories.favorites" title="我喜欢的音乐">⭐</button>
               <button class="category-btn" data-category="playlists" data-i18n-title="cd_player.categories.playlists" title="我的歌单">📂</button>
               <button class="category-btn" data-category="local" data-i18n-title="cd_player.categories.local" title="本地音乐">📥</button>
+              <button class="category-btn" data-category="imported" title="在线歌单">📡</button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
               <button class="category-btn" data-category="special" data-i18n-title="cd_player.categories.special" title="STUDY系列">📚</button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
@@ -612,6 +613,38 @@
         <div class="warning-content">
           <div class="phone-icon">📱</div>
           <p>为了更好的体验，请使用横屏浏览</p>
+        </div>
+      </div>
+
+      <!-- Playlist Import Dialog -->
+      <div id="playlistImportOverlay" class="import-overlay hidden"></div>
+      <div id="playlistImportDialog" class="import-dialog hidden">
+        <div class="import-dialog-header">
+          <h3>导入在线歌单</h3>
+          <button class="import-close-btn cancel-import-btn">×</button>
+        </div>
+        <div class="import-dialog-body">
+          <div class="server-select">
+            <button class="server-select-btn active" data-server="netease">
+              ☁️ 网易云音乐
+            </button>
+            <button class="server-select-btn" data-server="tencent">
+              🎵 QQ音乐
+            </button>
+          </div>
+          <div class="import-input-group">
+            <input type="text" id="playlistUrlInput" placeholder="请输入歌单链接或ID" />
+            <div class="import-hint">
+              支持完整歌单链接或直接输入歌单ID<br>
+              例如：https://music.163.com/#/playlist?id=2619366284 或 2619366284
+            </div>
+          </div>
+          <div class="import-error-msg hidden"></div>
+          <div class="import-progress-msg hidden"></div>
+        </div>
+        <div class="import-dialog-footer">
+          <button class="import-btn-secondary cancel-import-btn">取消</button>
+          <button class="import-btn-primary start-import-btn">开始导入</button>
         </div>
       </div>
   </div>

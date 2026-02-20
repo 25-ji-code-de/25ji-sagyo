@@ -99,6 +99,62 @@ export async function loadTrack(index, vocalId = null, playTrack = null) {
     return;
   }
 
+  // Handle Imported Music
+  if (music.isImported) {
+    elements.trackTitle.textContent = music.title;
+    elements.trackArtist.textContent = music.composer;
+    const platformName = music.server === 'netease' ? '网易云音乐' : 'QQ音乐';
+    elements.trackVocal.textContent = platformName;
+
+    // Use cover from imported data or placeholder
+    if (music.coverUrl) {
+      elements.albumCover.crossOrigin = "anonymous";
+      elements.albumCover.src = music.coverUrl;
+      elements.albumCover.style.opacity = '1';
+      elements.albumCover.onload = () => {
+        state.dominantColors = extractColorsFromCover();
+      };
+      elements.albumCover.onerror = async () => {
+        const placeholderUrl = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp');
+        elements.albumCover.src = placeholderUrl;
+      };
+    } else {
+      const placeholderUrl = await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp');
+      elements.albumCover.src = placeholderUrl;
+      elements.albumCover.style.opacity = '1';
+      elements.albumCover.onload = () => {
+        state.dominantColors = extractColorsFromCover();
+      };
+    }
+
+    // Set audio source
+    elements.cdAudioPlayer.onerror = null;
+    elements.cdAudioPlayer.crossOrigin = "anonymous";
+    elements.cdAudioPlayer.src = music.audioUrl;
+    elements.cdAudioPlayer.load();
+
+    elements.cdAudioPlayer.onerror = () => {
+      console.error('Audio source failed to load (imported music)');
+      if (elements.trackLoadingSpinner) {
+        elements.trackLoadingSpinner.classList.add('hidden');
+      }
+      state.pendingAutoPlay = false;
+    };
+
+    // Update active class
+    const items = elements.musicList.querySelectorAll('.music-item:not(.import-item)');
+    items.forEach(item => item.classList.remove('active'));
+    if (items[index]) items[index].classList.add('active');
+
+    saveSettings();
+    if (elements.progressBar) elements.progressBar.value = 0;
+    if (elements.currentTimeEl) elements.currentTimeEl.textContent = '0:00';
+
+    // Update Media Session
+    updateMediaSessionLocal(music, music.coverUrl || await getAssetUrl('/mysekai/music_record_soundtrack/jacket/jacket_s_soundtrack_1.webp'));
+    return;
+  }
+
   // Get all vocals for this music
   const availableVocals = state.musicVocalsData.filter(
     vocal => vocal.musicId === music.id

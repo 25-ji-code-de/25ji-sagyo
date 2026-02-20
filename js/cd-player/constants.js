@@ -36,6 +36,7 @@ export const state = {
   // Music data
   musicData: [],
   localMusicData: [],
+  importedMusicData: [],
   musicVocalsData: [],
   musicTitlesZhCN: {},
   filteredMusicData: [],

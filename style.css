@@ -4860,3 +4860,248 @@ input:checked + .slider:before {
 .sekai-modal-btn-confirm:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* Playlist Import Dialog */
+.import-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-overlay.hidden {
+  display: none;
+}
+
+.import-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(40, 20, 60, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  overflow: hidden;
+}
+
+.import-dialog.hidden {
+  display: none;
+}
+
+.import-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.import-dialog-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.import-close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.import-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.import-dialog-body {
+  padding: 20px;
+}
+
+.server-select {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.server-select-btn {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.server-select-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.server-select-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+.server-select-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.import-input-group {
+  margin-bottom: 16px;
+}
+
+#playlistUrlInput {
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+#playlistUrlInput:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#playlistUrlInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.import-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+.import-error-msg {
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 6px;
+  color: #ff6b6b;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.import-error-msg.hidden {
+  display: none;
+}
+
+.import-progress-msg {
+  padding: 10px 12px;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 6px;
+  color: #a5b4fc;
+  font-size: 13px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.import-progress-msg.hidden {
+  display: none;
+}
+
+.import-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.import-btn-secondary,
+.import-btn-primary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.import-btn-secondary {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.import-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.import-btn-primary {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(168, 85, 247, 0.6));
+  color: #fff;
+  border: 1px solid rgba(99, 102, 241, 0.6);
+}
+
+.import-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+  transform: translateY(-1px);
+}
+
+.import-btn-primary:disabled,
+.import-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Platform Badge */
+.platform-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Save to Local Button */
+.save-to-local-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.save-to-local-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}

@@ -16,12 +16,13 @@ import { loadTrack } from './track-loader.js';
 import { getNextTrackIndex } from './track-selection.js';
 import { setupMediaSessionHandlers } from './media-session.js';
 import { toggleVisualization, initVisualizationState } from './visualizer.js';
-import { 
-  playTrack, 
-  pauseTrack, 
-  setupPlaybackControls, 
-  setupAudioEvents 
+import {
+  playTrack,
+  pauseTrack,
+  setupPlaybackControls,
+  setupAudioEvents
 } from './playback-controls.js';
+import './playlist-importer.js';
 
 /**
  * Initialize the CD Player

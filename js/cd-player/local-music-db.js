@@ -43,7 +43,7 @@ export async function initDB() {
 
 /**
  * Save local music to IndexedDB
- * @param {Object} musicInfo - Music info object with file
+ * @param {Object} musicInfo - Music info object with file (or remote URLs for imported music)
  */
 export async function saveLocalMusicToDB(musicInfo) {
   if (!db) await initDB();
@@ -72,9 +72,9 @@ export async function loadLocalMusicFromDB() {
 
     request.onsuccess = () => {
       const items = request.result;
-      // Recreate audioUrl from stored file
+      // Recreate audioUrl from stored file (only for local files, not imported)
       items.forEach(item => {
-        if (item.file) {
+        if (item.file && !item.isImported) {
           item.audioUrl = URL.createObjectURL(item.file);
         }
       });
@@ -109,7 +109,12 @@ export async function initLocalMusic() {
     await initDB();
     const savedMusic = await loadLocalMusicFromDB();
     if (savedMusic.length > 0) {
-      state.localMusicData.push(...savedMusic);
+      // Separate local files and imported music
+      const localFiles = savedMusic.filter(item => !item.isImported);
+      const importedMusic = savedMusic.filter(item => item.isImported);
+
+      state.localMusicData.push(...localFiles);
+      state.importedMusicData.push(...importedMusic);
     }
   } catch (error) {
     console.error('Failed to load local music from database:', error);
@@ -246,4 +251,59 @@ export async function importLocalMusic(onComplete, filterMusicList) {
   };
 
   input.click();
+}
+
+/**
+ * Save imported music in batch to IndexedDB
+ * @param {Array} tracks - Array of imported music objects
+ * @param {Function} onProgress - Progress callback (current, total)
+ */
+export async function saveImportedMusicBatch(tracks, onProgress = null) {
+  if (!db) await initDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    let completed = 0;
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+
+    for (let i = 0; i < tracks.length; i++) {
+      const request = store.put(tracks[i]);
+
+      request.onsuccess = () => {
+        completed++;
+        if (onProgress) {
+          onProgress(completed, tracks.length);
+        }
+      };
+
+      request.onerror = () => {
+        console.error('Failed to save track:', tracks[i].title, request.error);
+      };
+    }
+  });
+}
+
+/**
+ * Load imported music from IndexedDB
+ * @returns {Promise<Array>}
+ */
+export async function loadImportedMusicFromDB() {
+  if (!db) await initDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const items = request.result;
+      // Filter only imported music
+      const imported = items.filter(item => item.isImported);
+      resolve(imported);
+    };
+    request.onerror = () => reject(request.error);
+  });
 }

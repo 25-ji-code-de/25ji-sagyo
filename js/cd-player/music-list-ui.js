@@ -215,14 +215,17 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
     return;
   }
 
-  list.forEach((music, index) => {
-    const item = document.createElement('div');
-    item.className = 'music-item';
+  // Helper: Create platform badge for imported music
+  function createPlatformBadge(music) {
+    if (!music.isImported) return '';
 
-    if (state.currentMusicId === music.id) {
-      item.classList.add('active');
-    }
+    const platformIcon = music.server === 'netease' ? window.SVG_ICONS.cloud : window.SVG_ICONS.music;
+    const platformName = music.server === 'netease' ? '网易云' : 'QQ音乐';
+    return `<span class="platform-badge sekai-icon-sm" title="${platformName}">${platformIcon}</span>`;
+  }
 
+  // Helper: Create music item HTML
+  function createMusicItemHTML(music) {
     const displayTitle = music.title;
     let displayArtist = music.composer || 'Unknown';
 
@@ -236,16 +239,9 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
 
     const escapedTitle = escapeHtml(displayTitle);
     const escapedArtist = escapeHtml(displayArtist);
+    const platformBadge = createPlatformBadge(music);
 
-    // Platform badge for imported music
-    let platformBadge = '';
-    if (isImported) {
-      const platformIcon = music.server === 'netease' ? window.SVG_ICONS.cloud : window.SVG_ICONS.music;
-      const platformName = music.server === 'netease' ? '网易云' : 'QQ音乐';
-      platformBadge = `<span class="platform-badge sekai-icon-sm" title="${platformName}">${platformIcon}</span>`;
-    }
-
-    item.innerHTML = `
+    return `
       <div class="music-item-content">
         <div class="music-item-title" data-full-text="${escapedTitle.replace(/"/g, '&quot;')}">${escapedTitle}${platformBadge}</div>
         <div class="music-item-artist">${escapedArtist}</div>
@@ -262,8 +258,10 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
         `}
       </div>
     `;
+  }
 
-    // Check for title scrolling
+  // Helper: Setup title scrolling animation
+  function setupTitleScrolling(item) {
     const titleElement = item.querySelector('.music-item-title');
     const contentElement = item.querySelector('.music-item-content');
 
@@ -278,187 +276,241 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
         titleElement.style.setProperty('--scroll-distance', `${scrollDistance}px`);
       }
     });
+  }
 
-    // Click to play
+  // Helper: Setup play on click
+  function setupPlayOnClick(item, music) {
     const content = item.querySelector('.music-item-content');
     content.addEventListener('click', () => {
       const trackIndex = state.filteredMusicData.indexOf(music);
       state.pendingAutoPlay = true;
       loadTrack(trackIndex);
     });
+  }
 
-    // Handle local music delete and save
-    if (isLocal || isImported) {
-      // Save to local button (only for imported music)
-      if (isImported) {
-        const saveBtn = item.querySelector('.save-to-local-btn');
-        if (saveBtn) {
-          saveBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const confirmed = window.SekaiModal ?
-                await window.SekaiModal.confirm('保存到本地', `确定要将「${music.title}」下载并保存到本地音乐吗？`, '保存', '取消') :
-                confirm(`确定要将「${music.title}」下载并保存到本地音乐吗？`);
+  // Helper: Handle save to local button
+  async function handleSaveToLocal(music, saveBtn) {
+    try {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳';
+      saveBtn.title = '下载中...';
 
-            if (confirmed) {
-              try {
-                // Show loading indicator
-                saveBtn.disabled = true;
-                saveBtn.textContent = '⏳';
-                saveBtn.title = '下载中...';
+      if (window.SekaiNotification) {
+        window.SekaiNotification.info(`正在下载「${music.title}」...`);
+      }
 
-                // Show downloading notification
-                if (window.SekaiNotification) {
-                  window.SekaiNotification.info(`正在下载「${music.title}」...`);
-                }
+      // Download audio
+      const audioResponse = await fetch(music.audioUrl);
+      if (!audioResponse.ok) throw new Error('Failed to download audio');
+      const audioBlob = await audioResponse.blob();
+      const audioFile = new File([audioBlob], `${music.title}.mp3`, { type: 'audio/mpeg' });
 
-                // Download audio file
-                const audioResponse = await fetch(music.audioUrl);
-                if (!audioResponse.ok) throw new Error('Failed to download audio');
-                const audioBlob = await audioResponse.blob();
-
-                // Create File object from blob
-                const audioFile = new File([audioBlob], `${music.title}.mp3`, { type: 'audio/mpeg' });
-
-                // Download cover image if available
-                let coverUrl = null;
-                if (music.coverUrl) {
-                  try {
-                    const coverResponse = await fetch(music.coverUrl);
-                    if (coverResponse.ok) {
-                      const coverBlob = await coverResponse.blob();
-                      // Convert to data URL for storage
-                      coverUrl = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.readAsDataURL(coverBlob);
-                      });
-                    }
-                  } catch (err) {
-                    console.warn('Failed to download cover, skipping:', err);
-                  }
-                }
-
-                // Create local music object with file
-                const localCopy = {
-                  id: 'local_saved_' + Date.now(),
-                  title: music.title,
-                  composer: music.composer,
-                  lyricist: music.lyricist || '',
-                  album: music.album,
-                  isLocal: true,
-                  isImported: false,
-                  file: audioFile,
-                  audioUrl: URL.createObjectURL(audioFile),
-                  coverUrl: coverUrl,
-                  assetbundleName: 'local'
-                };
-
-                // Save to IndexedDB
-                await saveLocalMusicToDB(localCopy);
-
-                // Add to local music data
-                state.localMusicData.push(localCopy);
-
-                // Restore button
-                saveBtn.disabled = false;
-                saveBtn.textContent = '💾';
-                saveBtn.title = '保存到本地音乐';
-
-                // Show success notification
-                if (window.SekaiNotification) {
-                  window.SekaiNotification.success('已下载并保存到本地音乐');
-                } else {
-                  alert('已下载并保存到本地音乐');
-                }
-
-                // Refresh list if in local category
-                if (state.currentCategory === 'local') {
-                  filterMusicListFn(elements.musicSearchInput?.value.toLowerCase().trim() || '');
-                }
-              } catch (error) {
-                console.error('Failed to save music to local:', error);
-
-                // Restore button
-                saveBtn.disabled = false;
-                saveBtn.textContent = '💾';
-                saveBtn.title = '保存到本地音乐';
-
-                if (window.SekaiNotification) {
-                  window.SekaiNotification.error('下载失败，请重试');
-                } else {
-                  alert('下载失败，请重试');
-                }
-              }
-            }
-          });
+      // Download cover if available
+      let coverUrl = null;
+      if (music.coverUrl) {
+        try {
+          // Resolve cover URL (follow redirects and rewrite param)
+          const resolvedCoverUrl = await resolveCoverUrl(music.coverUrl);
+          const coverResponse = await fetch(resolvedCoverUrl);
+          if (coverResponse.ok) {
+            const coverBlob = await coverResponse.blob();
+            coverUrl = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(coverBlob);
+            });
+          }
+        } catch (err) {
+          console.warn('Failed to download cover, skipping:', err);
         }
       }
 
-      // Delete button
-      const deleteBtn = item.querySelector('.delete-local-btn');
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', async (e) => {
+      // Create local music object
+      const localCopy = {
+        id: 'local_saved_' + Date.now(),
+        title: music.title,
+        composer: music.composer,
+        lyricist: music.lyricist || '',
+        album: music.album,
+        isLocal: true,
+        isImported: false,
+        file: audioFile,
+        audioUrl: URL.createObjectURL(audioFile),
+        coverUrl: coverUrl,
+        assetbundleName: 'local'
+      };
+
+      await saveLocalMusicToDB(localCopy);
+      state.localMusicData.push(localCopy);
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾';
+      saveBtn.title = '保存到本地音乐';
+
+      if (window.SekaiNotification) {
+        window.SekaiNotification.success('已下载并保存到本地音乐');
+      } else {
+        alert('已下载并保存到本地音乐');
+      }
+
+      if (state.currentCategory === 'local') {
+        filterMusicListFn(elements.musicSearchInput?.value.toLowerCase().trim() || '');
+      }
+    } catch (error) {
+      console.error('Failed to save music to local:', error);
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾';
+      saveBtn.title = '保存到本地音乐';
+
+      if (window.SekaiNotification) {
+        window.SekaiNotification.error('下载失败，请重试');
+      } else {
+        alert('下载失败，请重试');
+      }
+    }
+  }
+
+  /**
+   * Resolve cover URL redirect and rewrite param to 240y240
+   * @param {string} coverUrl - Original cover URL from API
+   * @returns {Promise<string|null>} Resolved URL with param=240y240
+   */
+  async function resolveCoverUrl(coverUrl) {
+    if (!coverUrl) return null;
+
+    try {
+      const response = await fetch(coverUrl, {
+        method: 'HEAD',
+        redirect: 'follow'
+      });
+
+      let finalUrl = response.url;
+
+      if (finalUrl.includes('?param=')) {
+        finalUrl = finalUrl.replace(/(\?|&)param=[^&]*/, '$1param=240y240');
+      } else if (finalUrl.includes('?')) {
+        finalUrl = finalUrl + '&param=240y240';
+      } else {
+        finalUrl = finalUrl + '?param=240y240';
+      }
+
+      return finalUrl;
+    } catch (err) {
+      console.warn('Failed to resolve cover URL:', coverUrl, err);
+      return coverUrl;
+    }
+  }
+
+  // Helper: Handle delete music
+  async function handleDeleteMusic(music, isImported) {
+    try {
+      await deleteLocalMusicFromDB(music.id);
+
+      if (isImported) {
+        const idx = state.importedMusicData.findIndex(m => m.id === music.id);
+        if (idx !== -1) {
+          state.importedMusicData.splice(idx, 1);
+        }
+      } else {
+        const idx = state.localMusicData.findIndex(m => m.id === music.id);
+        if (idx !== -1) {
+          if (state.localMusicData[idx].audioUrl) {
+            URL.revokeObjectURL(state.localMusicData[idx].audioUrl);
+          }
+          state.localMusicData.splice(idx, 1);
+        }
+      }
+
+      filterMusicListFn(elements.musicSearchInput?.value.toLowerCase().trim() || '');
+
+      if (state.currentMusicId === music.id) {
+        pauseTrack();
+        state.currentTrackIndex = -1;
+        state.currentMusicId = null;
+      }
+    } catch (error) {
+      console.error('Failed to delete music:', error);
+      if (window.SekaiNotification) {
+        window.SekaiNotification.error('删除失败，请重试');
+      } else {
+        alert('删除失败，请重试');
+      }
+    }
+  }
+
+  // Helper: Setup local/imported music buttons
+  function setupLocalMusicButtons(item, music) {
+    const isImported = music.isImported;
+
+    // Save to local button (only for imported music)
+    if (isImported) {
+      const saveBtn = item.querySelector('.save-to-local-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           const confirmed = window.SekaiModal ?
-              await window.SekaiModal.confirm('删除音乐', `确定要删除「${music.title}」吗？`, '删除', '取消') :
-              confirm(`确定要删除「${music.title}」吗？`);
+              await window.SekaiModal.confirm('保存到本地', `确定要将「${music.title}」下载并保存到本地音乐吗？`, '保存', '取消') :
+              confirm(`确定要将「${music.title}」下载并保存到本地音乐吗？`);
 
           if (confirmed) {
-            try {
-              await deleteLocalMusicFromDB(music.id);
-
-              // Remove from appropriate state array
-              if (isImported) {
-                const idx = state.importedMusicData.findIndex(m => m.id === music.id);
-                if (idx !== -1) {
-                  state.importedMusicData.splice(idx, 1);
-                }
-              } else {
-                const idx = state.localMusicData.findIndex(m => m.id === music.id);
-                if (idx !== -1) {
-                  if (state.localMusicData[idx].audioUrl) {
-                    URL.revokeObjectURL(state.localMusicData[idx].audioUrl);
-                  }
-                  state.localMusicData.splice(idx, 1);
-                }
-              }
-
-              filterMusicListFn(elements.musicSearchInput?.value.toLowerCase().trim() || '');
-
-              if (state.currentMusicId === music.id) {
-                pauseTrack();
-                state.currentTrackIndex = -1;
-                state.currentMusicId = null;
-              }
-            } catch (error) {
-              console.error('Failed to delete music:', error);
-              if (window.SekaiNotification) {
-                window.SekaiNotification.error('删除失败，请重试');
-              } else {
-                alert('删除失败，请重试');
-              }
-            }
+            await handleSaveToLocal(music, saveBtn);
           }
         });
       }
-    } else {
-      // Add to playlist button
-      const addBtn = item.querySelector('.add-to-playlist-btn');
-      if (addBtn) {
-        addBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          addToPlaylist(music.id, addBtn, filterMusicListFn);
-        });
-      }
+    }
 
-      // Favorite button
-      const favBtn = item.querySelector('.favorite-btn');
-      if (favBtn) {
-        favBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggleFavorite(music.id, favBtn, filterMusicListFn);
-        });
-      }
+    // Delete button
+    const deleteBtn = item.querySelector('.delete-local-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const confirmed = window.SekaiModal ?
+            await window.SekaiModal.confirm('删除音乐', `确定要删除「${music.title}」吗？`, '删除', '取消') :
+            confirm(`确定要删除「${music.title}」吗？`);
+
+        if (confirmed) {
+          await handleDeleteMusic(music, isImported);
+        }
+      });
+    }
+  }
+
+  // Helper: Setup normal music buttons
+  function setupNormalMusicButtons(item, music) {
+    const addBtn = item.querySelector('.add-to-playlist-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addToPlaylist(music.id, addBtn, filterMusicListFn);
+      });
+    }
+
+    const favBtn = item.querySelector('.favorite-btn');
+    if (favBtn) {
+      favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavorite(music.id, favBtn, filterMusicListFn);
+      });
+    }
+  }
+
+  list.forEach((music, index) => {
+    const item = document.createElement('div');
+    item.className = 'music-item';
+
+    if (state.currentMusicId === music.id) {
+      item.classList.add('active');
+    }
+
+    item.innerHTML = createMusicItemHTML(music);
+
+    setupTitleScrolling(item);
+    setupPlayOnClick(item, music);
+
+    if (music.isLocal || music.isImported) {
+      setupLocalMusicButtons(item, music);
+    } else {
+      setupNormalMusicButtons(item, music);
     }
 
     elements.musicList.appendChild(item);

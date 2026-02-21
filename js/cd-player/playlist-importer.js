@@ -90,49 +90,12 @@ export async function fetchPlaylistWithFallback(server, id) {
 }
 
 /**
- * Resolve cover URL redirect and rewrite param to 240y240
- * @param {string} coverUrl - Original cover URL from API
- * @returns {Promise<string|null>} Resolved URL with param=240y240
- */
-async function resolveCoverUrl(coverUrl) {
-  if (!coverUrl) return null;
-
-  try {
-    // Fetch to follow redirects and get final URL
-    const response = await fetch(coverUrl, {
-      method: 'HEAD',
-      redirect: 'follow'
-    });
-
-    let finalUrl = response.url;
-
-    // Rewrite the param parameter to 240y240
-    if (finalUrl.includes('?param=')) {
-      // Replace existing param value
-      finalUrl = finalUrl.replace(/(\?|&)param=[^&]*/, '$1param=240y240');
-    } else if (finalUrl.includes('?')) {
-      // Add param to existing query string
-      finalUrl = finalUrl + '&param=240y240';
-    } else {
-      // Add param as first query parameter
-      finalUrl = finalUrl + '?param=240y240';
-    }
-
-    return finalUrl;
-  } catch (err) {
-    console.warn('Failed to resolve cover URL:', coverUrl, err);
-    // Fallback: return original URL
-    return coverUrl;
-  }
-}
-
-/**
  * Convert API response to internal format
  * @param {Array} tracks - Tracks from API
  * @param {string} server - Server type
- * @returns {Promise<Array>} Converted tracks (now async)
+ * @returns {Array} Converted tracks
  */
-export async function convertToLocalFormat(tracks, server) {
+export function convertToLocalFormat(tracks, server) {
   const converted = [];
 
   for (const track of tracks) {
@@ -149,9 +112,7 @@ export async function convertToLocalFormat(tracks, server) {
       songId = urlMatch[1];
     }
 
-    // Resolve cover URL and rewrite param to 240y240
-    const coverUrl = await resolveCoverUrl(track.pic);
-
+    // Store original cover URL, resolve it lazily when needed
     const musicInfo = {
       id: `imported_${server}_${songId}`,
       title: track.name || 'Unknown Title',
@@ -161,7 +122,7 @@ export async function convertToLocalFormat(tracks, server) {
       isLocal: false,
       isImported: true,
       audioUrl: track.url,
-      coverUrl: coverUrl,
+      coverUrl: track.pic, // Store original URL, don't resolve yet
       lrcUrl: track.lrc || null,
       assetbundleName: 'imported',
       server: server
@@ -295,16 +256,14 @@ export function openImportDialog(onComplete) {
   cancelBtn.removeEventListener('click', cancelHandler);
   cancelBtn.addEventListener('click', cancelHandler);
 
-  // Import handler
-  const importHandler = async () => {
-    const urlInput = input.value.trim();
-
+  // Helper: Validate input
+  function validateInput(urlInput) {
     if (!urlInput) {
       if (errorMsg) {
         errorMsg.textContent = '请输入歌单链接或ID';
         errorMsg.classList.remove('hidden');
       }
-      return;
+      return null;
     }
 
     const playlistId = parsePlaylistInput(urlInput, selectedServer);
@@ -314,21 +273,78 @@ export function openImportDialog(onComplete) {
         errorMsg.textContent = '无效的歌单链接或ID';
         errorMsg.classList.remove('hidden');
       }
-      return;
+      return null;
     }
 
-    // Hide error, show progress
+    return playlistId;
+  }
+
+  // Helper: Setup progress UI
+  function setupProgressUI() {
     if (errorMsg) errorMsg.classList.add('hidden');
     if (progressMsg) {
       progressMsg.textContent = '正在获取歌单...';
       progressMsg.classList.remove('hidden');
     }
 
-    // Disable buttons
     if (importBtn) importBtn.disabled = true;
     if (cancelBtn) cancelBtn.disabled = true;
     if (input) input.disabled = true;
     serverBtns.forEach(btn => btn.disabled = true);
+  }
+
+  // Helper: Show success message
+  function showSuccess(result) {
+    if (progressMsg) {
+      let message = `成功导入 ${result.imported} 首歌曲`;
+      if (result.skipped > 0) {
+        message += ` (跳过 ${result.skipped} 首重复)`;
+      }
+      progressMsg.textContent = message;
+    }
+
+    setTimeout(() => {
+      closeDialog();
+      if (onComplete) onComplete();
+    }, 2000);
+  }
+
+  // Helper: Get error message
+  function getErrorMessage(err) {
+    if (err.message === 'Playlist is empty') {
+      return '歌单为空';
+    } else if (err.message === 'No valid tracks found in playlist') {
+      return '歌单中没有有效的歌曲';
+    } else if (err.message.includes('Failed to fetch')) {
+      return '网络错误，请检查网络连接';
+    } else if (err.message.includes('HTTP')) {
+      return '无法获取歌单，请检查ID是否正确';
+    }
+    return '导入失败';
+  }
+
+  // Helper: Show error
+  function showError(err) {
+    if (progressMsg) progressMsg.classList.add('hidden');
+    if (errorMsg) {
+      errorMsg.textContent = getErrorMessage(err);
+      errorMsg.classList.remove('hidden');
+    }
+
+    if (importBtn) importBtn.disabled = false;
+    if (cancelBtn) cancelBtn.disabled = false;
+    if (input) input.disabled = false;
+    serverBtns.forEach(btn => btn.disabled = false);
+  }
+
+  // Import handler
+  const importHandler = async () => {
+    const urlInput = input.value.trim();
+    const playlistId = validateInput(urlInput);
+
+    if (!playlistId) return;
+
+    setupProgressUI();
 
     try {
       const result = await importPlaylist(selectedServer, playlistId, (current, total) => {
@@ -337,46 +353,10 @@ export function openImportDialog(onComplete) {
         }
       });
 
-      // Show success message
-      if (progressMsg) {
-        let message = `成功导入 ${result.imported} 首歌曲`;
-        if (result.skipped > 0) {
-          message += ` (跳过 ${result.skipped} 首重复)`;
-        }
-        progressMsg.textContent = message;
-      }
-
-      // Close dialog after delay
-      setTimeout(() => {
-        closeDialog();
-        if (onComplete) onComplete();
-      }, 2000);
-
+      showSuccess(result);
     } catch (err) {
       console.error('Import failed:', err);
-
-      // Show error
-      if (progressMsg) progressMsg.classList.add('hidden');
-      if (errorMsg) {
-        let message = '导入失败';
-        if (err.message === 'Playlist is empty') {
-          message = '歌单为空';
-        } else if (err.message === 'No valid tracks found in playlist') {
-          message = '歌单中没有有效的歌曲';
-        } else if (err.message.includes('Failed to fetch')) {
-          message = '网络错误，请检查网络连接';
-        } else if (err.message.includes('HTTP')) {
-          message = '无法获取歌单，请检查ID是否正确';
-        }
-        errorMsg.textContent = message;
-        errorMsg.classList.remove('hidden');
-      }
-
-      // Re-enable buttons
-      if (importBtn) importBtn.disabled = false;
-      if (cancelBtn) cancelBtn.disabled = false;
-      if (input) input.disabled = false;
-      serverBtns.forEach(btn => btn.disabled = false);
+      showError(err);
     }
   };
 

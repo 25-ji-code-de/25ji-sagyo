@@ -61,46 +61,61 @@
     }
 
     /**
+     * 应用用户统计数据
+     */
+    applyUserStats(userStats) {
+      localStorage.setItem('userStats', JSON.stringify(userStats));
+
+      if (window.achievementSystem && window.achievementSystem.updateStats) {
+        window.achievementSystem.updateStats(userStats);
+      }
+    }
+
+    /**
+     * 应用偏好设置
+     */
+    applyPreferences(prefs) {
+      if (prefs.language) localStorage.setItem('app_language', prefs.language);
+      if (prefs.worldClockTimeZones) localStorage.setItem('worldClockTimeZones', JSON.stringify(prefs.worldClockTimeZones));
+      if (prefs.healthReminderConfig) localStorage.setItem('health_reminder_config', JSON.stringify(prefs.healthReminderConfig));
+      if (prefs.visualizationEnabled !== undefined) localStorage.setItem('visualizationEnabled', prefs.visualizationEnabled);
+      if (prefs.clockWidgetVisible !== undefined) localStorage.setItem('clockWidgetVisible', prefs.clockWidgetVisible);
+      if (prefs.userNickname) localStorage.setItem('userNickname', prefs.userNickname);
+
+      localStorage.setItem('preferences_modified', 'true');
+    }
+
+    /**
+     * 应用CD播放器设置
+     */
+    applyCdPlayerSettings(cd) {
+      if (cd.volume !== undefined) localStorage.setItem('cd_player_volume', cd.volume);
+      if (cd.favorites !== undefined) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
+      if (cd.playlists !== undefined) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
+      if (cd.lastTrackId) localStorage.setItem('cd_player_last_track_id', cd.lastTrackId);
+      if (cd.lastVocalId) localStorage.setItem('cd_player_last_vocal_id', cd.lastVocalId);
+      if (cd.vocalPreference) localStorage.setItem('cd_player_vocal_preference', cd.vocalPreference);
+      if (cd.repeat !== undefined) localStorage.setItem('cd_player_repeat', cd.repeat);
+      if (cd.shuffle !== undefined) localStorage.setItem('cd_player_shuffle', cd.shuffle);
+      if (cd.preferredCharacters !== undefined) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
+
+      localStorage.setItem('cdPlayer_used', 'true');
+    }
+
+    /**
      * 应用云端数据到本地
      */
     applyCloudData(cloudData) {
-      // 1. 用户统计数据
       if (cloudData.userStats) {
-        localStorage.setItem('userStats', JSON.stringify(cloudData.userStats));
-
-        // 同时更新内存中的 userStats（如果存在）
-        if (window.achievementSystem && window.achievementSystem.updateStats) {
-          window.achievementSystem.updateStats(cloudData.userStats);
-        }
+        this.applyUserStats(cloudData.userStats);
       }
 
-      // 2. 偏好设置
       if (cloudData.preferences) {
-        const prefs = cloudData.preferences;
-        if (prefs.language) localStorage.setItem('app_language', prefs.language);
-        if (prefs.worldClockTimeZones) localStorage.setItem('worldClockTimeZones', JSON.stringify(prefs.worldClockTimeZones));
-        if (prefs.healthReminderConfig) localStorage.setItem('health_reminder_config', JSON.stringify(prefs.healthReminderConfig));
-        if (prefs.visualizationEnabled !== undefined) localStorage.setItem('visualizationEnabled', prefs.visualizationEnabled);
-        if (prefs.clockWidgetVisible !== undefined) localStorage.setItem('clockWidgetVisible', prefs.clockWidgetVisible);
-        if (prefs.userNickname) localStorage.setItem('userNickname', prefs.userNickname);
-
-        localStorage.setItem('preferences_modified', 'true');
+        this.applyPreferences(cloudData.preferences);
       }
 
-      // 3. CD 播放器设置
       if (cloudData.cdPlayer) {
-        const cd = cloudData.cdPlayer;
-        if (cd.volume !== undefined) localStorage.setItem('cd_player_volume', cd.volume);
-        if (cd.favorites !== undefined) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
-        if (cd.playlists !== undefined) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
-        if (cd.lastTrackId) localStorage.setItem('cd_player_last_track_id', cd.lastTrackId);
-        if (cd.lastVocalId) localStorage.setItem('cd_player_last_vocal_id', cd.lastVocalId);
-        if (cd.vocalPreference) localStorage.setItem('cd_player_vocal_preference', cd.vocalPreference);
-        if (cd.repeat !== undefined) localStorage.setItem('cd_player_repeat', cd.repeat);
-        if (cd.shuffle !== undefined) localStorage.setItem('cd_player_shuffle', cd.shuffle);
-        if (cd.preferredCharacters !== undefined) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
-
-        localStorage.setItem('cdPlayer_used', 'true');
+        this.applyCdPlayerSettings(cloudData.cdPlayer);
       }
     }
 

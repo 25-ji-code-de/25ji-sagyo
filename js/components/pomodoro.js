@@ -388,14 +388,9 @@
   }
 
   /**
-   * 计时器完成处理
+   * 显示完成通知
    */
-  function handleTimerComplete() {
-    // 播放铃声提示（根据当前模式选择不同铃声）
-    playAlarmSound(currentMode);
-
-    // 显示应用内 toast 通知
-    const isWork = currentMode === 'work';
+  function showCompletionNotification(isWork) {
     const title = isWork
       ? (window.I18n?.t('pomodoro.notifications.work_complete.title') || '工作完成!')
       : (window.I18n?.t('pomodoro.notifications.break_complete.title') || '休息结束!');
@@ -403,6 +398,8 @@
       ? (window.I18n?.t('pomodoro.notifications.work_complete.body') || '该休息一下了')
       : (window.I18n?.t('pomodoro.notifications.break_complete.body') || '开始下一个番茄钟');
     const icon = isWork ? window.SVG_ICONS.timer : window.SVG_ICONS.clock;
+
+    // 显示应用内 toast 通知
     showPomodoroToast(`${title} ${body}`, icon);
 
     // 同时尝试浏览器通知（作为备用）
@@ -413,41 +410,66 @@
     } catch (e) {
       console.warn('Notification error:', e);
     }
+  }
+
+  /**
+   * 处理工作完成后的逻辑
+   */
+  function handleWorkComplete() {
+    workRounds++;
+
+    // 追踪成就
+    if (window.achievementSystem) {
+      window.achievementSystem.incrementPomodoro();
+      const duration = parseInt(workDurationInput?.value || 25) * 60;
+      window.achievementSystem.addFocusTime(duration);
+    }
+
+    // 广播完成番茄钟
+    if (window.LiveStatus && window.BroadcastMessages) {
+      const username = window.LiveStatus.getCurrentUsername() || '某位用户';
+      const message = window.BroadcastMessages.generate('pomodoro_complete', username);
+      window.LiveStatus.sendBroadcast(message);
+    }
+
+    // 触发番茄钟完成事件
+    document.dispatchEvent(new CustomEvent('pomodoroComplete', {
+      detail: { mode: 'work', rounds: workRounds }
+    }));
+
+    // 切换到休息模式
+    if (workRounds >= maxRounds) {
+      currentMode = 'long-break';
+      remainingSeconds = parseInt(longBreakInput?.value || 15) * 60;
+      workRounds = 0;
+    } else {
+      currentMode = 'short-break';
+      remainingSeconds = parseInt(shortBreakInput?.value || 5) * 60;
+    }
+  }
+
+  /**
+   * 处理休息完成后的逻辑
+   */
+  function handleBreakComplete() {
+    currentMode = 'work';
+    remainingSeconds = parseInt(workDurationInput?.value || 25) * 60;
+  }
+
+  /**
+   * 计时器完成处理
+   */
+  function handleTimerComplete() {
+    playAlarmSound(currentMode);
+
+    const isWork = currentMode === 'work';
+    showCompletionNotification(isWork);
 
     // 切换模式
-    if (currentMode === 'work') {
-      workRounds++;
-      // 追踪成就
-      if (window.achievementSystem) {
-        window.achievementSystem.incrementPomodoro();
-        // 添加专注时间（25分钟或自定义）
-        const duration = parseInt(workDurationInput?.value || 25) * 60;
-        window.achievementSystem.addFocusTime(duration);
-      }
-
-      // 广播完成番茄钟
-      if (window.LiveStatus && window.BroadcastMessages) {
-        const username = window.LiveStatus.getCurrentUsername() || '某位用户';
-        const message = window.BroadcastMessages.generate('pomodoro_complete', username);
-        window.LiveStatus.sendBroadcast(message);
-      }
-      
-      // 触发番茄钟完成事件，通知待办事项组件
-      document.dispatchEvent(new CustomEvent('pomodoroComplete', {
-        detail: { mode: 'work', rounds: workRounds }
-      }));
-      
-      if (workRounds >= maxRounds) {
-        currentMode = 'long-break';
-        remainingSeconds = parseInt(longBreakInput?.value || 15) * 60;
-        workRounds = 0;
-      } else {
-        currentMode = 'short-break';
-        remainingSeconds = parseInt(shortBreakInput?.value || 5) * 60;
-      }
+    if (isWork) {
+      handleWorkComplete();
     } else {
-      currentMode = 'work';
-      remainingSeconds = parseInt(workDurationInput?.value || 25) * 60;
+      handleBreakComplete();
     }
 
     updateDisplay();

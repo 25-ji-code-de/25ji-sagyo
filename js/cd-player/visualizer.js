@@ -52,24 +52,114 @@ export function initVisualizationState() {
 }
 
 /**
+ * Helper: Create temp canvas and get pixel data
+ */
+function extractPixelData() {
+  const img = elements.albumCover;
+  if (!img || !img.complete) return null;
+
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+
+  const size = 50;
+  tempCanvas.width = size;
+  tempCanvas.height = size;
+  tempCtx.drawImage(img, 0, 0, size, size);
+
+  const imageData = tempCtx.getImageData(0, 0, size, size);
+  return imageData.data;
+}
+
+/**
+ * Helper: Check if pixel should be skipped
+ */
+function shouldSkipPixel(r, g, b, a) {
+  if (a < 128) return true;
+  if ((r < 15 && g < 15 && b < 15) || (r > 240 && g > 240 && b > 240)) return true;
+  return false;
+}
+
+/**
+ * Helper: Process pixel into color map
+ */
+function processPixel(r, g, b, colorMap, lowSatColors) {
+  const hsl = AppHelpers.rgbToHsl(r, g, b);
+
+  if (hsl.s >= 20) {
+    const hueKey = Math.round(hsl.h / 30) * 30;
+
+    if (!colorMap[hueKey]) {
+      colorMap[hueKey] = { h: hsl.h, s: hsl.s, l: hsl.l, count: 0 };
+    }
+    colorMap[hueKey].count++;
+    colorMap[hueKey].h = (colorMap[hueKey].h * colorMap[hueKey].count + hsl.h) / (colorMap[hueKey].count + 1);
+    colorMap[hueKey].s = (colorMap[hueKey].s * colorMap[hueKey].count + hsl.s) / (colorMap[hueKey].count + 1);
+    colorMap[hueKey].l = (colorMap[hueKey].l * colorMap[hueKey].count + hsl.l) / (colorMap[hueKey].count + 1);
+  } else {
+    lowSatColors.push({ h: hsl.h, s: hsl.s, l: hsl.l });
+  }
+
+  return hsl.s;
+}
+
+/**
+ * Helper: Generate monochrome colors
+ */
+function generateMonochromeColors() {
+  return [
+    { h: 0, s: 0, l: 30 },
+    { h: 0, s: 0, l: 45 },
+    { h: 0, s: 0, l: 60 },
+    { h: 0, s: 0, l: 75 }
+  ];
+}
+
+/**
+ * Helper: Calculate hue variance
+ */
+function calculateHueVariance(colorList, dominantColor) {
+  return colorList.reduce((acc, c) => {
+    const hueDiff = Math.abs(c.h - dominantColor.h);
+    const wrappedDiff = Math.min(hueDiff, 360 - hueDiff);
+    return acc + wrappedDiff * c.count;
+  }, 0) / colorList.reduce((acc, c) => acc + c.count, 0);
+}
+
+/**
+ * Helper: Generate low variance colors
+ */
+function generateLowVarianceColors(dominantColor) {
+  return [
+    { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 35 },
+    { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 50 },
+    { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 65 },
+    { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 75 }
+  ];
+}
+
+/**
+ * Helper: Generate high variance colors
+ */
+function generateHighVarianceColors(colorList) {
+  const colors = colorList
+    .slice(0, 8)
+    .map(c => ({
+      h: c.h,
+      s: Math.max(c.s, 50),
+      l: Math.min(Math.max(c.l, 40), 70)
+    }));
+
+  return sortColorsForGradient(colors);
+}
+
+/**
  * Extract dominant colors from album cover
  * @returns {Array} Array of color objects with h, s, l properties
  */
 export function extractColorsFromCover() {
   try {
-    const img = elements.albumCover;
-    if (!img || !img.complete) return [];
-
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-
-    const size = 50;
-    tempCanvas.width = size;
-    tempCanvas.height = size;
-    tempCtx.drawImage(img, 0, 0, size, size);
-
-    const imageData = tempCtx.getImageData(0, 0, size, size);
-    const pixels = imageData.data;
+    const pixels = extractPixelData();
+    if (!pixels) return [];
 
     const colorMap = {};
     const lowSatColors = [];
@@ -82,75 +172,34 @@ export function extractColorsFromCover() {
       const b = pixels[i + 2];
       const a = pixels[i + 3];
 
-      if (a < 128) continue;
-      if ((r < 15 && g < 15 && b < 15) || (r > 240 && g > 240 && b > 240)) continue;
+      if (shouldSkipPixel(r, g, b, a)) continue;
 
-      const hsl = AppHelpers.rgbToHsl(r, g, b);
-      totalSaturation += hsl.s;
+      const saturation = processPixel(r, g, b, colorMap, lowSatColors);
+      totalSaturation += saturation;
       sampleCount++;
-
-      if (hsl.s >= 20) {
-        const hueKey = Math.round(hsl.h / 30) * 30;
-
-        if (!colorMap[hueKey]) {
-          colorMap[hueKey] = { h: hsl.h, s: hsl.s, l: hsl.l, count: 0 };
-        }
-        colorMap[hueKey].count++;
-        colorMap[hueKey].h = (colorMap[hueKey].h * colorMap[hueKey].count + hsl.h) / (colorMap[hueKey].count + 1);
-        colorMap[hueKey].s = (colorMap[hueKey].s * colorMap[hueKey].count + hsl.s) / (colorMap[hueKey].count + 1);
-        colorMap[hueKey].l = (colorMap[hueKey].l * colorMap[hueKey].count + hsl.l) / (colorMap[hueKey].count + 1);
-      } else {
-        lowSatColors.push({ h: hsl.h, s: hsl.s, l: hsl.l });
-      }
     }
 
     const avgSaturation = sampleCount > 0 ? totalSaturation / sampleCount : 0;
     const isMonochrome = avgSaturation < 15;
 
-    let colors;
-
     if (isMonochrome) {
-      colors = [
-        { h: 0, s: 0, l: 30 },
-        { h: 0, s: 0, l: 45 },
-        { h: 0, s: 0, l: 60 },
-        { h: 0, s: 0, l: 75 }
-      ];
-    } else {
-      const colorList = Object.values(colorMap).sort((a, b) => b.count - a.count);
-      const dominantColor = colorList[0];
-      
-      if (!dominantColor) {
-        return [];
-      }
-      
-      const hueVariance = colorList.reduce((acc, c) => {
-        const hueDiff = Math.abs(c.h - dominantColor.h);
-        const wrappedDiff = Math.min(hueDiff, 360 - hueDiff);
-        return acc + wrappedDiff * c.count;
-      }, 0) / colorList.reduce((acc, c) => acc + c.count, 0);
-
-      if (hueVariance < 30) {
-        colors = [
-          { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 35 },
-          { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 50 },
-          { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 65 },
-          { h: dominantColor.h, s: Math.max(dominantColor.s, 60), l: 75 }
-        ];
-      } else {
-        colors = colorList
-          .slice(0, 8)
-          .map(c => ({
-            h: c.h,
-            s: Math.max(c.s, 50),
-            l: Math.min(Math.max(c.l, 40), 70)
-          }));
-
-        colors = sortColorsForGradient(colors);
-      }
+      return generateMonochromeColors();
     }
 
-    return colors;
+    const colorList = Object.values(colorMap).sort((a, b) => b.count - a.count);
+    const dominantColor = colorList[0];
+
+    if (!dominantColor) {
+      return [];
+    }
+
+    const hueVariance = calculateHueVariance(colorList, dominantColor);
+
+    if (hueVariance < 30) {
+      return generateLowVarianceColors(dominantColor);
+    } else {
+      return generateHighVarianceColors(colorList);
+    }
   } catch (e) {
     console.warn('Failed to extract colors from cover:', e);
     return [];

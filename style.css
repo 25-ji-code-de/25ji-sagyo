@@ -4795,7 +4795,7 @@ input:checked + .slider:before {
 }
 
 .sekai-modal-title {
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   font-size: 18px;
   font-weight: 600;
   color: #fff;

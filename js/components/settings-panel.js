@@ -107,77 +107,127 @@
   }
 
   /**
-   * 更新主页标签
+   * 获取问候语 key
    */
-  async function updateHomeTab() {
-    // 更新问候语
+  function getGreetingKey() {
     const hour = new Date().getHours();
-    let greetingKey = 'settings.home.greeting.default';
-    if (hour >= 5 && hour < 12) greetingKey = 'settings.home.greeting.morning';
-    else if (hour >= 12 && hour < 18) greetingKey = 'settings.home.greeting.afternoon';
-    else if (hour >= 18 && hour < 23) greetingKey = 'settings.home.greeting.evening';
-    else greetingKey = 'settings.home.greeting.night';
+    if (hour >= 5 && hour < 12) return 'settings.home.greeting.morning';
+    if (hour >= 12 && hour < 18) return 'settings.home.greeting.afternoon';
+    if (hour >= 18 && hour < 23) return 'settings.home.greeting.evening';
+    return 'settings.home.greeting.night';
+  }
 
+  /**
+   * 更新问候语
+   */
+  function updateGreeting() {
     if (greetingText && window.I18n) {
-      greetingText.textContent = window.I18n.t(greetingKey);
+      greetingText.textContent = window.I18n.t(getGreetingKey());
     }
+  }
 
-    // 更新昵称 - 登录后使用用户名
-    let displayNickname;
-    let isLoggedIn = false;
-
+  /**
+   * 获取用户昵称
+   */
+  async function getUserNickname() {
+    // 尝试从认证系统获取
     if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
       const userInfo = await window.SekaiAuth.getUserInfo();
       if (userInfo) {
-        displayNickname = userInfo.preferred_username || userInfo.name || userInfo.email;
-        isLoggedIn = true;
-        // 登录后，将用户名保存到 localStorage（用于其他功能）
-        const oldNickname = localStorage.getItem('userNickname');
-        if (oldNickname !== displayNickname) {
-          localStorage.setItem('userNickname', displayNickname);
-          // 通知 LiveStatus 更新用户名（重新连接）
-          if (window.LiveStatus && window.LiveStatus.updateUsername) {
-            window.LiveStatus.updateUsername();
-          }
-        }
+        return {
+          nickname: userInfo.preferred_username || userInfo.name || userInfo.email,
+          isLoggedIn: true
+        };
       }
     }
 
-    if (!isLoggedIn) {
-      const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
-      displayNickname = localStorage.getItem('userNickname') || defaultNickname;
+    // 使用本地昵称
+    const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
+    return {
+      nickname: localStorage.getItem('userNickname') || defaultNickname,
+      isLoggedIn: false
+    };
+  }
+
+  /**
+   * 更新本地存储的昵称
+   */
+  function updateStoredNickname(newNickname) {
+    const oldNickname = localStorage.getItem('userNickname');
+    if (oldNickname !== newNickname) {
+      localStorage.setItem('userNickname', newNickname);
+      // 通知 LiveStatus 更新用户名
+      if (window.LiveStatus && window.LiveStatus.updateUsername) {
+        window.LiveStatus.updateUsername();
+      }
+    }
+  }
+
+  /**
+   * 更新昵称显示
+   */
+  async function updateNicknameDisplay() {
+    const { nickname, isLoggedIn } = await getUserNickname();
+
+    if (userNickname) {
+      userNickname.textContent = nickname;
     }
 
-    if (userNickname) userNickname.textContent = displayNickname;
+    // 登录后保存用户名
+    if (isLoggedIn) {
+      updateStoredNickname(nickname);
+    }
 
-    // 更新编辑按钮提示文本
+    // 更新编辑按钮提示
     if (editNicknameBtn) {
-      if (isLoggedIn) {
-        editNicknameBtn.title = '前往账户设置修改昵称';
-      } else {
-        editNicknameBtn.title = '编辑昵称';
-      }
+      editNicknameBtn.title = isLoggedIn
+        ? '前往账户设置修改昵称'
+        : '编辑昵称';
     }
+  }
 
-    // 更新统计摘要
+  /**
+   * 更新统计摘要
+   */
+  function updateStatsSummary() {
     const savedStats = localStorage.getItem('userStats');
-    if (savedStats) {
-      try {
-        const stats = JSON.parse(savedStats);
-        if (streakSummary && window.I18n) {
-          streakSummary.textContent = window.I18n.t('settings.home.streak_summary', { days: stats.streak_days || 1 });
-        }
-        if (timeSummary && window.I18n) {
-          const hours = ((stats.total_time || 0) / 3600).toFixed(1);
-          timeSummary.textContent = window.I18n.t('settings.home.time_summary', { hours });
-        }
-      } catch (e) {}
-    }
+    if (!savedStats) return;
 
-    // 随机提示
+    try {
+      const stats = JSON.parse(savedStats);
+
+      if (streakSummary && window.I18n) {
+        streakSummary.textContent = window.I18n.t('settings.home.streak_summary', {
+          days: stats.streak_days || 1
+        });
+      }
+
+      if (timeSummary && window.I18n) {
+        const hours = ((stats.total_time || 0) / 3600).toFixed(1);
+        timeSummary.textContent = window.I18n.t('settings.home.time_summary', { hours });
+      }
+    } catch (e) {
+      console.warn('Failed to parse user stats:', e);
+    }
+  }
+
+  /**
+   * 更新随机提示
+   */
+  function updateRandomTip() {
     if (randomTipText) {
       randomTipText.textContent = getDailyTip();
     }
+  }
+
+  /**
+   * 更新主页标签
+   */
+  async function updateHomeTab() {
+    updateGreeting();
+    await updateNicknameDisplay();
+    updateStatsSummary();
+    updateRandomTip();
   }
 
   /**

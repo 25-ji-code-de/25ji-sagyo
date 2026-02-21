@@ -108,6 +108,54 @@
     resyncOnce();
   }
 
+  // Helper: Initialize HLS playback
+  function initHLSPlayback(dayOffset) {
+    HLSHandler.init(video, sources.m3u8, {
+      onReady: () => {
+        HLSHandler.seekTo(video, dayOffset).then(() => {
+          video.play().catch(() => {});
+        });
+      },
+      onFallback: fallbackToMP4
+    }).catch((err) => {
+      console.warn('HLS init failed:', err);
+    });
+  }
+
+  // Helper: Handle HLS sync
+  function handleHLSSync(hlsState, dayOffset) {
+    if (!hlsState.ready) {
+      if (hlsState.codecUnsupported || hlsState.failed) return;
+      initHLSPlayback(dayOffset);
+      return;
+    }
+
+    const current = video.currentTime || 0;
+    if (TimeSync.isDrifted(current, dayOffset)) {
+      HLSHandler.seekTo(video, dayOffset).catch(console.warn);
+    }
+    if (video.paused) video.play().catch(() => {});
+    updateControlsUI();
+  }
+
+  // Helper: Handle MP4 sync
+  function handleMP4Sync(partIndex, offset) {
+    if (lastPartIndex === null || lastPartIndex !== partIndex) {
+      return loadAndSeekTo(partIndex, offset).catch(console.warn).finally(updateControlsUI);
+    }
+
+    const current = video.currentTime || 0;
+    if (TimeSync.isDrifted(current, offset)) {
+      try {
+        video.currentTime = offset;
+      } catch (e) {
+        loadAndSeekTo(partIndex, offset).catch(console.warn);
+      }
+    }
+    if (video.paused) video.play().catch(() => {});
+    updateControlsUI();
+  }
+
   // 核心同步逻辑
   function resyncOnce() {
     const now = TimeSync.getNowByMode(timezoneMode);
@@ -117,47 +165,10 @@
 
     if (playbackMode === 'hls' && !hlsState.failed) {
       const dayOffset = TimeSync.computeDayOffset(now);
-
-      if (!hlsState.ready) {
-        if (hlsState.codecUnsupported || hlsState.failed) return;
-
-        HLSHandler.init(video, sources.m3u8, {
-          onReady: () => {
-            HLSHandler.seekTo(video, dayOffset).then(() => {
-              video.play().catch(() => {});
-            });
-          },
-          onFallback: fallbackToMP4
-        }).catch((err) => {
-          console.warn('HLS init failed:', err);
-        });
-        return;
-      }
-
-      const current = video.currentTime || 0;
-      if (TimeSync.isDrifted(current, dayOffset)) {
-        HLSHandler.seekTo(video, dayOffset).catch(console.warn);
-      }
-      if (video.paused) video.play().catch(() => {});
-      updateControlsUI();
+      handleHLSSync(hlsState, dayOffset);
     } else {
-      // MP4 模式
       const { partIndex, offset } = TimeSync.computePartAndOffset(now, PART_LENGTH_SECONDS);
-
-      if (lastPartIndex === null || lastPartIndex !== partIndex) {
-        return loadAndSeekTo(partIndex, offset).catch(console.warn).finally(updateControlsUI);
-      }
-
-      const current = video.currentTime || 0;
-      if (TimeSync.isDrifted(current, offset)) {
-        try {
-          video.currentTime = offset;
-        } catch (e) {
-          loadAndSeekTo(partIndex, offset).catch(console.warn);
-        }
-      }
-      if (video.paused) video.play().catch(() => {});
-      updateControlsUI();
+      handleMP4Sync(partIndex, offset);
     }
   }
 

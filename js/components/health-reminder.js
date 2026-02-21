@@ -187,16 +187,16 @@
     const toast = document.createElement('div');
     toast.className = `health-toast ${type}`;
 
-    const icon = type === 'sedentary' ? '🧘' : '💧';
+    const icon = type === 'sedentary' ? window.SVG_ICONS.activity : window.SVG_ICONS.droplet;
     const title = getTranslatedTitle(type);
 
     toast.innerHTML = `
-      <div class="toast-icon">${icon}</div>
+      <div class="toast-icon sekai-icon-lg">${icon}</div>
       <div class="toast-content">
         <div class="toast-title">${title}</div>
         <div class="toast-message">${message}</div>
       </div>
-      <button class="toast-close">×</button>
+      <button class="toast-close sekai-icon">${window.SVG_ICONS.x}</button>
     `;
 
     // 关闭按钮事件

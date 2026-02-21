@@ -17,7 +17,6 @@
     muteBtn: document.getElementById('muteBtn'),
     volumeSlider: document.getElementById('volumeSlider'),
     fullscreenBtn: document.getElementById('fullscreenBtn'),
-    tzToggleBtn: document.getElementById('tzToggleBtn'),
     audioProcessBtn: document.getElementById('audioProcessBtn'),
     orientationWarning: document.getElementById('orientation-warning'),
     overlay: document.getElementById('overlay'),
@@ -212,9 +211,6 @@
     saveSettings();
   };
 
-  if (elements.tzToggleBtn) {
-    elements.tzToggleBtn.addEventListener('click', toggleTimezone);
-  }
   if (elements.infoEl) {
     elements.infoEl.addEventListener('click', toggleTimezone);
     elements.infoEl.title = "点击切换时区 (本地 / 东京)";

@@ -10,6 +10,7 @@
   <meta name="description" content="『25时、Nightcord见。』成员们的 24 小时工作日常 — 沉浸式作业陪伴：番茄钟、CD 播放器、世界时钟与音频可视化等实用工具。" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/icons.css">
 </head>
 <body>
   <div id="app">
@@ -31,7 +32,7 @@
             <span class="stat-label">在线</span>
           </div>
           <div class="live-stat-item broadcast-msg" data-i18n-title="broadcast.click_to_view">
-            <span class="broadcast-icon">📢</span>
+            <span class="broadcast-icon" data-icon="radio"></span>
             <div class="broadcast-text-wrapper">
               <span class="broadcast-text" data-i18n="broadcast.connecting">正在连接 Nightcord...</span>
             </div>
@@ -39,16 +40,15 @@
         </div>
 
         <div id="controls" role="toolbar" aria-label="Video controls">
-          <button id="muteBtn" aria-pressed="true" title="Mute / Unmute">🔊</button>
+          <button id="muteBtn" aria-pressed="true" title="Mute / Unmute" data-icon="volumeHigh"></button>
           <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" />
-          <button id="audioProcessBtn" aria-pressed="false" title="音频处理（限幅+降低人声）">🎚️</button>
-          <button id="fullscreenBtn" title="Fullscreen">Fullscreen</button>
-          <button id="tzToggleBtn" title="Toggle timezone">Toggle TZ</button>
-          <button id="pomodoroBtn" title="Pomodoro Timer">🍅</button>
-          <button id="cdPlayerBtn" title="CD Player">💿</button>
-          <button id="todoListBtn" title="Todo List">📋</button>
-          <button id="breathingBtn" title="呼吸练习" data-i18n-title="breathing.title">🌬️</button>
-          <button id="settingsBtn" title="设置">⚙️</button>
+          <button id="audioProcessBtn" aria-pressed="false" title="音频处理（限幅+降低人声）" data-icon="audioLines"></button>
+          <button id="fullscreenBtn" title="Fullscreen" data-icon="maximize"></button>
+          <button id="pomodoroBtn" title="Pomodoro Timer" data-icon="timer"></button>
+          <button id="cdPlayerBtn" title="CD Player" data-icon="disc"></button>
+          <button id="todoListBtn" title="Todo List" data-icon="clipboardList"></button>
+          <button id="breathingBtn" title="呼吸练习" data-i18n-title="breathing.title" data-icon="wind"></button>
+          <button id="settingsBtn" title="设置" data-icon="settings"></button>
         </div>
 
         <!-- Pomodoro Timer Panel -->
@@ -56,8 +56,8 @@
           <div class="pomodoro-header">
             <span data-i18n="pomodoro.title">番茄钟 & 世界时钟</span>
             <div class="header-controls">
-              <button id="toggleClockWidget" class="toggle-btn" data-i18n-title="world_clock.toggle_hint" title="显示/隐藏时钟">🕐</button>
-              <button id="pomodoroCloseBtn" class="close-btn" title="关闭">✕</button>
+              <button id="toggleClockWidget" class="toggle-btn" data-i18n-title="world_clock.toggle_hint" title="显示/隐藏时钟" data-icon="clock"></button>
+              <button id="pomodoroCloseBtn" class="close-btn" title="关闭" data-icon="x"></button>
             </div>
           </div>
 
@@ -113,9 +113,9 @@
               <!-- Active Task Indicator (from Todo List) -->
               <div id="activeTaskIndicator" class="active-task-indicator">
                 <div class="active-task-top-row">
-                  <span class="active-task-label-icon">🎯</span>
+                  <span class="active-task-label-icon" data-icon="target"></span>
                   <span class="active-task-name-text" id="activeTaskName" data-i18n="todo.no_active_task">未选择任务</span>
-                  <button class="active-task-close-btn" id="clearActiveTaskBtn" data-i18n-title="todo.clear_active_task" title="取消关联">✕</button>
+                  <button class="active-task-close-btn" id="clearActiveTaskBtn" data-i18n-title="todo.clear_active_task" title="取消关联" data-icon="x"></button>
                 </div>
                 
                 <div class="active-task-bottom-row">
@@ -123,8 +123,8 @@
                       <!-- Rendered by JS -->
                    </div>
                    <div class="active-task-int-btns">
-                      <button class="int-btn internal" id="quickIntInternal" data-i18n-title="todo.interruption_internal" title="内部干扰">'</button>
-                      <button class="int-btn external" id="quickIntExternal" data-i18n-title="todo.interruption_external" title="外部干扰">-</button>
+                      <button class="int-btn internal" id="quickIntInternal" data-i18n-title="todo.interruption_internal" title="内部干扰" data-icon="zap"></button>
+                      <button class="int-btn external" id="quickIntExternal" data-i18n-title="todo.interruption_external" title="外部干扰" data-icon="userX"></button>
                    </div>
                 </div>
               </div>
@@ -154,8 +154,8 @@
       <!-- Chat Panel -->
       <div id="chatPanel" class="hidden side-panel">
         <div class="panel-header">
-          <span>💬 消息记录</span>
-          <button id="chatCloseBtn" class="close-btn" title="关闭">✕</button>
+          <span><span data-icon="messageSquare" style="display:inline-block; vertical-align:middle; width:1.2em; height:1.2em; margin-right:4px;"></span> 消息记录</span>
+          <button id="chatCloseBtn" class="close-btn" title="关闭" data-icon="x"></button>
         </div>
         <div class="chat-messages" id="chatMessages">
           <div class="chat-message system">
@@ -172,10 +172,10 @@
       <!-- CD Player Panel -->
       <div id="cdPlayerPanel" class="hidden">
         <div class="cd-player-header">
-          <span data-i18n="cd_player.title">🎵 SEKAI 留声机</span>
+          <span data-i18n="cd_player.title"><span data-icon="disc" style="display:inline-block; vertical-align:middle; width:1.2em; height:1.2em; margin-right:4px;"></span> SEKAI 留声机</span>
           <div class="header-controls">
-            <button id="toggleVisualization" class="toggle-btn" data-i18n-title="cd_player.toggle_visualization" title="显示/隐藏音频可视化">🌀</button>
-            <button id="cdPlayerCloseBtn" class="close-btn" title="关闭">✕</button>
+            <button id="toggleVisualization" class="toggle-btn" data-i18n-title="cd_player.toggle_visualization" title="显示/隐藏音频可视化" data-icon="activity"></button>
+            <button id="cdPlayerCloseBtn" class="close-btn" title="关闭" data-icon="x"></button>
           </div>
         </div>
 
@@ -184,13 +184,13 @@
           <div class="music-list-section">
             <!-- Category Sidebar -->
             <div class="music-categories" id="musicCategories">
-              <button class="category-btn active" data-category="all" data-i18n-title="cd_player.categories.all" title="全部歌曲">🎵</button>
-              <button class="category-btn" data-category="favorites" data-i18n-title="cd_player.categories.favorites" title="我喜欢的音乐">⭐</button>
-              <button class="category-btn" data-category="playlists" data-i18n-title="cd_player.categories.playlists" title="我的歌单">📂</button>
-              <button class="category-btn" data-category="local" data-i18n-title="cd_player.categories.local" title="本地音乐">📥</button>
-              <button class="category-btn" data-category="imported" title="在线歌单">📡</button>
+              <button class="category-btn active" data-category="all" data-i18n-title="cd_player.categories.all" title="全部歌曲" data-icon="music"></button>
+              <button class="category-btn" data-category="favorites" data-i18n-title="cd_player.categories.favorites" title="我喜欢的音乐" data-icon="star"></button>
+              <button class="category-btn" data-category="playlists" data-i18n-title="cd_player.categories.playlists" title="我的歌单" data-icon="folder"></button>
+              <button class="category-btn" data-category="local" data-i18n-title="cd_player.categories.local" title="本地音乐" data-icon="download"></button>
+              <button class="category-btn" data-category="imported" title="在线歌单" data-icon="radio"></button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
-              <button class="category-btn" data-category="special" data-i18n-title="cd_player.categories.special" title="STUDY系列">📚</button>
+              <button class="category-btn" data-category="special" data-i18n-title="cd_player.categories.special" title="STUDY系列" data-icon="bookOpen"></button>
               <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 8px;"></div>
               <button class="category-btn" data-category="virtual_singer" title="Virtual Singer">
                 <img src="/unit_logos/vs.webp" alt="VS" />
@@ -210,7 +210,7 @@
               <button class="category-btn" data-category="25_ji_nightcord_de" title="25时，在Nightcord。">
                 <img src="/unit_logos/25ji.webp" alt="25时" />
               </button>
-              <button class="category-btn" data-category="other" title="其他">📀</button>
+              <button class="category-btn" data-category="other" title="其他" data-icon="disc"></button>
             </div>
 
             <div class="music-list-container">
@@ -248,15 +248,15 @@
             </div>
 
             <div class="player-controls">
-              <button id="prevBtn" class="control-btn" data-i18n-title="cd_player.controls.prev" title="上一首">⏮</button>
-              <button id="playPauseBtn" class="control-btn play-btn" data-i18n-title="cd_player.controls.play" title="播放/暂停">▶️</button>
-              <button id="nextBtn" class="control-btn" data-i18n-title="cd_player.controls.next" title="下一首">⏭</button>
-              <button id="shuffleBtn" class="control-btn" data-i18n-title="cd_player.controls.shuffle" title="随机播放">🔀</button>
-              <button id="repeatBtn" class="control-btn" data-i18n-title="cd_player.controls.repeat" title="循环播放">🔁</button>
+              <button id="prevBtn" class="control-btn" data-i18n-title="cd_player.controls.prev" title="上一首" data-icon="skipBack"></button>
+              <button id="playPauseBtn" class="control-btn play-btn" data-i18n-title="cd_player.controls.play" title="播放/暂停" data-icon="play"></button>
+              <button id="nextBtn" class="control-btn" data-i18n-title="cd_player.controls.next" title="下一首" data-icon="skipForward"></button>
+              <button id="shuffleBtn" class="control-btn" data-i18n-title="cd_player.controls.shuffle" title="随机播放" data-icon="shuffle"></button>
+              <button id="repeatBtn" class="control-btn" data-i18n-title="cd_player.controls.repeat" title="循环播放" data-icon="repeat"></button>
             </div>
 
             <div class="volume-control">
-              <span>🔊</span>
+              <span data-icon="volumeHigh"></span>
               <input type="range" id="cdVolumeSlider" min="0" max="0.5" step="0.01" value="0.1" />
             </div>
           </div>
@@ -269,9 +269,12 @@
       <!-- Todo List Panel -->
       <div id="todoPanel" class="hidden side-panel">
         <div class="panel-header">
-          <span data-i18n="todo.title">📋 待办事项</span>
+          <span>
+            <span data-icon="clipboardList" style="display:inline-block; vertical-align:middle; width:1.2em; height:1.2em; margin-right:4px;"></span>
+            <span data-i18n="todo.title">待办事项</span>
+          </span>
           <div class="header-controls">
-            <button id="todoCloseBtn" class="close-btn" title="关闭">✕</button>
+            <button id="todoCloseBtn" class="close-btn" title="关闭" data-icon="x"></button>
           </div>
         </div>
         
@@ -280,7 +283,7 @@
             <!-- Today's Plan -->
             <div class="todo-section today-section">
               <div class="section-header-v2">
-                <span class="section-icon">🍅</span>
+                <span class="section-icon" data-icon="tomato"></span>
                 <span class="section-title-v2" data-i18n="todo.section_today">Today's Focus</span>
                 <span class="section-count" id="todayCount">0</span>
               </div>
@@ -288,7 +291,7 @@
               <!-- Quick Add to Today -->
               <div class="todo-input-area v2-input">
                  <input type="text" id="newTodoInputToday" data-i18n-placeholder="todo.input_placeholder_today" placeholder="Add to Today..." autocomplete="off"/>
-                 <button id="addTodoBtnToday" class="todo-btn primary" data-i18n-title="todo.add_button_title" title="添加任务">➕</button>
+                 <button id="addTodoBtnToday" class="todo-btn primary" data-i18n-title="todo.add_button_title" title="添加任务" data-icon="plus"></button>
               </div>
 
               <div class="todo-list-container today-list-container">
@@ -303,17 +306,19 @@
             <!-- Activity Inventory -->
             <div class="todo-section inventory-section">
               <div class="section-header-v2">
-                <span class="section-icon">📥</span>
+                <span class="section-icon" data-icon="inbox"></span>
                 <span class="section-title-v2" data-i18n="todo.section_inventory">Inbox</span>
               </div>
               <div class="todo-input-area v2-input">
                  <input type="text" id="newTodoInputInbox" data-i18n-placeholder="todo.input_placeholder_inbox" placeholder="Add to Inbox..." autocomplete="off"/>
-                 <button id="addTodoBtnInbox" class="todo-btn secondary" data-i18n-title="todo.add_button_title" title="添加任务">➕</button>
+                 <button id="addTodoBtnInbox" class="todo-btn secondary sekai-icon-btn" data-i18n-title="todo.add_button_title" title="添加任务">
+                    <span data-icon="plus"></span>
+                 </button>
               </div>
               <div class="todo-list-container inventory-list-container">
                  <ul id="todoListInventory" class="todo-items-v2">
                     <li class="todo-item-placeholder" style="text-align:center; opacity: 0.5; padding: 20px; font-size: 13px;">
-                        <span style="display:block; font-size: 24px; margin-bottom: 8px;">✨</span>
+                        <span data-icon="sparkles" style="display:block; margin: 0 auto 8px;"></span>
                         <span data-i18n="todo.empty_inbox">Collect your ideas here</span>
                     </li>
                  </ul>
@@ -490,7 +495,9 @@
             <div class="tab-content" id="tab-sync">
               <!-- Logged out state -->
               <div id="sync-logged-out" class="empty-state">
-                <div class="empty-icon">☁️</div>
+                <div class="empty-icon">
+                  <span data-icon="cloud" style="width: 48px; height: 48px;"></span>
+                </div>
                 <h3 data-i18n="settings.sync.title">云端同步</h3>
                 <p data-i18n="settings.sync.desc">登录以同步您的专注时长、成就和偏好设置。</p>
                 <button class="primary-btn" id="syncLoginBtn" data-i18n="settings.sync.login_btn">登录 / 注册</button>
@@ -675,6 +682,7 @@
   </script>
 
   <!-- 工具模块 -->
+  <script src="js/utils/icons.js"></script>
   <script src="js/utils/helpers.js"></script>
   <script src="js/utils/i18n.js"></script>
   <script src="js/utils/storage.js"></script>

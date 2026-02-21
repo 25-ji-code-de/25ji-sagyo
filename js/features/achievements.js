@@ -295,12 +295,12 @@
           const time = new Date(activity.timestamp);
           const timeStr = `${time.getMonth() + 1}/${time.getDate()} ${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
           
-          let actIcon = '📝';
+          let actIcon = window.SVG_ICONS.activity;
           switch (activity.type) {
-            case 'pomodoro': actIcon = '🍅'; break;
-            case 'song': actIcon = '🎵'; break;
-            case 'achievement': actIcon = '🏆'; break;
-            case 'login': actIcon = '👋'; break;
+            case 'pomodoro': actIcon = window.SVG_ICONS.timer; break;
+            case 'song': actIcon = window.SVG_ICONS.music; break;
+            case 'achievement': actIcon = window.SVG_ICONS.award; break;
+            case 'login': actIcon = window.SVG_ICONS.smile; break;
           }
           
           item.innerHTML = `<span class="activity-icon">${actIcon}</span><span class="activity-text">${activity.detail}</span><span class="activity-time">${timeStr}</span>`;

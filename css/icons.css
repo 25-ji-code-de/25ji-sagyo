@@ -1,0 +1,66 @@
+
+/* SVG Icons Support */
+.sekai-icon,
+[data-icon] svg,
+button svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: inline-block;
+}
+
+/* Size variants */
+.sekai-icon-sm {
+  width: 0.875em;
+  height: 0.875em;
+  vertical-align: -0.05em;
+}
+
+.sekai-icon-lg {
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.2em;
+}
+
+/* Specific component adjustments */
+.broadcast-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.broadcast-icon svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-top: -1px; /* Fine-tune vertical alignment */
+}
+
+#controls button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: 0 auto;
+}
+
+.toggle-btn svg,
+.close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-icon svg,
+.category-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.achievement-icon svg {
+  width: 32px;
+  height: 32px;
+}

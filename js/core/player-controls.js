@@ -14,10 +14,10 @@
    * @returns {string} 图标字符
    */
   function getVolumeIcon(volume, muted) {
-    if (muted || volume === 0) return '🔇';
-    if (volume < 0.33) return '🔈';
-    if (volume < 0.66) return '🔉';
-    return '🔊';
+    if (muted || volume === 0) return window.SVG_ICONS.volumeMute;
+    if (volume < 0.33) return window.SVG_ICONS.volumeLow;
+    if (volume < 0.66) return window.SVG_ICONS.volumeMedium;
+    return window.SVG_ICONS.volumeHigh;
   }
 
   /**
@@ -28,9 +28,16 @@
    */
   function updateMuteButton(muteBtn, volume, muted) {
     if (!muteBtn) return;
-    
+
     const icon = getVolumeIcon(volume, muted);
-    muteBtn.textContent = icon;
+    muteBtn.innerHTML = icon;
+
+    // Add sekai-icon class to the SVG for consistent styling
+    const svg = muteBtn.querySelector('svg');
+    if (svg && !svg.classList.contains('sekai-icon')) {
+      svg.classList.add('sekai-icon');
+    }
+
     muteBtn.setAttribute('aria-pressed', String(!muted));
     muteBtn.title = muted ? 'Muted — click to unmute' : 'Click to mute';
   }
@@ -169,7 +176,6 @@
       muteBtn,
       volumeSlider,
       fullscreenBtn,
-      tzToggleBtn,
       tzLabel,
       audioProcessBtn,
       localTimeEl,

@@ -183,7 +183,9 @@ video{
 }
 
 .broadcast-icon {
-  font-size: 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .broadcast-text-wrapper {

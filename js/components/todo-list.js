@@ -283,11 +283,11 @@ class TodoList {
     if (tasks.length === 0) {
       container.innerHTML = listType === 'today'
         ? `<li class="todo-item-placeholder" style="text-align:center; opacity:0.5; padding:20px; font-size:13px;">
-             <span style="display:block; font-size: 24px; margin-bottom: 8px; opacity:0.7">😴</span>
+             <span class="sekai-icon-lg" style="display:block; margin: 0 auto 8px; opacity:0.7">${window.SVG_ICONS.moon}</span>
              <span data-i18n="todo.empty_today">No focus tasks yet</span>
            </li>`
         : `<li class="todo-item-placeholder" style="text-align:center; opacity:0.5; padding:20px; font-size:13px;">
-             <span style="display:block; font-size: 24px; margin-bottom: 8px; opacity:0.7">✨</span>
+             <span class="sekai-icon-lg" style="display:block; margin: 0 auto 8px; opacity:0.7">${window.SVG_ICONS.sparkles}</span>
              <span data-i18n="todo.empty_inbox">Inbox empty</span>
            </li>`;
       return;
@@ -312,7 +312,7 @@ class TodoList {
     // 2. Content
     // Unplanned badge now stylized as a small red dot/tag if needed, or kept simple
     const unplannedBadge = todo.isUnplanned 
-       ? `<span style="color:#ff6b6b; font-weight:bold; margin-right:4px;" title="Unplanned">⚡</span>` 
+       ? `<span style="color:#ff6b6b; font-weight:bold; margin-right:4px;" title="Unplanned" class="sekai-icon">${window.SVG_ICONS.zap}</span>` 
        : '';
        
     const contentHtml = `
@@ -347,28 +347,28 @@ class TodoList {
     }
 
     // Add Button (Visual +)
-    const addBtnHtml = `<button class="pomo-add-btn-v2" title="Plan another Pomodoro">＋</button>`;
+    const addBtnHtml = `<button class="pomo-add-btn-v2" title="Plan another Pomodoro">${window.SVG_ICONS.plus}</button>`;
     
     // 4. Visual Interruption Badges (Icons instead of text)
     const intInternalHtml = todo.interruptions.internal > 0 
-      ? `<span class="int-badge internal" title="Internal Interruptions"><i class="int-icon-img">💭</i> ${todo.interruptions.internal}</span>` 
-      : `<span class="int-badge internal" style="opacity:0.3" title="Record Internal"><i class="int-icon-img">💭</i></span>`;
+      ? `<span class="int-badge internal" title="Internal Interruptions"><span class="int-icon-svg">${window.SVG_ICONS.cloud}</span> ${todo.interruptions.internal}</span>` 
+      : `<span class="int-badge internal" style="opacity:0.3" title="Record Internal"><span class="int-icon-svg">${window.SVG_ICONS.cloud}</span></span>`;
       
     const intExternalHtml = todo.interruptions.external > 0
-      ? `<span class="int-badge external" title="External Interruptions"><i class="int-icon-img">📞</i> ${todo.interruptions.external}</span>`
-      : `<span class="int-badge external" style="opacity:0.3" title="Record External"><i class="int-icon-img">📞</i></span>`;
+      ? `<span class="int-badge external" title="External Interruptions"><span class="int-icon-svg">${window.SVG_ICONS.phone}</span> ${todo.interruptions.external}</span>`
+      : `<span class="int-badge external" style="opacity:0.3" title="Record External"><span class="int-icon-svg">${window.SVG_ICONS.phone}</span></span>`;
     
     // 5. Action Buttons (Hidden until Hover)
     // Move logic: Today <-> Inbox
-    const moveIcon = listType === 'today' ? '📦' : '📅';
+    const moveIcon = listType === 'today' ? window.SVG_ICONS.package : window.SVG_ICONS.calendar;
     const moveTarget = listType === 'today' ? 'inventory' : 'today';
     const moveTitle = listType === 'today' ? 'Move to Inbox' : 'Move to Today';
     
     const actionsHtml = `
       <div class="todo-hover-actions">
-         <button class="hover-btn focus" title="Focus This Task">🎯</button>
+         <button class="hover-btn focus" title="Focus This Task">${window.SVG_ICONS.target}</button>
          <button class="hover-btn move" data-target="${moveTarget}" title="${moveTitle}">${moveIcon}</button>
-         <button class="hover-btn delete" title="Delete">✕</button>
+         <button class="hover-btn delete" title="Delete">${window.SVG_ICONS.x}</button>
       </div>
     `;
 

@@ -105,13 +105,16 @@
     // 更新状态文本
     if (pomodoroStatus) {
       if (currentMode === 'work') {
-        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.work') || '工作时间 🎯';
+        const text = (window.I18n?.t('pomodoro.status.work') || '工作时间').replace(/🎯/g, '').trim();
+        pomodoroStatus.innerHTML = `<span style="vertical-align:middle">${text}</span> <span class="sekai-icon" style="vertical-align:middle">${window.SVG_ICONS.target}</span>`;
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#ff6b6b';
       } else if (currentMode === 'short-break') {
-        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.short_break') || '短休息 ☕';
+        const text = (window.I18n?.t('pomodoro.status.short_break') || '短休息').replace(/☕/g, '').trim();
+        pomodoroStatus.innerHTML = `<span style="vertical-align:middle">${text}</span> <span class="sekai-icon" style="vertical-align:middle">${window.SVG_ICONS.coffee}</span>`;
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#51cf66';
       } else if (currentMode === 'long-break') {
-        pomodoroStatus.textContent = window.I18n?.t('pomodoro.status.long_break') || '长休息 🌟';
+        const text = (window.I18n?.t('pomodoro.status.long_break') || '长休息').replace(/🌟/g, '').trim();
+        pomodoroStatus.innerHTML = `<span style="vertical-align:middle">${text}</span> <span class="sekai-icon" style="vertical-align:middle">${window.SVG_ICONS.star}</span>`;
         if (pomodoroDisplay) pomodoroDisplay.style.color = '#339af0';
       }
     }
@@ -302,11 +305,11 @@
     // Check if there's an active task to show
     const activeTask = window.TodoList?.getActiveTask?.();
     const taskInfo = activeTask 
-      ? `<div class="toast-task-info">📝 已记录到: ${activeTask.text}</div>` 
+      ? `<div class="toast-task-info"><span class="sekai-icon-sm" style="margin-right:4px; vertical-align:text-bottom;">${window.SVG_ICONS.activity}</span>已记录到: ${activeTask.text}</div>` 
       : '';
     
     toast.innerHTML = `
-      <span class="toast-icon">${icon}</span>
+      <span class="toast-icon sekai-icon-lg">${icon}</span>
       <div class="toast-content">
         <span class="toast-text">${text}</span>
         ${taskInfo}
@@ -397,15 +400,15 @@
       ? (window.I18n?.t('pomodoro.notifications.work_complete.title') || '工作完成!')
       : (window.I18n?.t('pomodoro.notifications.break_complete.title') || '休息结束!');
     const body = isWork
-      ? (window.I18n?.t('pomodoro.notifications.work_complete.body') || '该休息一下了 ☕')
-      : (window.I18n?.t('pomodoro.notifications.break_complete.body') || '开始下一个番茄钟 🍅');
-    const icon = isWork ? '🍅' : '⏰';
+      ? (window.I18n?.t('pomodoro.notifications.work_complete.body') || '该休息一下了')
+      : (window.I18n?.t('pomodoro.notifications.break_complete.body') || '开始下一个番茄钟');
+    const icon = isWork ? window.SVG_ICONS.timer : window.SVG_ICONS.clock;
     showPomodoroToast(`${title} ${body}`, icon);
 
     // 同时尝试浏览器通知（作为备用）
     try {
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '🍅' });
+        new Notification(title, { body });
       }
     } catch (e) {
       console.warn('Notification error:', e);

@@ -101,7 +101,7 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
     importBtn.style.background = 'rgba(255, 255, 255, 0.1)';
     importBtn.innerHTML = `
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 20px;">📥</span>
+        <span class="sekai-icon-lg">${window.SVG_ICONS.download}</span>
         <span>导入本地音乐文件...</span>
       </div>
     `;
@@ -132,7 +132,7 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
     importBtn.style.background = 'rgba(255, 255, 255, 0.1)';
     importBtn.innerHTML = `
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 20px;">📡</span>
+        <span class="sekai-icon-lg">${window.SVG_ICONS.radio}</span>
         <span>导入在线歌单...</span>
       </div>
     `;
@@ -155,7 +155,7 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
       clearBtn.style.border = '1px solid rgba(239, 68, 68, 0.3)';
       clearBtn.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 20px;">🗑️</span>
+          <span class="sekai-icon-lg">${window.SVG_ICONS.trash}</span>
           <span>清空全部 (${list.length}首)</span>
         </div>
       `;
@@ -240,9 +240,9 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
     // Platform badge for imported music
     let platformBadge = '';
     if (isImported) {
-      const platformEmoji = music.server === 'netease' ? '☁️' : '🎵';
+      const platformIcon = music.server === 'netease' ? window.SVG_ICONS.cloud : window.SVG_ICONS.music;
       const platformName = music.server === 'netease' ? '网易云' : 'QQ音乐';
-      platformBadge = `<span class="platform-badge" title="${platformName}">${platformEmoji}</span>`;
+      platformBadge = `<span class="platform-badge sekai-icon-sm" title="${platformName}">${platformIcon}</span>`;
     }
 
     item.innerHTML = `
@@ -252,12 +252,12 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
       </div>
       <div class="music-item-actions">
         ${isLocal || isImported ? `
-          ${isImported ? `<button class="save-to-local-btn" title="保存到本地音乐">💾</button>` : ''}
-          <button class="delete-local-btn" title="删除">🗑️</button>
+          ${isImported ? `<button class="save-to-local-btn sekai-icon-btn" title="保存到本地音乐">${window.SVG_ICONS.save}</button>` : ''}
+          <button class="delete-local-btn sekai-icon-btn" title="删除">${window.SVG_ICONS.trash}</button>
         ` : `
-          <button class="add-to-playlist-btn" title="添加到歌单">✚</button>
-          <button class="favorite-btn ${isFav ? 'active' : ''}" title="${isFav ? '取消收藏' : '添加到我喜欢的音乐'}">
-            ${isFav ? '★' : '☆'}
+          <button class="add-to-playlist-btn sekai-icon-btn" title="添加到歌单">${window.SVG_ICONS.plus}</button>
+          <button class="favorite-btn sekai-icon-btn ${isFav ? 'active' : ''}" title="${isFav ? '取消收藏' : '添加到我喜欢的音乐'}">
+            ${isFav ? window.SVG_ICONS.starFilled : window.SVG_ICONS.star}
           </button>
         `}
       </div>

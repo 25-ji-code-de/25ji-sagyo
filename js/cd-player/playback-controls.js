@@ -46,7 +46,11 @@ export function playTrack(loadTrack) {
   elements.cdAudioPlayer.play()
     .then(() => {
       state.isPlaying = true;
-      elements.playPauseBtn.textContent = '⏸️';
+      if (window.renderIcon) {
+        elements.playPauseBtn.innerHTML = window.renderIcon('pause');
+      } else {
+        elements.playPauseBtn.textContent = '⏸️';
+      }
 
       updateMediaSessionPlaybackState('playing');
       updateMediaSessionPositionState();
@@ -81,7 +85,11 @@ export function playTrack(loadTrack) {
 export function pauseTrack() {
   elements.cdAudioPlayer.pause();
   state.isPlaying = false;
-  elements.playPauseBtn.textContent = '▶️';
+  if (window.renderIcon) {
+    elements.playPauseBtn.innerHTML = window.renderIcon('play');
+  } else {
+    elements.playPauseBtn.textContent = '▶️';
+  }
 
   updateMediaSessionPlaybackState('paused');
 

@@ -80,16 +80,16 @@ export async function addToPlaylist(musicId, buttonElement, filterMusicList) {
     const isAdded = p.tracks.has(musicId);
 
     const icon = document.createElement('span');
-    icon.className = 'playlist-dropdown-icon';
-    icon.textContent = '📂';
+    icon.className = 'playlist-dropdown-icon sekai-icon-sm';
+    icon.innerHTML = window.SVG_ICONS.folder;
 
     const name = document.createElement('span');
     name.className = 'playlist-dropdown-name';
     name.textContent = p.name;
 
     const check = document.createElement('span');
-    check.className = 'playlist-dropdown-check';
-    check.textContent = isAdded ? '✓' : '';
+    check.className = 'playlist-dropdown-check sekai-icon-sm';
+    check.innerHTML = isAdded ? window.SVG_ICONS.check : '';
 
     item.appendChild(icon);
     item.appendChild(name);
@@ -119,8 +119,8 @@ export async function addToPlaylist(musicId, buttonElement, filterMusicList) {
   newItem.className = 'playlist-dropdown-item create-new';
 
   const newIcon = document.createElement('span');
-  newIcon.className = 'playlist-dropdown-icon';
-  newIcon.textContent = '+';
+  newIcon.className = 'playlist-dropdown-icon sekai-icon-sm';
+  newIcon.innerHTML = window.SVG_ICONS.plus;
 
   const newName = document.createElement('span');
   newName.className = 'playlist-dropdown-name';
@@ -190,7 +190,7 @@ export function displayPlaylists(filterMusicList) {
   const createCard = document.createElement('div');
   createCard.className = 'playlist-card create-new';
   createCard.innerHTML = `
-    <div class="playlist-icon">✚</div>
+    <div class="playlist-icon sekai-icon-lg">${window.SVG_ICONS.plus}</div>
     <div class="playlist-name">新建歌单</div>
   `;
   createCard.addEventListener('click', () => createPlaylist(() => displayPlaylists(filterMusicList)));
@@ -201,7 +201,7 @@ export function displayPlaylists(filterMusicList) {
     const card = document.createElement('div');
     card.className = 'playlist-card';
     card.innerHTML = `
-      <div class="playlist-icon">📂</div>
+      <div class="playlist-icon sekai-icon-lg">${window.SVG_ICONS.folder}</div>
       <div class="playlist-name">${p.name}</div>
       <div class="playlist-count">${p.tracks.size} 首歌曲</div>
     `;
@@ -238,12 +238,12 @@ export function toggleFavorite(musicId, btn, filterMusicList) {
   if (state.favorites.has(musicId)) {
     state.favorites.delete(musicId);
     btn.classList.remove('active');
-    btn.textContent = '☆';
+    btn.innerHTML = window.SVG_ICONS.star;
     btn.title = '添加到收藏';
   } else {
     state.favorites.add(musicId);
     btn.classList.add('active');
-    btn.textContent = '★';
+    btn.innerHTML = window.SVG_ICONS.starFilled;
     btn.title = '取消收藏';
   }
   saveSettings();

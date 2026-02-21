@@ -3,14 +3,14 @@
     "title": "25-ji, Nightcord de. - 24-Hour Work Companion"
   },
   "todo": {
-    "title": "📋 To-Do List",
+    "title": "To-Do List",
     "input_placeholder": "Add a new task...",
     "input_placeholder_today": "Add to Today...",
     "input_placeholder_inbox": "Add to Inbox...",
     "add_button_title": "Add Task",
     "empty": "No tasks yet. Take a break~",
     "clear_completed": "Clear Completed",
-    "active_task": "🎯 Current Task",
+    "active_task": "Current Task",
     "no_active_task": "No task selected",
     "clear_active_task": "Clear Focus",
     "section_today": "Today's Plan",
@@ -31,9 +31,9 @@
     },
     "status": {
       "ready": "Ready",
-      "work": "Focus Time 🎯",
-      "short_break": "Short Break ☕",
-      "long_break": "Long Break 🌟"
+      "work": "Focus Time",
+      "short_break": "Short Break",
+      "long_break": "Long Break"
     },
     "buttons": {
       "start": "Start",

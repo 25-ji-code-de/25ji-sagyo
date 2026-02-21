@@ -3,14 +3,14 @@
     "title": "『25时、Nightcord见。』成员们的 24 小时工作日常"
   },
   "todo": {
-    "title": "📋 待办事项",
+    "title": "待办事项",
     "input_placeholder": "添加新任务...",
     "input_placeholder_today": "添加到今日作业...",
     "input_placeholder_inbox": "添加到收集箱...",
     "add_button_title": "添加任务",
     "empty": "暂时没有任务，休息一下吧~",
     "clear_completed": "清除已完成",
-    "active_task": "🎯 当前任务",
+    "active_task": "当前任务",
     "no_active_task": "未选择任务",
     "clear_active_task": "取消关联",
     "section_today": "今日作业 (Today)",
@@ -31,9 +31,9 @@
     },
     "status": {
       "ready": "准备工作",
-      "work": "工作时间 🎯",
-      "short_break": "短休息 ☕",
-      "long_break": "长休息 🌟"
+      "work": "工作时间",
+      "short_break": "短休息",
+      "long_break": "长休息"
     },
     "buttons": {
       "start": "开始",

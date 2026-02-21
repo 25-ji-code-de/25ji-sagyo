@@ -1312,7 +1312,7 @@ video{
   backdrop-filter: blur(8px);
 }
 
-.control-btn:hover:not(:disabled) {
+.control-btn:hover:not(:disabled):not(.active) {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -1345,6 +1345,12 @@ video{
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
   border-color: rgba(99, 102, 241, 0.6);
   box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+.control-btn.active:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
+  transform: scale(1.1);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
 }
 
 /* Volume Control */

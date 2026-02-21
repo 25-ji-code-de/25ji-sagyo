@@ -90,12 +90,49 @@ export async function fetchPlaylistWithFallback(server, id) {
 }
 
 /**
+ * Resolve cover URL redirect and rewrite param to 240y240
+ * @param {string} coverUrl - Original cover URL from API
+ * @returns {Promise<string|null>} Resolved URL with param=240y240
+ */
+async function resolveCoverUrl(coverUrl) {
+  if (!coverUrl) return null;
+
+  try {
+    // Fetch to follow redirects and get final URL
+    const response = await fetch(coverUrl, {
+      method: 'HEAD',
+      redirect: 'follow'
+    });
+
+    let finalUrl = response.url;
+
+    // Rewrite the param parameter to 240y240
+    if (finalUrl.includes('?param=')) {
+      // Replace existing param value
+      finalUrl = finalUrl.replace(/(\?|&)param=[^&]*/, '$1param=240y240');
+    } else if (finalUrl.includes('?')) {
+      // Add param to existing query string
+      finalUrl = finalUrl + '&param=240y240';
+    } else {
+      // Add param as first query parameter
+      finalUrl = finalUrl + '?param=240y240';
+    }
+
+    return finalUrl;
+  } catch (err) {
+    console.warn('Failed to resolve cover URL:', coverUrl, err);
+    // Fallback: return original URL
+    return coverUrl;
+  }
+}
+
+/**
  * Convert API response to internal format
  * @param {Array} tracks - Tracks from API
  * @param {string} server - Server type
- * @returns {Array} Converted tracks
+ * @returns {Promise<Array>} Converted tracks (now async)
  */
-export function convertToLocalFormat(tracks, server) {
+export async function convertToLocalFormat(tracks, server) {
   const converted = [];
 
   for (const track of tracks) {
@@ -112,6 +149,9 @@ export function convertToLocalFormat(tracks, server) {
       songId = urlMatch[1];
     }
 
+    // Resolve cover URL and rewrite param to 240y240
+    const coverUrl = await resolveCoverUrl(track.pic);
+
     const musicInfo = {
       id: `imported_${server}_${songId}`,
       title: track.name || 'Unknown Title',
@@ -121,7 +161,7 @@ export function convertToLocalFormat(tracks, server) {
       isLocal: false,
       isImported: true,
       audioUrl: track.url,
-      coverUrl: track.pic || null,
+      coverUrl: coverUrl,
       lrcUrl: track.lrc || null,
       assetbundleName: 'imported',
       server: server

@@ -56,13 +56,22 @@ export function filterMusicList(query = '', loadTrack, pauseTrack) {
 
   // Filter by search query
   if (query) {
+    // Build search index for online music (cached)
     if (!state.searchIndexCache) {
       state.searchIndexCache = buildSearchIndex(state.musicData, state.musicTitlesZhCN);
     }
-    
-    const indexMap = new Map(state.searchIndexCache.map(item => [item.id, item]));
+
+    // Build search index for local and imported music (dynamic, as they can change)
+    const localAndImportedMusic = [...state.localMusicData, ...state.importedMusicData];
+    const localImportedIndex = localAndImportedMusic.length > 0
+      ? buildSearchIndex(localAndImportedMusic, {})
+      : [];
+
+    // Combine indexes
+    const combinedIndex = [...state.searchIndexCache, ...localImportedIndex];
+    const indexMap = new Map(combinedIndex.map(item => [item.id, item]));
     const queryData = prepareQueryData(query);
-    
+
     const scoredList = [];
     for (const music of list) {
       const indexItem = indexMap.get(music.id);
@@ -73,7 +82,7 @@ export function filterMusicList(query = '', loadTrack, pauseTrack) {
         }
       }
     }
-    
+
     scoredList.sort((a, b) => b.score - a.score);
     list = scoredList.map(item => item.music);
   }

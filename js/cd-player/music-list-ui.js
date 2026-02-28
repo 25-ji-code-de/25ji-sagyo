@@ -61,14 +61,19 @@ export function filterMusicList(query = '', loadTrack, pauseTrack) {
       state.searchIndexCache = buildSearchIndex(state.musicData, state.musicTitlesZhCN);
     }
 
-    // Build search index for local and imported music (dynamic, as they can change)
+    // Build search index for local and imported music (cached, rebuild on data change)
     const localAndImportedMusic = [...state.localMusicData, ...state.importedMusicData];
-    const localImportedIndex = localAndImportedMusic.length > 0
-      ? buildSearchIndex(localAndImportedMusic, {})
-      : [];
+    const currentLocalImportedCount = localAndImportedMusic.length;
+
+    if (!state.localImportedIndexCache || state.lastLocalImportedCount !== currentLocalImportedCount) {
+      state.localImportedIndexCache = currentLocalImportedCount > 0
+        ? buildSearchIndex(localAndImportedMusic, {})
+        : [];
+      state.lastLocalImportedCount = currentLocalImportedCount;
+    }
 
     // Combine indexes
-    const combinedIndex = [...state.searchIndexCache, ...localImportedIndex];
+    const combinedIndex = [...state.searchIndexCache, ...state.localImportedIndexCache];
     const indexMap = new Map(combinedIndex.map(item => [item.id, item]));
     const queryData = prepareQueryData(query);
 
@@ -503,25 +508,46 @@ export function displayMusicList(list, loadTrack, pauseTrack, filterMusicListFn)
     }
   }
 
-  list.forEach((music, index) => {
-    const item = document.createElement('div');
-    item.className = 'music-item';
+  // Batch rendering for performance with large lists
+  const BATCH_SIZE = 50;
+  let currentIndex = 0;
 
-    if (state.currentMusicId === music.id) {
-      item.classList.add('active');
+  function renderBatch() {
+    const fragment = document.createDocumentFragment();
+    const endIndex = Math.min(currentIndex + BATCH_SIZE, list.length);
+
+    for (let i = currentIndex; i < endIndex; i++) {
+      const music = list[i];
+      const item = document.createElement('div');
+      item.className = 'music-item';
+
+      if (state.currentMusicId === music.id) {
+        item.classList.add('active');
+      }
+
+      item.innerHTML = createMusicItemHTML(music);
+
+      setupTitleScrolling(item);
+      setupPlayOnClick(item, music);
+
+      if (music.isLocal || music.isImported) {
+        setupLocalMusicButtons(item, music);
+      } else {
+        setupNormalMusicButtons(item, music);
+      }
+
+      fragment.appendChild(item);
     }
 
-    item.innerHTML = createMusicItemHTML(music);
+    elements.musicList.appendChild(fragment);
+    currentIndex = endIndex;
 
-    setupTitleScrolling(item);
-    setupPlayOnClick(item, music);
-
-    if (music.isLocal || music.isImported) {
-      setupLocalMusicButtons(item, music);
-    } else {
-      setupNormalMusicButtons(item, music);
+    if (currentIndex < list.length) {
+      requestAnimationFrame(renderBatch);
     }
+  }
 
-    elements.musicList.appendChild(item);
-  });
+  if (list.length > 0) {
+    renderBatch();
+  }
 }

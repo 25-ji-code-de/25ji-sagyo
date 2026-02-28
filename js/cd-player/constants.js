@@ -63,6 +63,8 @@ export const state = {
   
   // Search index cache
   searchIndexCache: null,
+  localImportedIndexCache: null,
+  lastLocalImportedCount: 0,
   
   // Audio context for visualizer
   audioContext: null,

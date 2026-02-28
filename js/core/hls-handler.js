@@ -24,8 +24,6 @@
     startFragPrefetch: true
   };
 
-  const HLS_SCRIPT_URL = 'https://s4.zstatic.net/npm/hls.js@latest/dist/hls.min.js';
-
   /**
    * HLS 处理器状态
    */
@@ -35,25 +33,6 @@
     failed: false,
     codecUnsupported: false
   };
-
-  /**
-   * 加载 HLS.js 库
-   * @returns {Promise<void>}
-   */
-  function loadHLSLibrary() {
-    return new Promise((resolve, reject) => {
-      if (typeof Hls !== 'undefined') {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = HLS_SCRIPT_URL;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error('Failed to load HLS.js library'));
-      document.head.appendChild(script);
-    });
-  }
 
   /**
    * 检查 HLS 支持
@@ -86,13 +65,12 @@
 
     const { onReady, onError, onFallback } = callbacks;
 
-    try {
-      await loadHLSLibrary();
-    } catch (err) {
-      console.warn('Failed to load HLS.js:', err);
+    // 检查 HLS.js 是否已加载
+    if (typeof Hls === 'undefined') {
+      console.error('HLS.js library not loaded');
       state.failed = true;
       onFallback && onFallback();
-      throw err;
+      throw new Error('HLS.js library not loaded');
     }
 
     const support = checkSupport(video);

@@ -84,6 +84,12 @@
       },
       "default_nickname": "「世界」的居民",
       "edit_nickname": "修改暱稱",
+      "edit_profile": "前往帳戶設定修改暱稱 / 頭像 / 個性簽名",
+      "edit_profile_title": "修改個人資料",
+      "edit_profile_desc": "登入後暱稱、頭像與個性簽名由 SEKAI Pass 帳戶管理。\n是否前往帳戶設定頁面修改？",
+      "edit_profile_confirm": "前往設定",
+      "bio_empty": "還沒有個性簽名",
+      "bio_login_hint": "登入 SEKAI Pass 後可設定頭像與個性簽名",
       "streak_summary": "你已與 25時 共同度過了 {days} 天的時光",
       "time_summary": "累計專注 {hours} 小時，繼續加油！",
       "tips_title": "每日小撇步"
@@ -127,6 +133,14 @@
       "copyright": "版權聲明",
       "license": "開源授權",
       "disclaimer_title": "免責聲明 / Disclaimer"
+    }
+  },
+  "profile": {
+    "card": {
+      "unknown": "未知使用者",
+      "no_bio": "這個人很懶，還沒有寫個性簽名",
+      "anonymous": "僅顯示聊天暱稱，暫無更多資訊",
+      "click_hint": "點擊查看使用者資訊"
     }
   },
   "cd_player": {

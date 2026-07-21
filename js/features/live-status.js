@@ -48,8 +48,11 @@
   let shouldReconnect = true;
   let startTime = null;
   let initialized = false; // 防止重复初始化
+  let lastProfileAnnounceAt = 0;
+  let pendingProfileAnnounce = false;
   // messageHistory 仅用于内存中暂存，主要显示在 chatMessages 中
   const MAX_HISTORY = 50;
+  const PROFILE_ANNOUNCE_COOLDOWN_MS = 15000;
 
   /**
    * 初始化 DOM 元素引用
@@ -86,46 +89,99 @@
   function appendChatMessage(message, name = null, timestamp = null, isSystem = false) {
     if (!elements.chatMessages) return;
 
+    // 隐藏资料广播消息，仅更新本地缓存
+    if (!isSystem && window.UserProfile && window.UserProfile.isAnnouncement(message)) {
+      window.UserProfile.tryParseAnnouncement(message);
+      return;
+    }
+
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${isSystem ? 'system' : ''}`;
-    
+
     // 时间
     const timeSpan = document.createElement('span');
     timeSpan.className = 'time';
     const time = timestamp ? new Date(timestamp) : new Date();
     timeSpan.textContent = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-    
+
     if (!isSystem) {
       msgDiv.appendChild(timeSpan);
-      
-      // 发送者名称
+
+      // 发送者名称（可点击查看简易资料）
       if (name) {
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'name';
+        const nameSpan = document.createElement('button');
+        nameSpan.type = 'button';
+        nameSpan.className = 'name name-clickable';
         nameSpan.textContent = name;
+        nameSpan.title = window.I18n?.t('profile.card.click_hint') || '点击查看用户信息';
+        nameSpan.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (window.UserProfile) {
+            window.UserProfile.showCardForName(name);
+          }
+        });
         msgDiv.appendChild(nameSpan);
-        
+
         const separator = document.createElement('span');
         separator.className = 'separator';
         separator.textContent = ': ';
         msgDiv.appendChild(separator);
       }
     }
-    
+
     // 消息内容
     const contentSpan = document.createElement('span');
     contentSpan.className = 'content';
     contentSpan.textContent = message;
     msgDiv.appendChild(contentSpan);
-    
+
     elements.chatMessages.appendChild(msgDiv);
-    
+
     // 滚动到底部
     elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-    
+
     // 限制消息数量
     while (elements.chatMessages.children.length > MAX_HISTORY) {
       elements.chatMessages.removeChild(elements.chatMessages.firstChild);
+    }
+  }
+
+  /**
+   * 向聊天室广播当前用户的头像 / 个性签名（兼容仅支持 message 的 chat demo）
+   * @param {boolean} [force=false]
+   */
+  async function announceProfile(force = false) {
+    if (!isConnected()) {
+      pendingProfileAnnounce = true;
+      return false;
+    }
+    if (!window.SekaiAuth || !window.SekaiAuth.isAuthenticated() || !window.UserProfile) {
+      return false;
+    }
+
+    const now = Date.now();
+    if (!force && now - lastProfileAnnounceAt < PROFILE_ANNOUNCE_COOLDOWN_MS) {
+      return false;
+    }
+
+    try {
+      const userInfo = await window.SekaiAuth.getUserInfo();
+      const profile = window.UserProfile.fromUserInfo(userInfo);
+      if (!profile) return false;
+
+      const payload = window.UserProfile.encodeAnnouncement(profile);
+      if (!payload) return false;
+
+      const ok = sendBroadcast(payload);
+      if (ok) {
+        lastProfileAnnounceAt = now;
+        pendingProfileAnnounce = false;
+      }
+      return ok;
+    } catch (e) {
+      console.warn('[LiveStatus] Failed to announce profile:', e);
+      return false;
     }
   }
 
@@ -138,7 +194,13 @@
    */
   function updateBroadcastMessage(message, name = null, timestamp = null, addToHistory = true) {
     if (!elements.broadcastText) return;
-    
+
+    // 资料广播：不更新顶部滚动条，只解析缓存
+    if (window.UserProfile && window.UserProfile.isAnnouncement(message)) {
+      window.UserProfile.tryParseAnnouncement(message);
+      return;
+    }
+
     // 添加到聊天面板（包含 name）
     if (addToHistory && message) {
       appendChatMessage(message, name, timestamp);
@@ -219,11 +281,20 @@
       updateBroadcastMessage(message, null, null, true);
     } else if (data.name && data.message) {
       // 带有 name 的消息：{"name":"xxx","message":"xxx","timestamp":123}
-      // broadcast text 只显示 message，面板显示 name + message
-      updateBroadcastMessage(data.message, data.name, data.timestamp, true);
+      // 资料广播或普通聊天
+      if (window.UserProfile && window.UserProfile.isAnnouncement(data.message)) {
+        window.UserProfile.tryParseAnnouncement(data.message);
+      } else {
+        // broadcast text 只显示 message，面板显示 name + message
+        updateBroadcastMessage(data.message, data.name, data.timestamp, true);
+      }
     } else if (data.message) {
       // 普通广播消息（无 name）
-      updateBroadcastMessage(data.message, null, null, true);
+      if (window.UserProfile && window.UserProfile.isAnnouncement(data.message)) {
+        window.UserProfile.tryParseAnnouncement(data.message);
+      } else {
+        updateBroadcastMessage(data.message, null, null, true);
+      }
     } else if (data.broadcast) {
       // 服务端广播
       updateBroadcastMessage(data.broadcast, null, null, true);
@@ -276,6 +347,10 @@
           ws.send(JSON.stringify({ name: currentUsername }));
         }
         setConnectionStatus('connected');
+        // 连接成功后广播自己的资料，供其他客户端展示
+        setTimeout(() => {
+          announceProfile(true);
+        }, 400);
       });
 
       ws.addEventListener('message', (event) => {
@@ -387,10 +462,14 @@
       console.log('[LiveStatus] Username changed, reconnecting...');
       // 断开并重连以更新服务器上的用户名
       shouldReconnect = true;
+      pendingProfileAnnounce = true;
       if (ws) {
         try { ws.close(); } catch (e) {}
       }
       // reconnect will be triggered by the close event
+    } else {
+      // 昵称未变时仍可刷新头像 / 签名广播
+      announceProfile(true);
     }
   }
 
@@ -530,6 +609,7 @@
     disconnect,
     reconnect,
     updateUsername,
+    announceProfile,
     isConnected,
     getOnlineCount: () => onlineUsers.size,
     getCurrentUsername: () => currentUsername

@@ -12,6 +12,7 @@
   const syncUserAvatar = document.getElementById('syncUserAvatar');
   const syncUserName = document.getElementById('syncUserName');
   const syncUserEmail = document.getElementById('syncUserEmail');
+  const syncUserBio = document.getElementById('syncUserBio');
   
   // Status elements
   const lastSyncTime = document.getElementById('lastSyncTime');
@@ -49,18 +50,34 @@
       loggedOutView.classList.add('sekai-hidden');
       loggedInView.classList.remove('sekai-hidden');
 
-      // Update User Info
+      // Update User Info (display name / avatar / bio)
       try {
         const userInfo = await window.SekaiAuth.getUserInfo();
         if (userInfo) {
-           // Prefer display_name over login username
-           const name = window.SekaiAuth.getDisplayName(userInfo, 'User');
+           const profile = window.UserProfile
+             ? window.UserProfile.fromUserInfo(userInfo)
+             : null;
+           const name = profile?.displayName || window.SekaiAuth.getDisplayName(userInfo, 'User');
            const email = userInfo.email || '';
-           const initial = name.charAt(0).toUpperCase();
+           const avatarUrl = profile?.avatarUrl || window.SekaiAuth.getAvatarUrl?.(userInfo) || null;
+           const bio = profile?.bio || window.SekaiAuth.getBio?.(userInfo) || '';
 
            if (syncUserName) syncUserName.textContent = name;
            if (syncUserEmail) syncUserEmail.textContent = email;
-           if (syncUserAvatar) syncUserAvatar.textContent = initial;
+           if (window.UserProfile) {
+             window.UserProfile.setAvatarElement(syncUserAvatar, name, avatarUrl);
+           } else if (syncUserAvatar) {
+             syncUserAvatar.textContent = name.charAt(0).toUpperCase();
+           }
+           if (syncUserBio) {
+             if (bio) {
+               syncUserBio.textContent = bio;
+               syncUserBio.classList.remove('sekai-hidden');
+             } else {
+               syncUserBio.textContent = '';
+               syncUserBio.classList.add('sekai-hidden');
+             }
+           }
         }
       } catch(e) {
           console.error("Failed to fetch user info", e);

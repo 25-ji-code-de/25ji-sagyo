@@ -84,6 +84,12 @@
       },
       "default_nickname": "「セカイ」の住人",
       "edit_nickname": "ニックネーム変更",
+      "edit_profile": "アカウント設定でニックネーム / アバター / ひとことを変更",
+      "edit_profile_title": "プロフィール編集",
+      "edit_profile_desc": "ログイン後のニックネーム・アバター・ひとことは SEKAI Pass で管理されます。\nアカウント設定を開きますか？",
+      "edit_profile_confirm": "設定を開く",
+      "bio_empty": "まだひとことがありません",
+      "bio_login_hint": "SEKAI Pass にログインするとアバターとひとことを設定できます",
       "streak_summary": "25時と共に {days} 日間過ごしました",
       "time_summary": "累計作業時間: {hours} 時間。この調子です！",
       "tips_title": "今日のヒント"
@@ -137,6 +143,14 @@
       "copyright": "著作権",
       "license": "オープンソースライセンス",
       "disclaimer_title": "免責事項 / Disclaimer"
+    }
+  },
+  "profile": {
+    "card": {
+      "unknown": "不明なユーザー",
+      "no_bio": "まだひとことがありません",
+      "anonymous": "チャットのニックネームのみ表示されています",
+      "click_hint": "クリックしてユーザー情報を表示"
     }
   },
   "cd_player": {

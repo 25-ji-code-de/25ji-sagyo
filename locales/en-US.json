@@ -84,6 +84,12 @@
       },
       "default_nickname": "Resident of SEKAI",
       "edit_nickname": "Edit Nickname",
+      "edit_profile": "Edit nickname / avatar / bio in account settings",
+      "edit_profile_title": "Edit Profile",
+      "edit_profile_desc": "When signed in, nickname, avatar, and bio are managed by SEKAI Pass.\nOpen account settings to edit them?",
+      "edit_profile_confirm": "Open Settings",
+      "bio_empty": "No bio yet",
+      "bio_login_hint": "Sign in with SEKAI Pass to set avatar and bio",
       "streak_summary": "You've spent {days} days with 25-ji",
       "time_summary": "Total focus time: {hours} hours. Keep it up!",
       "tips_title": "Daily Tip"
@@ -137,6 +143,14 @@
       "copyright": "Copyright",
       "license": "Open Source License",
       "disclaimer_title": "Disclaimer"
+    }
+  },
+  "profile": {
+    "card": {
+      "unknown": "Unknown user",
+      "no_bio": "No bio yet",
+      "anonymous": "Chat nickname only — no more details available",
+      "click_hint": "Click to view user info"
     }
   },
   "cd_player": {

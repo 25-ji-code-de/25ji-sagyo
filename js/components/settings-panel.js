@@ -17,6 +17,8 @@
   const greetingText = document.getElementById('greetingText');
   const userNickname = document.getElementById('userNickname');
   const editNicknameBtn = document.getElementById('editNicknameBtn');
+  const homeUserAvatar = document.getElementById('homeUserAvatar');
+  const userBio = document.getElementById('userBio');
   const streakSummary = document.getElementById('streakSummary');
   const timeSummary = document.getElementById('timeSummary');
   const randomTipText = document.getElementById('randomTipText');
@@ -127,16 +129,25 @@
   }
 
   /**
-   * 获取用户昵称
+   * 获取用户资料（昵称 / 头像 / 个性签名）
    */
-  async function getUserNickname() {
+  async function getUserProfile() {
     // 尝试从认证系统获取
     if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
       const userInfo = await window.SekaiAuth.getUserInfo();
       if (userInfo) {
+        const profile = window.UserProfile
+          ? window.UserProfile.fromUserInfo(userInfo)
+          : {
+              displayName: window.SekaiAuth.getDisplayName(userInfo, userInfo.email),
+              avatarUrl: window.SekaiAuth.getAvatarUrl?.(userInfo) || null,
+              bio: window.SekaiAuth.getBio?.(userInfo) || ''
+            };
+
         return {
-          // 优先展示名，而不是登录用户名
-          nickname: window.SekaiAuth.getDisplayName(userInfo, userInfo.email),
+          nickname: profile?.displayName || window.SekaiAuth.getDisplayName(userInfo, userInfo.email),
+          avatarUrl: profile?.avatarUrl || null,
+          bio: profile?.bio || '',
           isLoggedIn: true
         };
       }
@@ -146,6 +157,8 @@
     const defaultNickname = window.I18n?.t('settings.home.default_nickname') || '「世界」的居民';
     return {
       nickname: localStorage.getItem('userNickname') || defaultNickname,
+      avatarUrl: null,
+      bio: '',
       isLoggedIn: false
     };
   }
@@ -165,25 +178,47 @@
   }
 
   /**
-   * 更新昵称显示
+   * 更新主页资料显示（昵称 / 头像 / 个性签名）
    */
   async function updateNicknameDisplay() {
-    const { nickname, isLoggedIn } = await getUserNickname();
+    const { nickname, avatarUrl, bio, isLoggedIn } = await getUserProfile();
 
     if (userNickname) {
       userNickname.textContent = nickname;
     }
 
-    // 登录后保存用户名
+    if (window.UserProfile) {
+      window.UserProfile.setAvatarElement(homeUserAvatar, nickname, avatarUrl);
+    } else if (homeUserAvatar) {
+      homeUserAvatar.textContent = (nickname || 'U').charAt(0).toUpperCase();
+    }
+
+    if (userBio) {
+      if (isLoggedIn && bio) {
+        userBio.textContent = bio;
+        userBio.classList.remove('is-empty');
+      } else if (isLoggedIn) {
+        userBio.textContent = window.I18n?.t('settings.home.bio_empty') || '还没有个性签名';
+        userBio.classList.add('is-empty');
+      } else {
+        userBio.textContent = window.I18n?.t('settings.home.bio_login_hint') || '登录 SEKAI Pass 后可设置头像与个性签名';
+        userBio.classList.add('is-empty');
+      }
+    }
+
+    // 登录后保存用户名，并广播资料给聊天室
     if (isLoggedIn) {
       updateStoredNickname(nickname);
+      if (window.LiveStatus && window.LiveStatus.announceProfile) {
+        window.LiveStatus.announceProfile();
+      }
     }
 
     // 更新编辑按钮提示
     if (editNicknameBtn) {
       editNicknameBtn.title = isLoggedIn
-        ? '前往账户设置修改昵称'
-        : '编辑昵称';
+        ? (window.I18n?.t('settings.home.edit_profile') || '前往账户设置修改昵称 / 头像 / 个性签名')
+        : (window.I18n?.t('settings.home.edit_nickname') || '编辑昵称');
     }
   }
 
@@ -244,19 +279,20 @@
     }
   }
 
-  // 编辑昵称
+  // 编辑昵称 / 资料
   if (editNicknameBtn) {
     editNicknameBtn.addEventListener('click', async () => {
       // 检查是否已登录
       if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
         const confirmed = window.SekaiModal ?
           await window.SekaiModal.confirm(
-            '修改昵称',
-            '登录后昵称由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？',
-            '前往设置',
-            '取消'
+            window.I18n?.t('settings.home.edit_profile_title') || '修改个人资料',
+            window.I18n?.t('settings.home.edit_profile_desc') ||
+              '登录后昵称、头像与个性签名由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？',
+            window.I18n?.t('settings.home.edit_profile_confirm') || '前往设置',
+            window.I18n?.t('common.cancel') || '取消'
           ) :
-          confirm('登录后昵称由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？');
+          confirm('登录后昵称、头像与个性签名由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？');
 
         if (confirmed) {
           window.open('https://id.nightcord.de5.net/settings', '_blank');

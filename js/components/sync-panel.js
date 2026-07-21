@@ -53,7 +53,8 @@
       try {
         const userInfo = await window.SekaiAuth.getUserInfo();
         if (userInfo) {
-           const name = userInfo.preferred_username || userInfo.name || 'User';
+           // Prefer display_name over login username
+           const name = window.SekaiAuth.getDisplayName(userInfo, 'User');
            const email = userInfo.email || '';
            const initial = name.charAt(0).toUpperCase();
 

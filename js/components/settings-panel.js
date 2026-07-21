@@ -591,6 +591,33 @@
     updateHomeTab();
   });
 
+  // 从 SEKAI Pass 设置页切回时，重新拉取昵称等用户信息
+  let lastProfileRefreshAt = 0;
+  const PROFILE_REFRESH_COOLDOWN_MS = 2000;
+
+  async function refreshProfileFromAuth() {
+    if (!window.SekaiAuth || !window.SekaiAuth.isAuthenticated()) return;
+
+    const now = Date.now();
+    if (now - lastProfileRefreshAt < PROFILE_REFRESH_COOLDOWN_MS) return;
+    lastProfileRefreshAt = now;
+
+    await updateHomeTab();
+    if (window.SyncPanel && window.SyncPanel.updateUI) {
+      await window.SyncPanel.updateUI();
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      refreshProfileFromAuth();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    refreshProfileFromAuth();
+  });
+
   // 导出到全局命名空间
   window.SettingsPanel = {
     toggle: togglePanel,

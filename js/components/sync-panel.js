@@ -40,57 +40,70 @@
     }
   }
 
-  async function updateSyncUI() {
-    if (!loggedOutView || !loggedInView) return;
-
-    // Check Auth State
-    const isAuth = window.SekaiAuth && window.SekaiAuth.isAuthenticated();
-
+  function setSyncAuthViews(isAuth) {
     if (isAuth) {
       loggedOutView.classList.add('sekai-hidden');
       loggedInView.classList.remove('sekai-hidden');
-
-      // Update User Info (display name / avatar / bio)
-      try {
-        const userInfo = await window.SekaiAuth.getUserInfo();
-        if (userInfo) {
-           const profile = window.UserProfile
-             ? window.UserProfile.fromUserInfo(userInfo)
-             : null;
-           const name = profile?.displayName || window.SekaiAuth.getDisplayName(userInfo, 'User');
-           const email = userInfo.email || '';
-           const avatarUrl = profile?.avatarUrl || window.SekaiAuth.getAvatarUrl?.(userInfo) || null;
-           const bio = profile?.bio || window.SekaiAuth.getBio?.(userInfo) || '';
-
-           if (syncUserName) syncUserName.textContent = name;
-           if (syncUserEmail) syncUserEmail.textContent = email;
-           if (window.UserProfile) {
-             window.UserProfile.setAvatarElement(syncUserAvatar, name, avatarUrl);
-           } else if (syncUserAvatar) {
-             syncUserAvatar.textContent = name.charAt(0).toUpperCase();
-           }
-           if (syncUserBio) {
-             if (bio) {
-               syncUserBio.textContent = bio;
-               syncUserBio.classList.remove('sekai-hidden');
-             } else {
-               syncUserBio.textContent = '';
-               syncUserBio.classList.add('sekai-hidden');
-             }
-           }
-        }
-      } catch(e) {
-          console.error("Failed to fetch user info", e);
-      }
-
-      // Update Sync Status
-      const lastSync = localStorage.getItem('last_sync_time');
-      if (lastSyncTime) lastSyncTime.textContent = formatTime(lastSync);
-
-    } else {
-      loggedOutView.classList.remove('sekai-hidden');
-      loggedInView.classList.add('sekai-hidden');
+      return;
     }
+    loggedOutView.classList.remove('sekai-hidden');
+    loggedInView.classList.add('sekai-hidden');
+  }
+
+  function applySyncAvatar(name, avatarUrl) {
+    if (window.UserProfile) {
+      window.UserProfile.setAvatarElement(syncUserAvatar, name, avatarUrl);
+      return;
+    }
+    if (syncUserAvatar) {
+      syncUserAvatar.textContent = name.charAt(0).toUpperCase();
+    }
+  }
+
+  function applySyncBio(bio) {
+    if (!syncUserBio) return;
+    if (bio) {
+      syncUserBio.textContent = bio;
+      syncUserBio.classList.remove('sekai-hidden');
+      return;
+    }
+    syncUserBio.textContent = '';
+    syncUserBio.classList.add('sekai-hidden');
+  }
+
+  async function updateLoggedInProfile() {
+    try {
+      const userInfo = await window.SekaiAuth.getUserInfo();
+      if (!userInfo) return;
+
+      const profile = window.UserProfile
+        ? window.UserProfile.fromUserInfo(userInfo)
+        : null;
+      const name = profile?.displayName || window.SekaiAuth.getDisplayName(userInfo, 'User');
+      const email = userInfo.email || '';
+      const avatarUrl = profile?.avatarUrl || window.SekaiAuth.getAvatarUrl?.(userInfo) || null;
+      const bio = profile?.bio || window.SekaiAuth.getBio?.(userInfo) || '';
+
+      if (syncUserName) syncUserName.textContent = name;
+      if (syncUserEmail) syncUserEmail.textContent = email;
+      applySyncAvatar(name, avatarUrl);
+      applySyncBio(bio);
+    } catch (e) {
+      console.error('Failed to fetch user info', e);
+    }
+  }
+
+  async function updateSyncUI() {
+    if (!loggedOutView || !loggedInView) return;
+
+    const isAuth = window.SekaiAuth && window.SekaiAuth.isAuthenticated();
+    setSyncAuthViews(isAuth);
+    if (!isAuth) return;
+
+    await updateLoggedInProfile();
+
+    const lastSync = localStorage.getItem('last_sync_time');
+    if (lastSyncTime) lastSyncTime.textContent = formatTime(lastSync);
   }
 
   // Handle Manual Sync

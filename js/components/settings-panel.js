@@ -178,6 +178,47 @@
   }
 
   /**
+   * 更新主页头像
+   */
+  function updateHomeAvatar(nickname, avatarUrl) {
+    if (window.UserProfile) {
+      window.UserProfile.setAvatarElement(homeUserAvatar, nickname, avatarUrl);
+      return;
+    }
+    if (homeUserAvatar) {
+      homeUserAvatar.textContent = (nickname || 'U').charAt(0).toUpperCase();
+    }
+  }
+
+  /**
+   * 更新主页个性签名文案
+   */
+  function updateHomeBio(bio, isLoggedIn) {
+    if (!userBio) return;
+
+    if (isLoggedIn && bio) {
+      userBio.textContent = bio;
+      userBio.classList.remove('is-empty');
+      return;
+    }
+
+    userBio.classList.add('is-empty');
+    userBio.textContent = isLoggedIn
+      ? (window.I18n?.t('settings.home.bio_empty') || '还没有个性签名')
+      : (window.I18n?.t('settings.home.bio_login_hint') || '登录 SEKAI Pass 后可设置头像与个性签名');
+  }
+
+  /**
+   * 登录后同步昵称并广播资料
+   */
+  function syncLoggedInProfile(nickname) {
+    updateStoredNickname(nickname);
+    if (window.LiveStatus && window.LiveStatus.announceProfile) {
+      window.LiveStatus.announceProfile();
+    }
+  }
+
+  /**
    * 更新主页资料显示（昵称 / 头像 / 个性签名）
    */
   async function updateNicknameDisplay() {
@@ -187,34 +228,13 @@
       userNickname.textContent = nickname;
     }
 
-    if (window.UserProfile) {
-      window.UserProfile.setAvatarElement(homeUserAvatar, nickname, avatarUrl);
-    } else if (homeUserAvatar) {
-      homeUserAvatar.textContent = (nickname || 'U').charAt(0).toUpperCase();
-    }
+    updateHomeAvatar(nickname, avatarUrl);
+    updateHomeBio(bio, isLoggedIn);
 
-    if (userBio) {
-      if (isLoggedIn && bio) {
-        userBio.textContent = bio;
-        userBio.classList.remove('is-empty');
-      } else if (isLoggedIn) {
-        userBio.textContent = window.I18n?.t('settings.home.bio_empty') || '还没有个性签名';
-        userBio.classList.add('is-empty');
-      } else {
-        userBio.textContent = window.I18n?.t('settings.home.bio_login_hint') || '登录 SEKAI Pass 后可设置头像与个性签名';
-        userBio.classList.add('is-empty');
-      }
-    }
-
-    // 登录后保存用户名，并广播资料给聊天室
     if (isLoggedIn) {
-      updateStoredNickname(nickname);
-      if (window.LiveStatus && window.LiveStatus.announceProfile) {
-        window.LiveStatus.announceProfile();
-      }
+      syncLoggedInProfile(nickname);
     }
 
-    // 更新编辑按钮提示
     if (editNicknameBtn) {
       editNicknameBtn.title = isLoggedIn
         ? (window.I18n?.t('settings.home.edit_profile') || '前往账户设置修改昵称 / 头像 / 个性签名')

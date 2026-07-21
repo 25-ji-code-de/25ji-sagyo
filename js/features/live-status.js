@@ -260,45 +260,60 @@
   }
 
   /**
+   * 处理聊天/广播消息；资料广播仅写入缓存
+   * @param {string} message
+   * @param {string|null} [name]
+   * @param {number|null} [timestamp]
+   */
+  function handleChatPayload(message, name = null, timestamp = null) {
+    if (window.UserProfile && window.UserProfile.isAnnouncement(message)) {
+      window.UserProfile.tryParseAnnouncement(message);
+      return;
+    }
+    updateBroadcastMessage(message, name, timestamp, true);
+  }
+
+  /**
    * 处理收到的 WebSocket 消息
    * @param {Object} data - 消息数据
    */
   function handleMessage(data) {
-    // 处理不同类型的消息
     if (data.joined) {
-      // 用户加入
       onlineUsers.add(data.joined);
       updateOnlineCount(onlineUsers.size);
       const message = window.I18n?.t('broadcast.user_joined', { username: data.joined }) || `${data.joined} 加入了 Nightcord 作业空间`;
       updateBroadcastMessage(message, null, null, true);
-    } else if (data.quit) {
-      // 用户离开
+      return;
+    }
+
+    if (data.quit) {
       onlineUsers.delete(data.quit);
       updateOnlineCount(onlineUsers.size);
-    } else if (data.ready) {
-      // 历史消息加载完成
+      return;
+    }
+
+    if (data.ready) {
       const message = window.I18n?.t('broadcast.connected') || '已连接到 Nightcord 作业空间';
       updateBroadcastMessage(message, null, null, true);
-    } else if (data.name && data.message) {
-      // 带有 name 的消息：{"name":"xxx","message":"xxx","timestamp":123}
-      // 资料广播或普通聊天
-      if (window.UserProfile && window.UserProfile.isAnnouncement(data.message)) {
-        window.UserProfile.tryParseAnnouncement(data.message);
-      } else {
-        // broadcast text 只显示 message，面板显示 name + message
-        updateBroadcastMessage(data.message, data.name, data.timestamp, true);
-      }
-    } else if (data.message) {
-      // 普通广播消息（无 name）
-      if (window.UserProfile && window.UserProfile.isAnnouncement(data.message)) {
-        window.UserProfile.tryParseAnnouncement(data.message);
-      } else {
-        updateBroadcastMessage(data.message, null, null, true);
-      }
-    } else if (data.broadcast) {
-      // 服务端广播
+      return;
+    }
+
+    if (data.name && data.message) {
+      handleChatPayload(data.message, data.name, data.timestamp);
+      return;
+    }
+
+    if (data.message) {
+      handleChatPayload(data.message);
+      return;
+    }
+
+    if (data.broadcast) {
       updateBroadcastMessage(data.broadcast, null, null, true);
-    } else if (data.error) {
+      return;
+    }
+
+    if (data.error) {
       console.warn('[LiveStatus] Server error:', data.error);
     }
   }

@@ -93,6 +93,53 @@
     return profile;
   }
 
+  function packAnnouncement(obj) {
+    return PROFILE_MSG_PREFIX + JSON.stringify(obj);
+  }
+
+  function fitsAnnouncement(payload) {
+    return typeof payload === 'string' && payload.length <= MAX_CHAT_MESSAGE_LEN;
+  }
+
+  function buildAnnouncementBase(profile) {
+    const base = {
+      n: String(profile.displayName).slice(0, 50)
+    };
+    if (profile.username) base.u = String(profile.username).slice(0, 32);
+    if (profile.avatarUrl) base.a = profile.avatarUrl;
+    if (profile.bio) base.b = String(profile.bio);
+    return base;
+  }
+
+  function shrinkAnnouncement(base) {
+    let payload = packAnnouncement(base);
+    if (fitsAnnouncement(payload)) return payload;
+
+    if (base.b) {
+      const withoutBio = { ...base };
+      delete withoutBio.b;
+      const overhead = packAnnouncement({ ...withoutBio, b: '' }).length;
+      const room = MAX_CHAT_MESSAGE_LEN - overhead;
+      if (room > 0) {
+        base.b = base.b.slice(0, room);
+        payload = packAnnouncement(base);
+        if (fitsAnnouncement(payload)) return payload;
+      }
+      delete base.b;
+      payload = packAnnouncement(base);
+      if (fitsAnnouncement(payload)) return payload;
+    }
+
+    if (base.a) {
+      delete base.a;
+      payload = packAnnouncement(base);
+      if (fitsAnnouncement(payload)) return payload;
+    }
+
+    payload = packAnnouncement({ n: base.n });
+    return fitsAnnouncement(payload) ? payload : null;
+  }
+
   /**
    * Encode profile as a special chat message (hidden from UI).
    * Fits within the chat demo 256-char limit by truncating bio first.
@@ -101,50 +148,7 @@
    */
   function encodeAnnouncement(profile) {
     if (!profile || !profile.displayName) return null;
-
-    const base = {
-      n: String(profile.displayName).slice(0, 50),
-      u: profile.username ? String(profile.username).slice(0, 32) : undefined,
-      a: profile.avatarUrl || undefined,
-      b: profile.bio ? String(profile.bio) : undefined
-    };
-
-    // Drop empty optional fields
-    if (!base.u) delete base.u;
-    if (!base.a) delete base.a;
-    if (!base.b) delete base.b;
-
-    const pack = (obj) => PROFILE_MSG_PREFIX + JSON.stringify(obj);
-
-    let payload = pack(base);
-    if (payload.length <= MAX_CHAT_MESSAGE_LEN) return payload;
-
-    // Truncate bio to fit
-    if (base.b) {
-      const withoutBio = { ...base };
-      delete withoutBio.b;
-      const overhead = pack({ ...withoutBio, b: '' }).length;
-      const room = MAX_CHAT_MESSAGE_LEN - overhead;
-      if (room > 0) {
-        base.b = base.b.slice(0, room);
-        payload = pack(base);
-        if (payload.length <= MAX_CHAT_MESSAGE_LEN) return payload;
-      }
-      delete base.b;
-      payload = pack(base);
-      if (payload.length <= MAX_CHAT_MESSAGE_LEN) return payload;
-    }
-
-    // Drop avatar if still too long
-    if (base.a) {
-      delete base.a;
-      payload = pack(base);
-      if (payload.length <= MAX_CHAT_MESSAGE_LEN) return payload;
-    }
-
-    // Last resort: name only
-    payload = pack({ n: base.n });
-    return payload.length <= MAX_CHAT_MESSAGE_LEN ? payload : null;
+    return shrinkAnnouncement(buildAnnouncementBase(profile));
   }
 
   /**

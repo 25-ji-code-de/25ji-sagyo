@@ -162,6 +162,58 @@
       return fallback;
     }
 
+    /**
+     * Resolve login username (not display name).
+     * Priority: preferred_username → username
+     */
+    getUsername(userInfo, fallback = '') {
+      if (!userInfo) return fallback;
+      const candidates = [userInfo.preferred_username, userInfo.username];
+      for (const value of candidates) {
+        if (typeof value === 'string' && value.trim()) {
+          return value.trim();
+        }
+      }
+      return fallback;
+    }
+
+    /**
+     * Avatar URL from OIDC picture / SEKAI Pass avatar_url.
+     */
+    getAvatarUrl(userInfo) {
+      if (!userInfo) return null;
+      const candidates = [userInfo.picture, userInfo.avatar_url];
+      for (const value of candidates) {
+        if (typeof value === 'string' && value.trim()) {
+          const url = value.trim();
+          if (/^https:\/\//i.test(url)) return url;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Personal bio / signature (个性签名).
+     */
+    getBio(userInfo) {
+      if (!userInfo || typeof userInfo.bio !== 'string') return '';
+      return userInfo.bio.trim();
+    }
+
+    /**
+     * Normalize SEKAI Pass / OIDC userinfo into a stable profile object.
+     */
+    normalizeProfile(userInfo) {
+      if (!userInfo) return null;
+      return {
+        sub: userInfo.sub || userInfo.id || null,
+        displayName: this.getDisplayName(userInfo, ''),
+        username: this.getUsername(userInfo, ''),
+        avatarUrl: this.getAvatarUrl(userInfo),
+        bio: this.getBio(userInfo)
+      };
+    }
+
     // Get a valid access token, refreshing if necessary
     async getValidAccessToken() {
       const token = localStorage.getItem(this.accessTokenKey);

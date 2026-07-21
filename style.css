@@ -2118,6 +2118,25 @@ video{
   -webkit-text-fill-color: transparent;
 }
 
+.home-profile-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.home-profile-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .user-nickname-container {
   display: flex;
   align-items: center;
@@ -2128,6 +2147,20 @@ video{
   font-size: 20px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+}
+
+.user-bio-text {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.user-bio-text.is-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
 }
 
 .icon-btn {
@@ -3036,6 +3069,27 @@ video{
 #chatPanel .chat-message .name {
   font-weight: 600;
   color: rgba(180, 130, 255, 0.9);
+}
+
+#chatPanel .chat-message .name-clickable {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  color: rgba(180, 130, 255, 0.95);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#chatPanel .chat-message .name-clickable:hover,
+#chatPanel .chat-message .name-clickable:focus-visible {
+  color: #d2b8ff;
+  border-bottom-color: rgba(210, 184, 255, 0.7);
+  outline: none;
 }
 
 #chatPanel .chat-message .separator {
@@ -4599,6 +4653,16 @@ input:checked + .slider:before {
   justify-content: center;
   font-weight: bold;
   font-size: 20px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.user-avatar-circle.has-image {
+  color: transparent;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .user-details {
   flex: 1;
@@ -4619,6 +4683,102 @@ input:checked + .slider:before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.user-bio {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Clickable chat user profile card */
+.user-profile-card-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.user-profile-card-overlay.sekai-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.user-profile-card {
+  position: relative;
+  width: min(360px, 100%);
+  background: linear-gradient(160deg, rgba(36, 28, 54, 0.98) 0%, rgba(18, 16, 30, 0.98) 100%);
+  border: 1px solid rgba(180, 130, 255, 0.25);
+  border-radius: 16px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+.user-profile-card-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.user-profile-card-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.user-profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 24px;
+}
+.user-profile-card-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+}
+.user-profile-card-meta {
+  min-width: 0;
+  flex: 1;
+}
+.user-profile-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-profile-card-username {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(180, 130, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-profile-card-bio {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 2.8em;
 }
 .sync-status-box {
   background: rgba(0,0,0,0.2);

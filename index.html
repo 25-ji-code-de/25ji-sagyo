@@ -409,9 +409,15 @@
             <div class="tab-content active" id="tab-home">
               <div class="home-welcome-section">
                 <h2 id="greetingText">晚上好，</h2>
-                <div class="user-nickname-container">
-                  <span id="userNickname" class="nickname-text">「世界」的居民</span>
-                  <button id="editNicknameBtn" class="icon-btn" data-i18n-title="settings.home.edit_nickname" title="修改昵称">✏️</button>
+                <div class="home-profile-row">
+                  <div class="user-avatar-circle home-avatar" id="homeUserAvatar">U</div>
+                  <div class="home-profile-text">
+                    <div class="user-nickname-container">
+                      <span id="userNickname" class="nickname-text">「世界」的居民</span>
+                      <button id="editNicknameBtn" class="icon-btn" data-i18n-title="settings.home.edit_nickname" title="修改昵称">✏️</button>
+                    </div>
+                    <p id="userBio" class="user-bio-text" data-i18n="settings.home.bio_empty">还没有个性签名</p>
+                  </div>
                 </div>
               </div>
 
@@ -510,6 +516,7 @@
                   <div class="user-details">
                     <div class="user-name" id="syncUserName">User</div>
                     <div class="user-email" id="syncUserEmail">user@example.com</div>
+                    <div class="user-bio" id="syncUserBio"></div>
                   </div>
                 </div>
 
@@ -689,6 +696,7 @@
   <script src="js/utils/asset-loader.js"></script>
   <script src="js/utils/config.js"></script>
   <script src="js/utils/auth.js"></script>
+  <script src="js/utils/user-profile.js"></script>
   <script src="js/utils/api.js"></script>
   <script src="js/utils/settings-tracker.js"></script>
   <script src="js/utils/sync.js"></script>

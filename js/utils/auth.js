@@ -139,6 +139,29 @@
       }
     }
 
+    /**
+     * Resolve the display nickname from SEKAI Pass userinfo.
+     * Prefer real display name over login username.
+     * Priority: display_name → name → preferred_username → username → email
+     * (SEKAI Pass userinfo uses display_name/username; OIDC ID Token uses name/preferred_username)
+     */
+    getDisplayName(userInfo, fallback = 'User') {
+      if (!userInfo) return fallback;
+      const candidates = [
+        userInfo.display_name,
+        userInfo.name,
+        userInfo.preferred_username,
+        userInfo.username,
+        userInfo.email
+      ];
+      for (const value of candidates) {
+        if (typeof value === 'string' && value.trim()) {
+          return value.trim();
+        }
+      }
+      return fallback;
+    }
+
     // Get a valid access token, refreshing if necessary
     async getValidAccessToken() {
       const token = localStorage.getItem(this.accessTokenKey);

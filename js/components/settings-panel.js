@@ -135,7 +135,8 @@
       const userInfo = await window.SekaiAuth.getUserInfo();
       if (userInfo) {
         return {
-          nickname: userInfo.preferred_username || userInfo.name || userInfo.email,
+          // 优先展示名，而不是登录用户名
+          nickname: window.SekaiAuth.getDisplayName(userInfo, userInfo.email),
           isLoggedIn: true
         };
       }
@@ -251,11 +252,11 @@
         const confirmed = window.SekaiModal ?
           await window.SekaiModal.confirm(
             '修改昵称',
-            '登录后昵称已锁定为用户名。\n是否前往账户设置页面修改？',
+            '登录后昵称由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？',
             '前往设置',
             '取消'
           ) :
-          confirm('登录后昵称已锁定为用户名。\n是否前往账户设置页面修改？');
+          confirm('登录后昵称由 SEKAI Pass 账户管理。\n是否前往账户设置页面修改？');
 
         if (confirmed) {
           window.open('https://id.nightcord.de5.net/settings', '_blank');

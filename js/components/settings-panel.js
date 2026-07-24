@@ -642,6 +642,15 @@
     localStorage.setItem('userNickname', '「世界」的居民_' + [...Array(4)].map(_=>"23456789BCDFGHJKLMNPQRSTVWXY"[Math.random()*28|0]).join(''));
   }
 
+  // 页面加载时若已登录，尽早把 SEKAI Pass 昵称同步到 localStorage / 聊天身份，
+  // 避免 WebSocket 仍以访客昵称注册（不必等打开设置面板）。
+  if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
+    // 异步，不阻塞其它初始化
+    updateNicknameDisplay().catch((e) => {
+      console.warn('Failed to sync nickname on load:', e);
+    });
+  }
+
   // 监听语言变化事件
   window.addEventListener('languagechange', () => {
     updateHomeTab();

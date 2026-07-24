@@ -92,6 +92,21 @@
 
             try {
                 await window.SekaiAuth.handleCallback(code, state);
+
+                // 在跳转回首页前，把 SEKAI Pass 显示名写入 localStorage，
+                // 避免首页 WebSocket 仍用访客昵称「世界」的居民_XXXX 注册。
+                try {
+                    const userInfo = await window.SekaiAuth.getUserInfo();
+                    if (userInfo) {
+                        const displayName = window.SekaiAuth.getDisplayName(userInfo, '');
+                        if (displayName) {
+                            localStorage.setItem('userNickname', displayName);
+                        }
+                    }
+                } catch (profileErr) {
+                    console.warn('Failed to prefetch display name before redirect:', profileErr);
+                }
+
                 setStatus('登录成功，正在跳转...');
                 setTimeout(() => { window.location.href = '/'; }, 1000);
             } catch (err) {

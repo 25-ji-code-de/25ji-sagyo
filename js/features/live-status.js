@@ -358,6 +358,8 @@
 
       ws.addEventListener('open', () => {
         console.log('[LiveStatus] Connected to server');
+        // open 时再读一次：登录回跳后资料可能在 connecting 期间异步写入 localStorage
+        currentUsername = CONFIG.getUsername();
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ name: currentUsername }));
         }
@@ -469,22 +471,33 @@
 
   /**
    * 更新用户名（当用户在设置中修改昵称后调用）
-   * 会断开当前连接并以新用户名重新连接
+   * 始终同步内存中的 currentUsername；若已连接且名字变化则重连注册。
+   * 未连接时只更新内存名，下一次 open/connect 会使用新名。
    */
   function updateUsername() {
     const newUsername = CONFIG.getUsername();
-    if (newUsername !== currentUsername && isConnected()) {
+    if (!newUsername) return;
+
+    const changed = newUsername !== currentUsername;
+    // 即使尚未连上，也要先改内存名，避免 open 时仍用访客昵称注册
+    currentUsername = newUsername;
+
+    if (changed && isConnected()) {
       console.log('[LiveStatus] Username changed, reconnecting...');
-      // 断开并重连以更新服务器上的用户名
       shouldReconnect = true;
       pendingProfileAnnounce = true;
       if (ws) {
         try { ws.close(); } catch (e) {}
       }
       // reconnect will be triggered by the close event
-    } else {
-      // 昵称未变时仍可刷新头像 / 签名广播
+      return;
+    }
+
+    // 昵称未变，或尚未连上：有连接时刷新资料广播
+    if (isConnected()) {
       announceProfile(true);
+    } else {
+      pendingProfileAnnounce = true;
     }
   }
 

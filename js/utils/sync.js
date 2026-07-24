@@ -371,23 +371,24 @@
     }
   }
 
-  // 导出到全局
-  window.DataSync = new DataSync();
+  // 导出到全局（实例挂到 window；class 名 DataSync 在本 IIFE 内仍指向构造函数）
+  const dataSync = new DataSync();
+  window.DataSync = dataSync;
 
   // 登录后自动启动同步
   document.addEventListener('DOMContentLoaded', async () => {
     if (Auth.isAuthenticated()) {
       // 检查是否需要迁移
       try {
-        const result = await DataSync.migrateLocalData();
+        const result = await dataSync.migrateLocalData();
         if (result.migrated || result.cancelled === false) {
           // 启动自动同步
-          DataSync.startAutoSync();
+          dataSync.startAutoSync();
         }
       } catch (error) {
         console.error('Migration check failed:', error);
         // 即使迁移失败，也启动自动同步
-        DataSync.startAutoSync();
+        dataSync.startAutoSync();
       }
     }
   });

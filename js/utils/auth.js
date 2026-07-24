@@ -2,6 +2,10 @@
 // SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
 
 // SEKAI Pass OAuth 认证模块
+// Aligned with hub/assets/js/auth.js patterns:
+// - sessionStorage for PKCE secrets
+// - single-flight refresh
+// - refresh token keeps isAuthenticated true
 (function() {
   'use strict';
 
@@ -14,19 +18,26 @@
       this.tokenExpiresAtKey = 'sekai_token_expires_at';
       this.codeVerifierKey = 'sekai_code_verifier';
       this.stateKey = 'sekai_auth_state';
+      /** @type {Promise<boolean>|null} */
+      this._refreshPromise = null;
     }
 
-    // Generate random string
+    // Generate random string (hex)
     generateRandomString(length) {
       const array = new Uint8Array(length);
       window.crypto.getRandomValues(array);
-      return Array.from(array, dec => ('0' + dec.toString(16)).slice(-2)).join('');
+      return Array.from(array, (dec) => ('0' + dec.toString(16)).slice(-2)).join('');
     }
 
-    // Base64URL encode
+    // Base64URL encode (chunked — avoids apply arg limits)
     base64UrlEncode(arrayBuffer) {
-      let base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
-      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     // SHA-256 hash
@@ -42,13 +53,14 @@
       return this.base64UrlEncode(hashed);
     }
 
-    // Initiate Login
+    // Initiate Login — PKCE secrets live in sessionStorage (tab-scoped)
     async login() {
       const state = this.generateRandomString(16);
-      const codeVerifier = this.generateRandomString(32);
+      // PKCE verifier should be high-entropy; 64 hex chars ≈ 32 bytes
+      const codeVerifier = this.generateRandomString(64);
 
-      localStorage.setItem(this.stateKey, state);
-      localStorage.setItem(this.codeVerifierKey, codeVerifier);
+      sessionStorage.setItem(this.stateKey, state);
+      sessionStorage.setItem(this.codeVerifierKey, codeVerifier);
 
       const codeChallenge = await this.generateCodeChallenge(codeVerifier);
 
@@ -59,7 +71,7 @@
         scope: CONFIG.scope,
         state: state,
         code_challenge: codeChallenge,
-        code_challenge_method: 'S256'
+        code_challenge_method: 'S256',
       });
 
       window.location.href = `${CONFIG.authEndpoint}?${params.toString()}`;
@@ -67,11 +79,17 @@
 
     // Handle Callback
     async handleCallback(code, state) {
-      const storedState = localStorage.getItem(this.stateKey);
-      const codeVerifier = localStorage.getItem(this.codeVerifierKey);
+      const storedState =
+        sessionStorage.getItem(this.stateKey) || localStorage.getItem(this.stateKey);
+      const codeVerifier =
+        sessionStorage.getItem(this.codeVerifierKey) ||
+        localStorage.getItem(this.codeVerifierKey);
 
-      if (state !== storedState) {
+      if (!state || state !== storedState) {
         throw new Error('Invalid state parameter');
+      }
+      if (!codeVerifier) {
+        throw new Error('Missing PKCE code_verifier');
       }
 
       const params = new URLSearchParams({
@@ -79,15 +97,15 @@
         client_id: CONFIG.clientId,
         code: code,
         redirect_uri: CONFIG.redirectUri,
-        code_verifier: codeVerifier
+        code_verifier: codeVerifier,
       });
 
       const response = await fetch(CONFIG.tokenEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: params
+        body: params,
       });
 
       if (!response.ok) {
@@ -99,13 +117,18 @@
 
       // Store tokens
       localStorage.setItem(this.accessTokenKey, data.access_token);
-      localStorage.setItem(this.refreshTokenKey, data.refresh_token);
+      if (data.refresh_token) {
+        localStorage.setItem(this.refreshTokenKey, data.refresh_token);
+      }
 
       // Calculate and store expiration time
-      const expiresAt = Date.now() + (data.expires_in * 1000);
-      localStorage.setItem(this.tokenExpiresAtKey, expiresAt.toString());
+      const expiresIn = Number(data.expires_in) || 3600;
+      const expiresAt = Date.now() + expiresIn * 1000;
+      localStorage.setItem(this.tokenExpiresAtKey, String(expiresAt));
 
-      // Clean up
+      // Clean up PKCE state from both storages (migration-friendly)
+      sessionStorage.removeItem(this.stateKey);
+      sessionStorage.removeItem(this.codeVerifierKey);
       localStorage.removeItem(this.stateKey);
       localStorage.removeItem(this.codeVerifierKey);
 
@@ -120,8 +143,8 @@
       try {
         const response = await fetch(CONFIG.userInfoEndpoint, {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -152,7 +175,7 @@
         userInfo.name,
         userInfo.preferred_username,
         userInfo.username,
-        userInfo.email
+        userInfo.email,
       ];
       for (const value of candidates) {
         if (typeof value === 'string' && value.trim()) {
@@ -210,7 +233,7 @@
         displayName: this.getDisplayName(userInfo, ''),
         username: this.getUsername(userInfo, ''),
         avatarUrl: this.getAvatarUrl(userInfo),
-        bio: this.getBio(userInfo)
+        bio: this.getBio(userInfo),
       };
     }
 
@@ -223,10 +246,9 @@
 
       // Check if token is expired or will expire in the next 5 minutes
       const now = Date.now();
-      const expiryTime = parseInt(expiresAt);
+      const expiryTime = parseInt(expiresAt, 10);
 
-      if (expiryTime && now >= expiryTime - 5 * 60 * 1000) {
-        // Token expired or expiring soon, try to refresh
+      if (!Number.isFinite(expiryTime) || now >= expiryTime - 5 * 60 * 1000) {
         console.log('Access token expired or expiring soon, refreshing...');
         const refreshed = await this.refreshAccessToken();
         if (!refreshed) {
@@ -238,8 +260,18 @@
       return token;
     }
 
-    // Refresh access token using refresh token
+    // Refresh access token using refresh token (single-flight)
     async refreshAccessToken() {
+      if (this._refreshPromise) {
+        return this._refreshPromise;
+      }
+      this._refreshPromise = this._doRefreshAccessToken().finally(() => {
+        this._refreshPromise = null;
+      });
+      return this._refreshPromise;
+    }
+
+    async _doRefreshAccessToken() {
       const refreshToken = localStorage.getItem(this.refreshTokenKey);
       if (!refreshToken) {
         console.error('No refresh token available');
@@ -250,15 +282,15 @@
         const params = new URLSearchParams({
           grant_type: 'refresh_token',
           client_id: CONFIG.clientId,
-          refresh_token: refreshToken
+          refresh_token: refreshToken,
         });
 
         const response = await fetch(CONFIG.tokenEndpoint, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: params
+          body: params,
         });
 
         if (!response.ok) {
@@ -271,11 +303,14 @@
 
         // Update tokens
         localStorage.setItem(this.accessTokenKey, data.access_token);
-        localStorage.setItem(this.refreshTokenKey, data.refresh_token);
+        if (data.refresh_token) {
+          localStorage.setItem(this.refreshTokenKey, data.refresh_token);
+        }
 
         // Update expiration time
-        const expiresAt = Date.now() + (data.expires_in * 1000);
-        localStorage.setItem(this.tokenExpiresAtKey, expiresAt.toString());
+        const expiresIn = Number(data.expires_in) || 3600;
+        const expiresAt = Date.now() + expiresIn * 1000;
+        localStorage.setItem(this.tokenExpiresAtKey, String(expiresAt));
 
         console.log('Access token refreshed successfully');
         return true;
@@ -287,15 +322,43 @@
     }
 
     isAuthenticated() {
-      return !!localStorage.getItem(this.accessTokenKey);
+      const token = localStorage.getItem(this.accessTokenKey);
+      if (!token) return false;
+      const expiresAt = parseInt(localStorage.getItem(this.tokenExpiresAtKey), 10);
+      // If we have a refresh token, treat as authenticated even if access expired
+      if (localStorage.getItem(this.refreshTokenKey)) return true;
+      return Number.isFinite(expiresAt) && Date.now() < expiresAt;
     }
 
     logout() {
+      const access = localStorage.getItem(this.accessTokenKey);
+      const refresh = localStorage.getItem(this.refreshTokenKey);
+      const revokeUrl = CONFIG.tokenEndpoint.replace(/\/token$/, '/revoke');
+      const fire = (token, hint) => {
+        if (!token) return;
+        try {
+          void fetch(revokeUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              token,
+              token_type_hint: hint,
+              client_id: CONFIG.clientId,
+            }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch (_) { /* ignore */ }
+      };
+      fire(refresh, 'refresh_token');
+      fire(access, 'access_token');
+
       localStorage.removeItem(this.accessTokenKey);
       localStorage.removeItem(this.refreshTokenKey);
       localStorage.removeItem(this.tokenExpiresAtKey);
       localStorage.removeItem(this.stateKey);
       localStorage.removeItem(this.codeVerifierKey);
+      sessionStorage.removeItem(this.stateKey);
+      sessionStorage.removeItem(this.codeVerifierKey);
       window.location.reload();
     }
   }

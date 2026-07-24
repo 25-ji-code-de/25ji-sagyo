@@ -53,33 +53,50 @@
     <script src="js/utils/config.js"></script>
     <script src="js/utils/auth.js"></script>
     <script>
+        function setStatus(text, isError = false) {
+            const el = document.getElementById('status');
+            el.textContent = '';
+            if (isError) {
+                const div = document.createElement('div');
+                div.className = 'error';
+                div.textContent = text;
+                el.appendChild(div);
+                const br = document.createElement('br');
+                el.appendChild(br);
+                const a = document.createElement('a');
+                a.href = '/';
+                a.textContent = '返回首页';
+                el.appendChild(a);
+            } else {
+                el.textContent = text;
+            }
+        }
+
         async function handleCallback() {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             const state = urlParams.get('state');
             const error = urlParams.get('error');
+            const errorDesc = urlParams.get('error_description');
 
             if (error) {
-                document.getElementById('status').innerHTML =
-                    `<div class="error">认证失败: ${error}</div>`;
+                setStatus(`认证失败: ${error}${errorDesc ? ' — ' + errorDesc : ''}`, true);
                 return;
             }
 
             if (!code || !state) {
-                document.getElementById('status').innerHTML =
-                    '参数无效，正在返回...<br><a href="/">返回首页</a>';
-                setTimeout(() => window.location.href = '/', 2000);
+                setStatus('参数无效，正在返回...');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
                 return;
             }
 
             try {
                 await window.SekaiAuth.handleCallback(code, state);
-                document.getElementById('status').textContent = '登录成功，正在跳转...';
-                setTimeout(() => window.location.href = '/', 1000);
+                setStatus('登录成功，正在跳转...');
+                setTimeout(() => { window.location.href = '/'; }, 1000);
             } catch (err) {
                 console.error(err);
-                document.getElementById('status').innerHTML =
-                    `<div class="error">登录失败: ${err.message}</div><br><a href="/">返回首页</a>`;
+                setStatus(`登录失败: ${err?.message || String(err)}`, true);
             }
         }
 

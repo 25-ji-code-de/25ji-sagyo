@@ -115,7 +115,8 @@
     "sync": {
       "title": "Cloud Sync",
       "desc": "Sign in to sync your focus time, achievements, and preferences.",
-      "login_btn": "Sign In / Sign Up"
+      "login_btn": "Sign In / Sign Up",
+      "logged_in": "Signed in ✓"
     },
     "stats": {
       "today_focus": "Today's Focus (min)",

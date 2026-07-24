@@ -116,6 +116,7 @@
       "title": "Cloud Sync",
       "desc": "Sign in to sync your focus time, achievements, and preferences.",
       "login_btn": "Sign In / Sign Up",
+      "logged_in": "Signed in ✓",
       "status_title": "Sync Status",
       "last_sync": "Last Sync",
       "never_synced": "Never synced",

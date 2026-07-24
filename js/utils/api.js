@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 The 25-ji-code-de Team
 
 // SEKAI Gateway API 客户端
+// Mirrors hub API.request() pattern for DRY Bearer calls
 (function() {
   'use strict';
 
@@ -10,40 +11,70 @@
 
   class API {
     /**
+     * Shared authenticated JSON request (optional — silent on missing auth for events).
+     * @param {string} path
+     * @param {RequestInit} [init]
+     * @param {{ silentAuth?: boolean }} [opts]
+     */
+    static async request(path, init = {}, opts = {}) {
+      if (!Auth.isAuthenticated()) {
+        if (opts.silentAuth) return null;
+        throw new Error('Not authenticated');
+      }
+
+      const accessToken = await Auth.getValidAccessToken();
+      if (!accessToken) {
+        if (opts.silentAuth) return null;
+        throw new Error('No access token');
+      }
+
+      const headers = new Headers(init.headers || {});
+      headers.set('Authorization', `Bearer ${accessToken}`);
+      if (init.body && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+      }
+
+      const response = await fetch(`${CONFIG.apiBaseUrl}${path}`, {
+        ...init,
+        headers,
+      });
+
+      if (!response.ok) {
+        const err = new Error(`API error: ${response.status}`);
+        err.status = response.status;
+        throw err;
+      }
+
+      const text = await response.text();
+      if (!text) return null;
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text;
+      }
+    }
+
+    /**
      * 上报用户事件
      */
     static async reportEvent(eventType, metadata = {}) {
-      // 如果未登录，静默失败（不影响用户体验）
-      if (!Auth.isAuthenticated()) {
-        console.log('Not authenticated, skipping event report');
-        return false;
-      }
-
       try {
-        const accessToken = await Auth.getValidAccessToken();
-        if (!accessToken) {
-          console.log('No valid access token, skipping event report');
-          return false;
-        }
-
-        const response = await fetch(`${CONFIG.apiBaseUrl}/user/events`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
+        const result = await this.request(
+          '/user/events',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              project: '25ji',
+              event_type: eventType,
+              metadata: metadata,
+            }),
           },
-          body: JSON.stringify({
-            project: '25ji',
-            event_type: eventType,
-            metadata: metadata
-          })
-        });
-
-        if (!response.ok) {
-          console.error('Failed to report event:', response.status);
+          { silentAuth: true },
+        );
+        if (!result) {
+          console.log('Not authenticated, skipping event report');
           return false;
         }
-
         console.log(`Event reported: ${eventType}`, metadata);
         return true;
       } catch (error) {
@@ -61,16 +92,11 @@
       }
 
       try {
-        const accessToken = await Auth.getValidAccessToken();
-        if (!accessToken) return false;
-
-        // 逐个上报（未来可以优化为批量 API）
         for (const event of events) {
           await this.reportEvent(event.type, event.metadata);
           // 避免请求过快
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
-
         return true;
       } catch (error) {
         console.error('Error reporting batch:', error);

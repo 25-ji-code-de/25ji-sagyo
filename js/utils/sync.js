@@ -15,15 +15,27 @@
     }
 
     /**
+     * Safe JSON parse from localStorage (never throws).
+     */
+    _parseJson(raw, fallback) {
+      if (raw == null || raw === '') return fallback;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return fallback;
+      }
+    }
+
+    /**
      * 收集本地数据准备上传
      */
     collectLocalData() {
       const data = {};
 
       // 1. 用户统计数据（总是包含）
-      const userStats = localStorage.getItem('userStats');
-      if (userStats) {
-        data.userStats = JSON.parse(userStats);
+      const userStats = this._parseJson(localStorage.getItem('userStats'), null);
+      if (userStats && typeof userStats === 'object') {
+        data.userStats = userStats;
       }
 
       // 2. 偏好设置（只在用户修改过时包含）
@@ -31,8 +43,8 @@
       if (preferencesModified) {
         data.preferences = {
           language: localStorage.getItem('app_language'),
-          worldClockTimeZones: JSON.parse(localStorage.getItem('worldClockTimeZones') || 'null'),
-          healthReminderConfig: JSON.parse(localStorage.getItem('health_reminder_config') || 'null'),
+          worldClockTimeZones: this._parseJson(localStorage.getItem('worldClockTimeZones'), null),
+          healthReminderConfig: this._parseJson(localStorage.getItem('health_reminder_config'), null),
           visualizationEnabled: localStorage.getItem('visualizationEnabled'),
           clockWidgetVisible: localStorage.getItem('clockWidgetVisible'),
           userNickname: localStorage.getItem('userNickname')
@@ -45,14 +57,14 @@
       if (cdPlayerUsed) {
         data.cdPlayer = {
           volume: localStorage.getItem('cd_player_volume'),
-          favorites: JSON.parse(localStorage.getItem('cd_player_favorites') || '[]'),
-          playlists: JSON.parse(localStorage.getItem('cd_player_playlists') || '[]'),
+          favorites: this._parseJson(localStorage.getItem('cd_player_favorites'), []),
+          playlists: this._parseJson(localStorage.getItem('cd_player_playlists'), []),
           lastTrackId: localStorage.getItem('cd_player_last_track_id'),
           lastVocalId: localStorage.getItem('cd_player_last_vocal_id'),
           vocalPreference: localStorage.getItem('cd_player_vocal_preference'),
           repeat: localStorage.getItem('cd_player_repeat'),
           shuffle: localStorage.getItem('cd_player_shuffle'),
-          preferredCharacters: JSON.parse(localStorage.getItem('cd_player_preferred_characters') || '[]')
+          preferredCharacters: this._parseJson(localStorage.getItem('cd_player_preferred_characters'), [])
         };
         data.cdPlayer_used = true;
       }
@@ -61,10 +73,23 @@
     }
 
     /**
+     * Safe localStorage write (never throws on quota).
+     */
+    _setItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (e) {
+        console.warn('localStorage setItem failed:', key, e && e.name);
+        return false;
+      }
+    }
+
+    /**
      * 应用用户统计数据
      */
     applyUserStats(userStats) {
-      localStorage.setItem('userStats', JSON.stringify(userStats));
+      this._setItem('userStats', JSON.stringify(userStats));
 
       if (window.achievementSystem && window.achievementSystem.updateStats) {
         window.achievementSystem.updateStats(userStats);
@@ -75,31 +100,31 @@
      * 应用偏好设置
      */
     applyPreferences(prefs) {
-      if (prefs.language) localStorage.setItem('app_language', prefs.language);
-      if (prefs.worldClockTimeZones) localStorage.setItem('worldClockTimeZones', JSON.stringify(prefs.worldClockTimeZones));
-      if (prefs.healthReminderConfig) localStorage.setItem('health_reminder_config', JSON.stringify(prefs.healthReminderConfig));
-      if (prefs.visualizationEnabled !== undefined) localStorage.setItem('visualizationEnabled', prefs.visualizationEnabled);
-      if (prefs.clockWidgetVisible !== undefined) localStorage.setItem('clockWidgetVisible', prefs.clockWidgetVisible);
-      if (prefs.userNickname) localStorage.setItem('userNickname', prefs.userNickname);
+      if (prefs.language) this._setItem('app_language', prefs.language);
+      if (prefs.worldClockTimeZones) this._setItem('worldClockTimeZones', JSON.stringify(prefs.worldClockTimeZones));
+      if (prefs.healthReminderConfig) this._setItem('health_reminder_config', JSON.stringify(prefs.healthReminderConfig));
+      if (prefs.visualizationEnabled !== undefined) this._setItem('visualizationEnabled', prefs.visualizationEnabled);
+      if (prefs.clockWidgetVisible !== undefined) this._setItem('clockWidgetVisible', prefs.clockWidgetVisible);
+      if (prefs.userNickname) this._setItem('userNickname', prefs.userNickname);
 
-      localStorage.setItem('preferences_modified', 'true');
+      this._setItem('preferences_modified', 'true');
     }
 
     /**
      * 应用CD播放器设置
      */
     applyCdPlayerSettings(cd) {
-      if (cd.volume !== undefined) localStorage.setItem('cd_player_volume', cd.volume);
-      if (cd.favorites !== undefined) localStorage.setItem('cd_player_favorites', JSON.stringify(cd.favorites));
-      if (cd.playlists !== undefined) localStorage.setItem('cd_player_playlists', JSON.stringify(cd.playlists));
-      if (cd.lastTrackId) localStorage.setItem('cd_player_last_track_id', cd.lastTrackId);
-      if (cd.lastVocalId) localStorage.setItem('cd_player_last_vocal_id', cd.lastVocalId);
-      if (cd.vocalPreference) localStorage.setItem('cd_player_vocal_preference', cd.vocalPreference);
-      if (cd.repeat !== undefined) localStorage.setItem('cd_player_repeat', cd.repeat);
-      if (cd.shuffle !== undefined) localStorage.setItem('cd_player_shuffle', cd.shuffle);
-      if (cd.preferredCharacters !== undefined) localStorage.setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
+      if (cd.volume !== undefined) this._setItem('cd_player_volume', cd.volume);
+      if (cd.favorites !== undefined) this._setItem('cd_player_favorites', JSON.stringify(cd.favorites));
+      if (cd.playlists !== undefined) this._setItem('cd_player_playlists', JSON.stringify(cd.playlists));
+      if (cd.lastTrackId) this._setItem('cd_player_last_track_id', cd.lastTrackId);
+      if (cd.lastVocalId) this._setItem('cd_player_last_vocal_id', cd.lastVocalId);
+      if (cd.vocalPreference) this._setItem('cd_player_vocal_preference', cd.vocalPreference);
+      if (cd.repeat !== undefined) this._setItem('cd_player_repeat', cd.repeat);
+      if (cd.shuffle !== undefined) this._setItem('cd_player_shuffle', cd.shuffle);
+      if (cd.preferredCharacters !== undefined) this._setItem('cd_player_preferred_characters', JSON.stringify(cd.preferredCharacters));
 
-      localStorage.setItem('cdPlayer_used', 'true');
+      this._setItem('cdPlayer_used', 'true');
     }
 
     /**

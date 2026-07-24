@@ -116,6 +116,7 @@
       "title": "云端同步",
       "desc": "登录以同步您的专注时长、成就和偏好设置。",
       "login_btn": "登录 / 注册",
+      "logged_in": "已登录 ✓",
       "status_title": "同步状态",
       "last_sync": "上次同步",
       "never_synced": "从未同步",

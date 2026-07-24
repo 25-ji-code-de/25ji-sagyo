@@ -115,7 +115,8 @@
     "sync": {
       "title": "雲端同步",
       "desc": "登入以同步您的專注時間、成就和偏好設定。",
-      "login_btn": "登入 / 註冊"
+      "login_btn": "登入 / 註冊",
+      "logged_in": "已登入 ✓"
     },
     "stats": {
       "today_focus": "今日專注 (分鐘)",

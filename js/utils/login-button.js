@@ -14,24 +14,29 @@
       return;
     }
 
+    function t(key, fallback) {
+      try {
+        const v = window.I18n?.t?.(key);
+        return (v && v !== key) ? v : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
     // 检查登录状态并更新 UI
+    // Note: when authenticated, sync-panel hides #sync-logged-out (this button's container).
+    // Still keep label correct for race / partial UI states.
     async function updateLoginUI() {
       if (window.SekaiAuth && window.SekaiAuth.isAuthenticated()) {
-        loginBtn.textContent = '已登录 ✓';
+        loginBtn.textContent = t('settings.sync.logged_in', '已登录 ✓');
         loginBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-
-        // 更新设置面板中的昵称显示
-        if (window.SettingsPanel && window.SettingsPanel.updateHomeTab) {
-          await window.SettingsPanel.updateHomeTab();
-        }
       } else {
-        loginBtn.textContent = '登录 / 注册';
+        loginBtn.textContent = t('settings.sync.login_btn', '登录 / 注册');
         loginBtn.style.background = '';
+      }
 
-        // 更新设置面板中的昵称显示
-        if (window.SettingsPanel && window.SettingsPanel.updateHomeTab) {
-          await window.SettingsPanel.updateHomeTab();
-        }
+      if (window.SettingsPanel && window.SettingsPanel.updateHomeTab) {
+        await window.SettingsPanel.updateHomeTab();
       }
     }
 
